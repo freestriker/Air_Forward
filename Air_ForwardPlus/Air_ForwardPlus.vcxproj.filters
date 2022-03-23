@@ -26,5 +26,8 @@
     <ClInclude Include="header\core\Object.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\utils\ChildBrotherTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
