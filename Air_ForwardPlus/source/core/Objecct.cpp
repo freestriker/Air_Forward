@@ -1,4 +1,12 @@
 #include "core/object.h"
+#include <rttr/registration>
+
+RTTR_REGISTRATION
+{
+	rttr::registration::class_<Object>("Object")
+		.method("Type", &Object::Type)
+		.method("ToString", &Object::ToString);
+}
 
 Object::Object()
 {

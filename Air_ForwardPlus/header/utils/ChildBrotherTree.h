@@ -58,6 +58,8 @@ public:
     {
         return ChildIterator(this->parent);
     }
+
+    RTTR_ENABLE()
 };
 template<class T>
 ChildBrotherTree<T>::ChildBrotherTree() :ChildBrotherTree(nullptr, nullptr, nullptr, nullptr)
