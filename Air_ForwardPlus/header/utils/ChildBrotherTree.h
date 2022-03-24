@@ -9,7 +9,7 @@ public:
         ChildBrotherTree<T>* _node;
 
     public:
-        ChildIterator(T* node)
+        ChildIterator(ChildBrotherTree<T>* node)
         {
             node ? this->_node = node->child : nullptr;
 
@@ -58,8 +58,6 @@ public:
     {
         return ChildIterator(this->parent);
     }
-
-    RTTR_ENABLE()
 };
 template<class T>
 ChildBrotherTree<T>::ChildBrotherTree() :ChildBrotherTree(nullptr, nullptr, nullptr, nullptr)
@@ -146,15 +144,15 @@ ChildBrotherTree<T>* ChildBrotherTree<T>::Remove()
     ChildBrotherTree<T>* result = nullptr;
     if (this->parent)
     {
-        T* pre = nullptr;
+        ChildBrotherTree<T>* pre = nullptr;
         ChildBrotherTree<T>* o = this->parent;
-        for (ChildIterator start = o->GetStartChildIterator(), end = o->GetEndChildIterator(); start != end; ++start)
+        for (ChildIterator start = o->GetChildIterator(); start.IsValid(); ++start)
         {
-            if ((*start) == this)
+            if (start.Node() == this)
             {
                 break;
             }
-            pre = *start;
+            pre = start.Node();
         }
         if (pre)
         {

@@ -21,12 +21,39 @@
     <ClCompile Include="source\core\Objecct.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="source\core\Component.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\GameObject.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\ChildBrotherTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Component\Transform\Transform.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Global.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\core\Object.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\utils\ChildBrotherTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Component\Transform\Transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\Component.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\GameObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\Global.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

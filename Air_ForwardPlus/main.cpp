@@ -81,7 +81,7 @@ int main()
  //   LoadModel("C:/Users/FREEstriker/Desktop/sphere.obj");
 	//LoadTexture("C:/Users/FREEstriker/Desktop/wall.png");
 	Object* o = new Object();
-	std::cout << o->Type().name() << std::endl;
+	std::cout << o->TypeName() << std::endl;
 	std::cout << o->ToString() << std::endl;
 
 	Node* n1 = new Node(data);

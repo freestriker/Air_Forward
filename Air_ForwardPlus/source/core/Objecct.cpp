@@ -4,7 +4,8 @@
 RTTR_REGISTRATION
 {
 	rttr::registration::class_<Object>("Object")
-		.method("Type", &Object::Type)
+		.constructor<>()
+		.method("TypeName", &Object::TypeName)
 		.method("ToString", &Object::ToString);
 }
 
@@ -16,12 +17,12 @@ Object::~Object()
 {
 }
 
-const type_info& Object::Type()
+std::string Object::TypeName()
 {
-    return typeid(*this);
+    return typeid(*this).name();
 }
 
 std::string Object::ToString()
 {
-    return Type().name();
+    return TypeName();
 }

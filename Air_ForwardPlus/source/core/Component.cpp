@@ -1,10 +1,12 @@
 #include "core/Component.h"
 #include <rttr/registration>
+#include "core/GameObject.h"
 
 RTTR_REGISTRATION
 {
 	rttr::registration::class_<Component>("Component")
-		.property("gameObject", &Component::gameObject);
+				.constructor<>()
+				.property("gameObject", &Component::gameObject);
 }
 
 Component::Component(): gameObject(nullptr)

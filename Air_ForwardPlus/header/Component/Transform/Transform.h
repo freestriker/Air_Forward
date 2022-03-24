@@ -17,6 +17,11 @@ public:
 	void SetRotation(glm::quat rotation);
 	void SetScale(glm::vec3 scale);
 	void SetTranslationRotationScale(glm::vec3 translation, glm::quat rotation, glm::vec3 scale);
+
+	glm::mat4 TranslationMatrix();
+	glm::mat4 RotationMatrix();
+	glm::mat4 ScaleMatrix();
+
 	void UpdateSelf(GameObject* parentGameObject) override;
 	void UpdateGameObject(GameObject* parentGameObject);
 

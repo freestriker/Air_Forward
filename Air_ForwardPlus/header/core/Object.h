@@ -8,7 +8,7 @@ class Object
 public:
 	Object();
 	virtual ~Object();
-	virtual const type_info& Type()final;
+	std::string TypeName();
 	virtual std::string ToString();
 
 	RTTR_ENABLE()
