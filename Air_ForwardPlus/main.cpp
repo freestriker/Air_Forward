@@ -55,24 +55,46 @@ void LoadTexture(std::string path)
 		std::cout << "Load Texture Success!" << std::endl;
 	}
 }
-typedef ChildBrotherTree<int> Node;
+//typedef ChildBrotherTree<int> Node;
+class Node : public ChildBrotherTree<int>
+{
+public:
+	Node(int* data) : ChildBrotherTree<int>(data)
+	{
+
+	}
+	void OnAdd(int* parent)
+	{
+		std::cout << *this->object << std::endl;
+	}
+	void OnRemove()
+	{
+	
+	}
+};
 Node* root = new Node(nullptr);
 int data[5] = { 0, 1, 2, 3, 4 };
 int main()
 {
     type::invoke("f", {});
     glm::vec3 v = glm::vec3(1);
-    LoadModel("C:/Users/FREEstriker/Desktop/sphere.obj");
-	LoadTexture("C:/Users/FREEstriker/Desktop/wall.png");
+ //   LoadModel("C:/Users/FREEstriker/Desktop/sphere.obj");
+	//LoadTexture("C:/Users/FREEstriker/Desktop/wall.png");
 	Object* o = new Object();
 	std::cout << o->Type().name() << std::endl;
 	std::cout << o->ToString() << std::endl;
 
-	Node* n1 = root->AddChild(data);
-	Node* n2 = root->AddChild(data + 1);
-	Node* n3 = n2->AddBrother(data + 2);
-	Node* n11 = n1->AddBrother(data + 3);
-	Node* n12 = n2->AddChild(data + 4);
+	Node* n1 = new Node(data);
+	Node* n2 = new Node(data + 1);
+	Node* n3 = new Node(data + 2);
+	Node* n11 = new Node(data + 3);
+	Node* n21 = new Node(data + 4);
+
+	root->AddChild(n1);
+	root->AddChild(n2);
+	n2->AddBrother(n3);
+	n1->AddChild(n11);
+	n2->AddChild(n21);
 
 }
 // outputs: "Hello World"

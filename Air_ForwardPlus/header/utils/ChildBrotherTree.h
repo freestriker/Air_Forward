@@ -44,12 +44,10 @@ public:
     ChildBrotherTree(T* object);
     ChildBrotherTree();
     ~ChildBrotherTree();
-    virtual void OnAdd(ChildBrotherTree<T>* parent);
+    virtual void OnAdd(T* parent);
     virtual void OnRemove();
 
-    ChildBrotherTree<T>* AddChild(T* object);
     void AddChild(ChildBrotherTree<T>* child);
-    ChildBrotherTree<T>* AddBrother(T* object);
     void AddBrother(ChildBrotherTree<T>* brother);
     ChildBrotherTree<T>* Remove();
     ChildIterator GetChildIterator()
@@ -94,7 +92,7 @@ ChildBrotherTree<T>::ChildBrotherTree(T* object) :ChildBrotherTree(nullptr, null
 }
 
 template<class T>
-void ChildBrotherTree<T>::OnAdd(ChildBrotherTree<T>* parent)
+void ChildBrotherTree<T>::OnAdd(T* parent)
 {
 
 }
@@ -106,13 +104,6 @@ void ChildBrotherTree<T>::OnRemove()
 
 
 template<class T>
-ChildBrotherTree<T>* ChildBrotherTree<T>::AddChild(T* object)
-{
-    ChildBrotherTree<T>* newChild = new ChildBrotherTree<T>(object);
-    this->AddChild(newChild);
-    return newChild;
-}
-template<class T>
 void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>* child)
 {
     child->parent = this;
@@ -123,17 +114,10 @@ void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>* child)
     else
     {
         this->child = child;
-        child->OnAdd(this);
+        child->OnAdd(this->object);
     }
 }
 
-template<class T>
-ChildBrotherTree<T>* ChildBrotherTree<T>::AddBrother(T* object)
-{
-    ChildBrotherTree<T>* newBrother = new ChildBrotherTree<T>(object);
-    AddBrother(newBrother);
-    return newBrother;
-}
 template<class T>
 void ChildBrotherTree<T>::AddBrother(ChildBrotherTree<T>* brother)
 {
@@ -151,7 +135,7 @@ void ChildBrotherTree<T>::AddBrother(ChildBrotherTree<T>* brother)
     {
         this->brother = brother;
     }
-    brother->OnAdd(this->parent);
+    brother->OnAdd(this->parent ? this->parent->object : nullptr);
 }
 
 template<class T>
