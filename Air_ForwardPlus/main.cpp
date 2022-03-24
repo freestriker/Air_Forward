@@ -4,7 +4,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <FreeImage.h>
+#include <FreeImage/FreeImage.h>
 #include "core/Object.h"
 #include "utils/ChildBrotherTree.h"
 static void f() { std::cout << "Hello World" << std::endl; }
