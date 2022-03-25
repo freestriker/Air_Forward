@@ -2,7 +2,7 @@
 #include "core/Object.h"
 
 class GameObject;
-class Component : public Object
+class Component : public Object, public LifeTime
 {
 public:
 	GameObject* gameObject;
@@ -10,5 +10,5 @@ public:
 	virtual ~Component();
 	virtual void UpdateSelf(GameObject* parentGameObject);
 	virtual void OnAdd();
-	RTTR_ENABLE()
+	RTTR_ENABLE(Object, LifeTime)
 };

@@ -28,7 +28,7 @@ GameObject::~GameObject()
 	delete chain;
 }
 
-GameObject::GameObject(std::string name): name(name), components(), transform(), chain(nullptr)
+GameObject::GameObject(std::string name):LifeTime(), name(name), components(), transform(), chain(nullptr)
 {
 }
 

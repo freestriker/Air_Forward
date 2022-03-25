@@ -4,18 +4,21 @@
 #include <vector>
 #include <Component/Transform/Transform.h>
 #include <rttr/type>
+#include "core/LifeTime.h"
 class Component;
-class GameObject: public Object
+class GameObject: public Object, public LifeTime
 {
+	friend class ObjectFactory;
+
 	std::vector<Component*> components;
+	GameObject(std::string name);
+	GameObject();
+	virtual ~GameObject();
 public:
 	std::string name;
 	ChildBrotherTree<GameObject>* chain;
 	Transform transform;
 
-	GameObject(std::string name);
-	GameObject();
-	virtual ~GameObject();
 
 	void UpdateSelf(GameObject* parentGameObject);
 	void UpdateSelfWithoutTransform(GameObject* parentGameObject);
@@ -32,5 +35,5 @@ public:
 	void AddChild(GameObject* child);
 	void RemoveChild(GameObject* child);
 
-	RTTR_ENABLE(Object)
+	RTTR_ENABLE(Object, LifeTime)
 };
