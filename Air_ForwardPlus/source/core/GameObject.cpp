@@ -1,19 +1,26 @@
 #include "core/GameObject.h"
+#include "core/Component.h"
 #include <cassert>
 #include <rttr/registration>
+
 RTTR_REGISTRATION
 {
 	using namespace rttr;
 	registration::class_<GameObject>("GameObject")
-		.constructor<>()
+		.method("Active", &GameObject::Active)
+		.method("SetActive", &GameObject::SetActive)
 		.method("GetComponent", &GameObject::GetComponent)
 		.method("GetComponents", &GameObject::GetComponents)
 		.method("AddComponent", &GameObject::AddComponent)
 		.method("RemoveComponent", select_overload<void(Component*)>(&GameObject::RemoveComponent))
 		.method("RemoveComponent", select_overload<Component*(std::string)>(&GameObject::RemoveComponent))
 		.method("RemoveComponents", &GameObject::RemoveComponents)
+		.method("Parent", &GameObject::Parent)
+		.method("Child", &GameObject::Child)
+		.method("Brother", &GameObject::Brother)
 		.method("AddChild", &GameObject::AddChild)
 		.method("RemoveChild", &GameObject::RemoveChild)
+		.method("RemoveSelf", &GameObject::RemoveSelf)
 		;
 }
 
@@ -25,56 +32,64 @@ GameObject::GameObject(): GameObject("New GameObject")
 GameObject::~GameObject()
 {
 	components.clear();
-	delete chain;
 }
 
-GameObject::GameObject(std::string name):LifeTime(), name(name), components(), transform(), chain(nullptr)
+GameObject::GameObject(std::string name):LifeTime(), name(name), components(), transform(), chain(), active(true)
 {
+	chain.object = this;
 }
 
-void GameObject::UpdateSelf(GameObject* parentGameObject)
+void GameObject::SetActive(bool active)
 {
-	transform.UpdateSelf(parentGameObject);
-	for each (Component* component in components)
+	if (this->active != active)
 	{
-		component->UpdateSelf(parentGameObject);
-
+		this->active = active;
+		if (active)
+		{
+			OnEnable();
+		}
+		else
+		{
+			OnDisable();
+		}
 	}
 }
 
-void GameObject::UpdateSelfWithoutTransform(GameObject* parentGameObject)
+bool GameObject::Active()
 {
-	for each (Component * component in components)
-	{
-		component->UpdateSelf(parentGameObject);
-
-	}
-}
-
-void GameObject::CascadeUpdate(GameObject* parentGameObject)
-{
-	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain->GetChildIterator(); iter.IsValid(); ++iter)
-	{
-		iter.Node()->object->UpdateSelf(this);
-	}
+	return active;
 }
 
 void GameObject::AddComponent(Component* component)
 {
-	for each (Component* c in components)
-	{
-		assert(c == component && "Already contains a same component.");
-	}
 	components.push_back(component);
+	
+	component->gameObject = this;
+	component->OnStart();
+	if (active)
+	{
+		if (component->active)
+		{
+			component->OnEnable();
+		}
+	}
 }
 
 void GameObject::RemoveComponent(Component* component)
 {
 	for (auto iter = components.begin(), end = components.end(); iter < end; iter++)
 	{
-		if (*iter == component)
+		Component* c = *iter;
+		if (c == component)
 		{
 			components.erase(iter);
+
+			c->gameObject = nullptr;
+			if (active && component->active)
+			{
+				component->OnDisable();
+			}
+
 		}
 	}
 	assert(true && "Do not contains a same component.");
@@ -149,11 +164,18 @@ Component* GameObject::RemoveComponent(std::string typeName)
 		}
 		for (auto iter = components.begin(), end = components.end(); iter != end; iter++)
 		{
-			type class_target = type::get(*iter);
+			Component* t = *iter;
+			type class_target = type::get(t);
 			if (class_target == class_type || class_type.is_base_of(class_target))
 			{
-				Component* t = *iter;
 				components.erase(iter);
+
+				t->gameObject = nullptr;
+				if (active && t->active)
+				{
+					t->OnDisable();
+				}
+
 				return t;
 			}
 		}
@@ -179,11 +201,19 @@ std::vector<Component*> GameObject::RemoveComponents(std::string typeName)
 		}
 		for (auto iter = components.begin(); iter != components.end(); )
 		{
-			type class_target = type::get(*iter);
+			Component* c = *iter;
+			type class_target = type::get(c);
 			if (class_target == class_type || class_type.is_base_of(class_target))
 			{
-				removeVector.push_back(*iter);
 				iter = components.erase(iter);
+
+				c->gameObject = nullptr;
+				if (active && c->active)
+				{
+					c->OnDisable();
+				}
+
+				removeVector.push_back(c);
 			}
 			else
 			{
@@ -197,20 +227,80 @@ std::vector<Component*> GameObject::RemoveComponents(std::string typeName)
 		assert(false && "Do not have type.");
 	}
 }
+
+GameObject* GameObject::Parent()
+{
+	return chain.parent ? chain.parent->object : nullptr;
+}
+GameObject* GameObject::Child()
+{
+	return chain.child ? chain.child->object : nullptr;
+}
+GameObject* GameObject::Brother()
+{
+	return chain.brother ? chain.brother->object : nullptr;
+}
 void GameObject::AddChild(GameObject* child)
 {
-	auto chain = new ChildBrotherTree<GameObject>(child);
-	child->chain = chain;
-
-	this->chain->AddChild(chain);
-
-	UpdateSelf(this);
-	CascadeUpdate(this);
-
+	this->chain.AddChild(&child->chain);
 }
 
 void GameObject::RemoveChild(GameObject* child)
 {
-	delete child->chain->Remove();
-	child->chain = nullptr;
+	if (child->Parent() == this)
+	{
+		child->RemoveSelf();
+	}
+}
+
+void GameObject::RemoveSelf()
+{
+	chain.Remove();
+}
+
+
+void GameObject::OnAwake()
+{
+}
+
+void GameObject::OnEnable()
+{
+	for each (Component * component in components)
+	{
+		if (component->active)
+		{
+			component->OnEnable();
+		}
+	}
+	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
+	{
+		GameObject* go = iter.Node()->object;
+		if (go->active)
+		{
+			go->OnEnable();
+		}
+	}
+}
+
+void GameObject::OnDisable()
+{
+	for each (Component * component in components)
+	{
+		if (component->active)
+		{
+			component->OnDisable();
+		}
+	}
+	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
+	{
+		GameObject* go = iter.Node()->object;
+		if (go->active)
+		{
+			go->OnDisable();
+		}
+	}
+}
+
+void GameObject::OnDestory()
+{
 }

@@ -1,14 +1,14 @@
 #include <core/Global.h>
 #include "core/GameObject.h"
+#include "core/ObjectFactory.h"
 Global global = Global();
 
 Global::Global()
 {
-	rootGameObject = new GameObject();
-	rootGameObject->chain = new ChildBrotherTree<GameObject>(rootGameObject);
+	rootGameObject = ObjectFactory::InstantiateGameObject();
 }
 
 Global::~Global()
 {
-	delete rootGameObject;
+	ObjectFactory::DestoryGameObject(rootGameObject);
 }

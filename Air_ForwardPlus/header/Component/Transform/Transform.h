@@ -22,9 +22,6 @@ public:
 	glm::mat4 RotationMatrix();
 	glm::mat4 ScaleMatrix();
 
-	void UpdateSelf(GameObject* parentGameObject) override;
-	void UpdateGameObject(GameObject* parentGameObject);
-
 	Transform();
 	virtual ~Transform();
 	RTTR_ENABLE(Component)

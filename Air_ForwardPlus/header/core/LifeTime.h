@@ -1,5 +1,4 @@
 #pragma once
-#include <rttr/type>
 
 class LifeTime
 {
@@ -12,7 +11,4 @@ public:
 	virtual void OnDestory();
 	virtual void OnEnable();
 	virtual void OnDisable();
-
-	RTTR_ENABLE()
-
 };
