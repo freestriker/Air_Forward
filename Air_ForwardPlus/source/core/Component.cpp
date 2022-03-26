@@ -10,7 +10,7 @@ RTTR_REGISTRATION
 				.method("GameObject", &Component::GameObject);
 }
 
-Component::Component(): gameObject(nullptr), active(true)
+Component::Component(): LifeTime(), gameObject(nullptr), active(true)
 {
 }
 

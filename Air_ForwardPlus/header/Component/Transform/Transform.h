@@ -10,8 +10,6 @@ public:
 	glm::quat rotation;
 	glm::vec3 translation;
 	glm::vec3 scale;
-	glm::mat4 modelMatrix;
-	glm::mat4 worldMatrix;
 
 	void SetTranslation(glm::vec3 translation);
 	void SetRotation(glm::quat rotation);

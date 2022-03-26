@@ -6,8 +6,9 @@ RTTR_REGISTRATION
     using namespace rttr;
     registration::class_<Transform>("Transform")
         .constructor<>()
-        .property("modelMatrix", &Transform::modelMatrix)
-        .property("worldMatrix", &Transform::worldMatrix)
+        (
+            rttr::policy::ctor::as_raw_ptr
+        )
         .method("SetTranslation", &Transform::SetTranslation)
         .method("SetRotation", &Transform::SetRotation)
         .method("SetScale", &Transform::SetScale)
@@ -66,7 +67,7 @@ glm::mat4 Transform::ScaleMatrix()
     );
 }
 
-Transform::Transform(): translation(glm::vec3(0)), rotation(glm::quat(1, 0, 0, 0)), scale(glm::vec3(1)), worldMatrix(glm::mat4(1)), modelMatrix(glm::mat4(1))
+Transform::Transform(): translation(glm::vec3(0)), rotation(glm::quat(1, 0, 0, 0)), scale(glm::vec3(1))
 {
 }
 

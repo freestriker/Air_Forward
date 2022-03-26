@@ -6,6 +6,7 @@ class GameObject;
 class Component : public Object, protected LifeTime
 {
 	friend class GameObject;
+	friend class ObjectFactory;
 private:
 	bool active;
 	GameObject* gameObject;

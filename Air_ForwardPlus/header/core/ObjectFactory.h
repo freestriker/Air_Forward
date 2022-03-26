@@ -2,9 +2,10 @@
 #include <string>
 #include <rttr/type>
 #include<vector>
+#include <core/Component.h>
 class GameObject;
 class Component;
-class ObjectFactory
+class ObjectFactory final
 {
 public:
 	static GameObject* InstantiateGameObject();
@@ -18,8 +19,20 @@ template<typename T>
 T* ObjectFactory::InstantiateComponent(std::string typeName, std::vector<rttr::argument> arguments)
 {
 	using namespace rttr;
-	variant var = type::get_by_name(typeName).create(arguments);
-	Component* c = rttr::rttr_cast<Component*>(var.get_raw_ptr());
-	c->OnAwake();
-	return rttr::rttr_cast<Component*>(c);
+
+	static type componentType = type::get<Component>();
+
+	type t = type::get_by_name(typeName);
+	if (componentType.is_base_of(t))
+	{
+		variant var = t.create(arguments);
+		T* t = var.get_value< T* >();
+		dynamic_cast<Component*>(t)->OnAwake();
+		return t;
+
+	}
+	else
+	{
+		assert(false && "It is not a Component.");
+	}
 }

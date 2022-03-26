@@ -44,8 +44,6 @@ public:
     ChildBrotherTree(T* object);
     ChildBrotherTree();
     ~ChildBrotherTree();
-    virtual void OnAdd(T* parent);
-    virtual void OnRemove();
 
     void AddChild(ChildBrotherTree<T>* child);
     void AddBrother(ChildBrotherTree<T>* brother);
@@ -92,18 +90,6 @@ ChildBrotherTree<T>::ChildBrotherTree(T* object) :ChildBrotherTree(nullptr, null
 }
 
 template<class T>
-void ChildBrotherTree<T>::OnAdd(T* parent)
-{
-
-}
-template<class T>
-void ChildBrotherTree<T>::OnRemove()
-{
-
-}
-
-
-template<class T>
 void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>* child)
 {
     child->parent = this;
@@ -114,7 +100,6 @@ void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>* child)
     else
     {
         this->child = child;
-        child->OnAdd(this->object);
     }
 }
 
@@ -135,7 +120,6 @@ void ChildBrotherTree<T>::AddBrother(ChildBrotherTree<T>* brother)
     {
         this->brother = brother;
     }
-    brother->OnAdd(this->parent ? this->parent->object : nullptr);
 }
 
 template<class T>
@@ -174,6 +158,6 @@ ChildBrotherTree<T>* ChildBrotherTree<T>::Remove()
         this->brother = nullptr;
         result = this;
     }
-    result->OnRemove();
+
     return result;
 }

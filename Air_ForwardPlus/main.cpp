@@ -1,12 +1,13 @@
 ﻿#include <rttr/registration>
 #include <iostream>
-#include <glm/glm.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FreeImage/FreeImage.h>
 #include "core/Object.h"
-#include "utils/ChildBrotherTree.h"
+#include <core/GameObject.h>
+#include <core/ObjectFactory.h>
+#include <core/Global.h>
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION
@@ -55,46 +56,31 @@ void LoadTexture(std::string path)
 		std::cout << "Load Texture Success!" << std::endl;
 	}
 }
-//typedef ChildBrotherTree<int> Node;
-class Node : public ChildBrotherTree<int>
-{
-public:
-	Node(int* data) : ChildBrotherTree<int>(data)
-	{
-
-	}
-	void OnAdd(int* parent)
-	{
-		std::cout << *this->object << std::endl;
-	}
-	void OnRemove()
-	{
-	
-	}
-};
-Node* root = new Node(nullptr);
-int data[5] = { 0, 1, 2, 3, 4 };
 int main()
 {
     type::invoke("f", {});
-    glm::vec3 v = glm::vec3(1);
- //   LoadModel("C:/Users/FREEstriker/Desktop/sphere.obj");
-	//LoadTexture("C:/Users/FREEstriker/Desktop/wall.png");
-	Object* o = new Object();
-	std::cout << o->TypeName() << std::endl;
-	std::cout << o->ToString() << std::endl;
 
-	Node* n1 = new Node(data);
-	Node* n2 = new Node(data + 1);
-	Node* n3 = new Node(data + 2);
-	Node* n11 = new Node(data + 3);
-	Node* n21 = new Node(data + 4);
+	GameObject* go0 = ObjectFactory::InstantiateGameObject();
+	go0->name = "go0";
+	global.rootGameObject->AddChild(go0);
 
-	root->AddChild(n1);
-	root->AddChild(n2);
-	n2->AddBrother(n3);
-	n1->AddChild(n11);
-	n2->AddChild(n21);
+	GameObject* go1 = ObjectFactory::InstantiateGameObject();
+	go1->name = "go1";
+	global.rootGameObject->AddChild(go1);
 
+	GameObject* go2 = ObjectFactory::InstantiateGameObject();
+	go2->name = "go2";
+	global.rootGameObject->AddChild(go2);
+
+	GameObject* go00 = ObjectFactory::InstantiateGameObject();
+	go00->name = "go00";
+	go0->AddChild(go00);
+
+	GameObject* go01 = ObjectFactory::InstantiateGameObject();
+	go01->name = "go01";
+	go0->AddChild(go01);
+
+	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
+	go0->AddComponent(testTransform);
 }
 // outputs: "Hello World"

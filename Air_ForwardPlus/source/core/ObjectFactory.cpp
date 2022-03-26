@@ -1,5 +1,6 @@
 #include "core/ObjectFactory.h"
 #include "core/GameObject.h"
+
 GameObject* ObjectFactory::InstantiateGameObject()
 {
 	GameObject* go = new GameObject();
