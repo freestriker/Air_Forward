@@ -153,7 +153,9 @@
     <ClCompile Include="source\core\Component.cpp" />
     <ClCompile Include="source\core\GameObject.cpp" />
     <ClCompile Include="source\core\Global.cpp" />
+    <ClCompile Include="source\core\LifeTime.cpp" />
     <ClCompile Include="source\core\Objecct.cpp" />
+    <ClCompile Include="source\core\ObjectFactory.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,7 +163,9 @@
     <ClInclude Include="header\core\Component.h" />
     <ClInclude Include="header\core\GameObject.h" />
     <ClInclude Include="header\core\Global.h" />
+    <ClInclude Include="header\core\LifeTime.h" />
     <ClInclude Include="header\core\Object.h" />
+    <ClInclude Include="header\core\ObjectFactory.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

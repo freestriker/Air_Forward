@@ -36,6 +36,12 @@
     <ClCompile Include="source\core\Global.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="source\core\LifeTime.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\ObjectFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\core\Object.h">
@@ -54,6 +60,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\core\Global.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\LifeTime.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\ObjectFactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
