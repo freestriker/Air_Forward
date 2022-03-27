@@ -6,8 +6,9 @@ RTTR_REGISTRATION
     using namespace rttr;
     registration::class_<Transform>("Transform")
         .constructor<>()
-        .property("modelMatrix", &Transform::modelMatrix)
-        .property("worldMatrix", &Transform::worldMatrix)
+        (
+            rttr::policy::ctor::as_raw_ptr
+        )
         .method("SetTranslation", &Transform::SetTranslation)
         .method("SetRotation", &Transform::SetRotation)
         .method("SetScale", &Transform::SetScale)
@@ -22,31 +23,16 @@ RTTR_REGISTRATION
 void Transform::SetTranslation(glm::vec3 translation)
 {
     this->translation = translation;
-
-    GameObject* parentGameObject = this->gameObject ? this->gameObject->chain->parent->object : nullptr;
-    UpdateSelf(parentGameObject);
-    UpdateGameObject(parentGameObject);
-
 }
 
 void Transform::SetRotation(glm::quat rotation)
 {
     this->rotation = rotation;
-
-    GameObject* parentGameObject = this->gameObject ? this->gameObject->chain->parent->object : nullptr;
-    UpdateSelf(parentGameObject);
-    UpdateGameObject(parentGameObject);
-
 }
 
 void Transform::SetScale(glm::vec3 scale)
 {
     this->scale = scale;
-
-    GameObject* parentGameObject = this->gameObject ? this->gameObject->chain->parent->object : nullptr;
-    UpdateSelf(parentGameObject);
-    UpdateGameObject(parentGameObject);
-
 }
 
 void Transform::SetTranslationRotationScale(glm::vec3 translation, glm::quat rotation, glm::vec3 scale)
@@ -54,10 +40,6 @@ void Transform::SetTranslationRotationScale(glm::vec3 translation, glm::quat rot
     this->translation = translation;
     this->rotation = rotation;
     this->scale = scale;
-
-    GameObject* parentGameObject = this->gameObject ? this->gameObject->chain->parent->object : nullptr;
-    UpdateSelf(parentGameObject);
-    UpdateGameObject(parentGameObject);
 }
 
 glm::mat4 Transform::TranslationMatrix()
@@ -85,20 +67,7 @@ glm::mat4 Transform::ScaleMatrix()
     );
 }
 
-void Transform::UpdateSelf(GameObject* parentGameObject)
-{
-    this->modelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
-    this->worldMatrix = parentGameObject ? parentGameObject->transform.worldMatrix * this->modelMatrix : this->modelMatrix;
-}
-
-void Transform::UpdateGameObject(GameObject* parentGameObject)
-{
-    this->gameObject->UpdateSelfWithoutTransform(parentGameObject);
-    this->gameObject->CascadeUpdate(parentGameObject);
-
-}
-
-Transform::Transform(): translation(glm::vec3(0)), rotation(glm::quat(1, 0, 0, 0)), scale(glm::vec3(1)), worldMatrix(glm::mat4(1)), modelMatrix(glm::mat4(1))
+Transform::Transform(): translation(glm::vec3(0)), rotation(glm::quat(1, 0, 0, 0)), scale(glm::vec3(1))
 {
 }
 

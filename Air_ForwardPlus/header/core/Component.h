@@ -1,14 +1,21 @@
 #pragma once
 #include "core/Object.h"
+#include "core/LifeTime.h"
 
 class GameObject;
-class Component : public Object, public LifeTime
+class Component : public Object, protected LifeTime
 {
-public:
+	friend class GameObject;
+	friend class ObjectFactory;
+private:
+	bool active;
 	GameObject* gameObject;
+
+public:
 	Component();
 	virtual ~Component();
-	virtual void UpdateSelf(GameObject* parentGameObject);
-	virtual void OnAdd();
-	RTTR_ENABLE(Object, LifeTime)
+	bool Active();
+	void SetActive(bool active);
+	GameObject* GameObject();
+	RTTR_ENABLE(Object)
 };
