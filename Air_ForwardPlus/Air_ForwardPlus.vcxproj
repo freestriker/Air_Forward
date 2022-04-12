@@ -154,9 +154,11 @@
     <ClCompile Include="source\core\GameObject.cpp" />
     <ClCompile Include="source\core\Global.cpp" />
     <ClCompile Include="source\core\LifeTime.cpp" />
+    <ClCompile Include="source\core\LoadThread.cpp" />
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\Component\Transform\Transform.h" />
@@ -164,9 +166,11 @@
     <ClInclude Include="header\core\GameObject.h" />
     <ClInclude Include="header\core\Global.h" />
     <ClInclude Include="header\core\LifeTime.h" />
+    <ClInclude Include="header\core\LoadThread.h" />
     <ClInclude Include="header\core\Object.h" />
     <ClInclude Include="header\core\ObjectFactory.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\Thread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

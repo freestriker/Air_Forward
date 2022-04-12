@@ -8,6 +8,7 @@
 #include <core/GameObject.h>
 #include <core/ObjectFactory.h>
 #include <core/Global.h>
+#include "core/LoadThread.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION
@@ -82,5 +83,11 @@ int main()
 
 	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
 	go0->AddComponent(testTransform);
+
+	LoadThread* loadThread = new LoadThread();
+	loadThread->Start();
+	std::this_thread::sleep_for(std::chrono::seconds(6));
+	loadThread->End();
+	delete loadThread;
 }
 // outputs: "Hello World"
