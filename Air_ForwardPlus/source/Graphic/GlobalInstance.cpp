@@ -519,7 +519,7 @@ void Graphic::GlobalInstance::CreateRenderPass(RenderPassCreator* creator)
 
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = subpassDescriptor.pipelineBindPoint;
-            subpass.colorAttachmentCount = colorAttachments[subpassIndexes[subpassDescriptor.name]].size();
+            subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachments[subpassIndexes[subpassDescriptor.name]].size());
             subpass.pColorAttachments = colorAttachments[subpassIndexes[subpassDescriptor.name]].data();
             if (subpassDescriptor.useDepthStencilAttachment)
             {
@@ -549,11 +549,11 @@ void Graphic::GlobalInstance::CreateRenderPass(RenderPassCreator* creator)
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = attachments.size();
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = subpasss.size();
+    renderPassInfo.subpassCount = static_cast<uint32_t>(subpasss.size());
     renderPassInfo.pSubpasses = subpasss.data();
-    renderPassInfo.dependencyCount = dependencys.size();
+    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencys.size());
     renderPassInfo.pDependencies = dependencys.data();
 
     VkRenderPass newRenderPass = VkRenderPass();

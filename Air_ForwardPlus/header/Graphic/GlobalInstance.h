@@ -20,6 +20,9 @@ namespace Graphic
 
 		}
 		GraphicQueue()
+			: name()
+			, queueFamilyIndex()
+			, queue(VK_NULL_HANDLE)
 		{
 
 		}
