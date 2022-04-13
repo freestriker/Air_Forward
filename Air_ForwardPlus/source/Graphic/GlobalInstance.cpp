@@ -5,6 +5,7 @@
 #include "Graphic/Creator/VulkanDeviceCreator.h"
 #include <algorithm>
 #include <Graphic/GlobalSetting.h>
+#include "Graphic/Creator/RenderPassCreator.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -21,6 +22,7 @@ std::vector<VkImageView> Graphic::GlobalInstance::windowSwapchainImageViews({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::windowImageAvailableSemaphores({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores({});
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
+std::map<std::string, VkRenderPass> Graphic::GlobalInstance::renderpasss({});
 
 
 Graphic::GlobalInstance::GlobalInstance()
@@ -70,6 +72,12 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		err += ".";
 		throw std::runtime_error(err);
 	}
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    return VK_FALSE;
 }
 #endif
 
@@ -164,7 +172,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
 
 }
 
-void Graphic::GlobalInstance::CreateWindowSwapchainImageViews()
+void Graphic::GlobalInstance::CreateWindowSwapchainImages()
 {
     
     uint32_t imageCount = 0;
@@ -439,15 +447,123 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         }
 
         CreateWindowSwapchain();
-        CreateWindowSwapchainImageViews();
+        CreateWindowSwapchainImages();
         return;
     }
     throw std::runtime_error("Failed to find suitable device.");
 
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+void Graphic::GlobalInstance::CreateRenderPass(RenderPassCreator* creator)
 {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
+    std::map<std::string, uint32_t> attachmentIndexes;
+    std::vector<VkAttachmentDescription> attachments = std::vector<VkAttachmentDescription>(creator->_attchments.size());
+    std::vector<VkAttachmentReference> attachmentReferences = std::vector<VkAttachmentReference>(creator->_attchments.size());
+    {
+        uint32_t attachmentIndex = 0;
+        for (const auto& pair : creator->_attchments)
+        {
+            const auto& attachmentDescriptor = pair.second;
+
+            VkAttachmentDescription colorAttachment{};
+            colorAttachment.format = attachmentDescriptor.format;
+            colorAttachment.samples = attachmentDescriptor.samples;
+            colorAttachment.loadOp = attachmentDescriptor.loadOp;
+            colorAttachment.storeOp = attachmentDescriptor.storeOp;
+            colorAttachment.stencilLoadOp = attachmentDescriptor.useStencil ? attachmentDescriptor.stencilLoadOp : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.stencilStoreOp = attachmentDescriptor.useStencil ? attachmentDescriptor.stencilStoreOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachment.initialLayout = attachmentDescriptor.initialLayout;
+            colorAttachment.finalLayout = attachmentDescriptor.finalLayout;
+
+            VkAttachmentReference attachmentReference{};
+            attachmentReference.attachment = attachmentIndex;
+            attachmentReference.layout = attachmentDescriptor.layout;
+
+            attachments[attachmentIndex] = colorAttachment;
+            attachmentReferences[attachmentIndex] = attachmentReference;
+            attachmentIndexes[attachmentDescriptor.name] = attachmentIndex;
+
+            ++attachmentIndex;
+        }
+    }
+
+    std::map<std::string, uint32_t> subpassIndexes;
+    std::vector<VkSubpassDescription> subpasss = std::vector<VkSubpassDescription>(creator->_subpasss.size());
+    std::vector<std::vector<VkAttachmentReference>> colorAttachments = std::vector<std::vector<VkAttachmentReference>>(creator->_subpasss.size());
+    std::vector<VkAttachmentReference> depthStencilAttachments = std::vector<VkAttachmentReference>(creator->_subpasss.size());
+    {
+        uint32_t subpassIndex = 0;
+        for (const auto& pair : creator->_subpasss)
+        {
+            const auto& subpassDescriptor = pair.second;
+
+            colorAttachments[subpassIndex].resize(subpassDescriptor.colorAttachmentNames.size());
+            for (uint32_t i = 0; i < subpassDescriptor.colorAttachmentNames.size(); i++)
+            {
+                colorAttachments[subpassIndex][i] = attachmentReferences[attachmentIndexes[subpassDescriptor.colorAttachmentNames[i]]];
+            }
+
+            if (subpassDescriptor.useDepthStencilAttachment)
+            {
+                depthStencilAttachments[subpassIndex] = attachmentReferences[attachmentIndexes[subpassDescriptor.depthStencilAttachmentName]];
+            }
+
+            subpassIndexes[subpassDescriptor.name] = subpassIndex;
+
+            ++subpassIndex;
+        }
+
+        for (const auto& pair : creator->_subpasss)
+        {
+            const auto& subpassDescriptor = pair.second;
+
+            VkSubpassDescription subpass{};
+            subpass.pipelineBindPoint = subpassDescriptor.pipelineBindPoint;
+            subpass.colorAttachmentCount = colorAttachments[subpassIndexes[subpassDescriptor.name]].size();
+            subpass.pColorAttachments = colorAttachments[subpassIndexes[subpassDescriptor.name]].data();
+            if (subpassDescriptor.useDepthStencilAttachment)
+            {
+                subpass.pDepthStencilAttachment = &(depthStencilAttachments[subpassIndexes[subpassDescriptor.name]]);
+            }
+
+            subpasss[subpassIndexes[subpassDescriptor.name]] = subpass;
+        }
+    }
+
+    std::vector< VkSubpassDependency> dependencys = std::vector< VkSubpassDependency>(creator->_dependencys.size());
+    uint32_t dependencyIndex = 0;
+    for (const auto& dependencyDescriptor : creator->_dependencys)
+    {
+        VkSubpassDependency dependency{};
+        dependency.srcSubpass = dependencyDescriptor.srcSubpassName == "VK_SUBPASS_EXTERNAL" ? VK_SUBPASS_EXTERNAL : subpassIndexes[dependencyDescriptor.srcSubpassName];
+        dependency.dstSubpass = subpassIndexes[dependencyDescriptor.dstSubpassName];
+        dependency.srcStageMask = dependencyDescriptor.srcStageMask;
+        dependency.srcAccessMask = dependencyDescriptor.srcAccessMask;
+        dependency.dstStageMask = dependencyDescriptor.dstStageMask;
+        dependency.dstAccessMask = dependencyDescriptor.dstAccessMask;
+
+        dependencys[dependencyIndex] = dependency;
+
+        ++dependencyIndex;
+    }
+
+    VkRenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.subpassCount = subpasss.size();
+    renderPassInfo.pSubpasses = subpasss.data();
+    renderPassInfo.dependencyCount = dependencys.size();
+    renderPassInfo.pDependencies = dependencys.data();
+
+    VkRenderPass newRenderPass = VkRenderPass();
+    VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &newRenderPass);
+    if (result != VK_SUCCESS) {
+        std::string err = "Failed to create render pass, errcode: ";
+        err += result;
+        err += ".";
+        throw std::runtime_error(err);
+    }
+
+    renderpasss[creator->_name] = newRenderPass;
 }

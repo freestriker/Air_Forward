@@ -32,6 +32,7 @@ namespace Graphic
 	class VulkanDeviceCreator;
 	class VulkanInstanceCreator;
 	class GlfwWindowCreator;
+	class RenderPassCreator;
 	class GlobalInstance final
 	{
 		friend class VulkanInstanceCreator;
@@ -48,6 +49,7 @@ namespace Graphic
 		static std::vector<VkSemaphore> windowImageAvailableSemaphores;
 		static std::vector<VkSemaphore> renderImageFinishedSemaphores;
 		static std::vector<VkFence> frameInFlightFences;
+		static std::map<std::string, VkRenderPass> renderpasss;
 
 
 	private:
@@ -59,6 +61,8 @@ namespace Graphic
 		static void CreateGlfwWindow(GlfwWindowCreator* creator);
 		static void CreateVulkanInstance(VulkanInstanceCreator* creator);
 		static void CreateVulkanDevice(VulkanDeviceCreator* creator);
+
+		static void CreateRenderPass(RenderPassCreator* creator);
 	private:
 		GlobalInstance();
 		~GlobalInstance();
@@ -66,7 +70,7 @@ namespace Graphic
 		static void AddInstanceWindowparameter(VulkanInstanceCreator* creator);
 		static void CreateWindowSurface();
 		static void CreateWindowSwapchain();
-		static void CreateWindowSwapchainImageViews();
+		static void CreateWindowSwapchainImages();
 #ifdef _USE_GRAPHIC_DEBUG
 		static void AddInstanceDebugExtension(VulkanInstanceCreator* creator);
 		static void CreateDebugMessenger(VulkanInstanceCreator* creator);
