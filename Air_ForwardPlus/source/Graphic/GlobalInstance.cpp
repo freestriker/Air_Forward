@@ -5,6 +5,7 @@
 #include "Graphic/Creator/VulkanDeviceCreator.h"
 #include <algorithm>
 #include <Graphic/GlobalSetting.h>
+#include "Graphic/Creator/RenderPassCreator.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -21,6 +22,7 @@ std::vector<VkImageView> Graphic::GlobalInstance::windowSwapchainImageViews({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::windowImageAvailableSemaphores({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores({});
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
+std::map<std::string, VkRenderPass> Graphic::GlobalInstance::renderpasss({});
 
 
 Graphic::GlobalInstance::GlobalInstance()
@@ -70,6 +72,12 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		err += ".";
 		throw std::runtime_error(err);
 	}
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    return VK_FALSE;
 }
 #endif
 
@@ -164,7 +172,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
 
 }
 
-void Graphic::GlobalInstance::CreateWindowSwapchainImageViews()
+void Graphic::GlobalInstance::CreateWindowSwapchainImages()
 {
     
     uint32_t imageCount = 0;
@@ -439,15 +447,46 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         }
 
         CreateWindowSwapchain();
-        CreateWindowSwapchainImageViews();
+        CreateWindowSwapchainImages();
         return;
     }
     throw std::runtime_error("Failed to find suitable device.");
 
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+void Graphic::GlobalInstance::CreateRenderPass(RenderPassCreator* creator)
 {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
+    std::map<std::string, uint32_t> attachmentindexes;
+    std::vector<VkAttachmentDescription> attachments = std::vector<VkAttachmentDescription>(creator->_attchments.size());
+    std::vector<VkAttachmentReference> attachmentReferences = std::vector<VkAttachmentReference>(creator->_attchments.size());
+    {
+        uint32_t attachmentIndex = 0;
+        for (const auto& pair : creator->_attchments)
+        {
+            const auto& attachmentDescriptor = pair.second;
+
+            VkAttachmentDescription colorAttachment{};
+            colorAttachment.format = attachmentDescriptor.format;
+            colorAttachment.samples = attachmentDescriptor.samples;
+            colorAttachment.loadOp = attachmentDescriptor.loadOp;
+            colorAttachment.storeOp = attachmentDescriptor.storeOp;
+            colorAttachment.stencilLoadOp = attachmentDescriptor.useStencil ? attachmentDescriptor.stencilLoadOp : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.stencilStoreOp = attachmentDescriptor.useStencil ? attachmentDescriptor.stencilStoreOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachment.initialLayout = attachmentDescriptor.initialLayout;
+            colorAttachment.finalLayout = attachmentDescriptor.finalLayout;
+
+            VkAttachmentReference attachmentReference{};
+            attachmentReference.attachment = attachmentIndex;
+            attachmentReference.layout = attachmentDescriptor.layout;
+
+            attachments[attachmentIndex] = colorAttachment;
+            attachmentReferences[attachmentIndex] = attachmentReference;
+            attachmentindexes[attachmentDescriptor.name] = attachmentIndex;
+
+            ++attachmentIndex;
+        }
+    }
+
+
+
 }
