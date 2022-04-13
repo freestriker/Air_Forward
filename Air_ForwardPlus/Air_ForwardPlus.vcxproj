@@ -18,6 +18,43 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\Component\Transform\Transform.h" />
+    <ClInclude Include="header\core\Component.h" />
+    <ClInclude Include="header\core\GameObject.h" />
+    <ClInclude Include="header\core\Global.h" />
+    <ClInclude Include="header\core\LifeTime.h" />
+    <ClInclude Include="header\core\LoadThread.h" />
+    <ClInclude Include="header\core\Object.h" />
+    <ClInclude Include="header\core\ObjectFactory.h" />
+    <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
+    <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
+    <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
+    <ClInclude Include="header\Graphic\GlobalSetting.h" />
+    <ClInclude Include="header\Graphic\GraphicThread.h" />
+    <ClInclude Include="header\Graphic\GlobalInstance.h" />
+    <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\Thread.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\core\Component.cpp" />
+    <ClCompile Include="source\core\GameObject.cpp" />
+    <ClCompile Include="source\core\Global.cpp" />
+    <ClCompile Include="source\core\LifeTime.cpp" />
+    <ClCompile Include="source\core\LoadThread.cpp" />
+    <ClCompile Include="source\core\Objecct.cpp" />
+    <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
+    <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
+    <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
+    <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
+    <ClCompile Include="source\Graphic\GraphicThread.cpp" />
+    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
+    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\Thread.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -118,7 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions);RTTR_DLL</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
     </ClCompile>
@@ -136,7 +173,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
@@ -150,31 +187,6 @@
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;rttr_core.lib;assimp-vc143-mt.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="source\Component\Transform\Transform.cpp" />
-    <ClCompile Include="source\core\Component.cpp" />
-    <ClCompile Include="source\core\GameObject.cpp" />
-    <ClCompile Include="source\core\Global.cpp" />
-    <ClCompile Include="source\core\LifeTime.cpp" />
-    <ClCompile Include="source\core\LoadThread.cpp" />
-    <ClCompile Include="source\core\Objecct.cpp" />
-    <ClCompile Include="source\core\ObjectFactory.cpp" />
-    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
-    <ClCompile Include="source\utils\Thread.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="header\Component\Transform\Transform.h" />
-    <ClInclude Include="header\core\Component.h" />
-    <ClInclude Include="header\core\GameObject.h" />
-    <ClInclude Include="header\core\Global.h" />
-    <ClInclude Include="header\core\LifeTime.h" />
-    <ClInclude Include="header\core\LoadThread.h" />
-    <ClInclude Include="header\core\Object.h" />
-    <ClInclude Include="header\core\ObjectFactory.h" />
-    <ClInclude Include="header\utils\ChildBrotherTree.h" />
-    <ClInclude Include="header\utils\Thread.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

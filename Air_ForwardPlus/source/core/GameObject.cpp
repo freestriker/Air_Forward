@@ -265,12 +265,15 @@ void GameObject::OnAwake()
 
 void GameObject::OnEnable()
 {
-	for each (Component * component in components)
+	for (size_t i = 0; i < components.size(); i++)
 	{
+		Component* component = components[i];
+
 		if (component->active)
 		{
 			component->OnEnable();
 		}
+
 	}
 	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
 	{
@@ -284,12 +287,15 @@ void GameObject::OnEnable()
 
 void GameObject::OnDisable()
 {
-	for each (Component * component in components)
+	for (size_t i = 0; i < components.size(); i++)
 	{
+		Component* component = components[i];
+
 		if (component->active)
 		{
 			component->OnDisable();
 		}
+
 	}
 	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
 	{

@@ -9,6 +9,7 @@
 #include <core/ObjectFactory.h>
 #include <core/Global.h>
 #include "core/LoadThread.h"
+#include "Graphic/GraphicThread.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION
@@ -59,6 +60,7 @@ void LoadTexture(std::string path)
 }
 int main()
 {
+
     type::invoke("f", {});
 
 	GameObject* go0 = ObjectFactory::InstantiateGameObject();
@@ -86,8 +88,15 @@ int main()
 
 	LoadThread* loadThread = new LoadThread();
 	loadThread->Start();
-	std::this_thread::sleep_for(std::chrono::seconds(6));
+
+	Graphic::GraphicThread* graphicThread = new Graphic::GraphicThread();
+	graphicThread->Start();
+
+	std::this_thread::sleep_for(std::chrono::seconds(20));
+
+	graphicThread->End();
 	loadThread->End();
+	delete graphicThread;
 	delete loadThread;
 }
 // outputs: "Hello World"

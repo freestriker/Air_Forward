@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="头文件">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -15,47 +11,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Objecct.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Component.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\GameObject.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\utils\ChildBrotherTree.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Component\Transform\Transform.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Global.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\LifeTime.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\ObjectFactory.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\utils\Thread.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\LoadThread.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="header\core\Object.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="header\utils\ChildBrotherTree.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header\Component\Transform\Transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -71,14 +26,57 @@
     <ClInclude Include="header\core\LifeTime.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\core\LoadThread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\Object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="header\core\ObjectFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\GlobalInstance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\utils\ChildBrotherTree.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\utils\Thread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\core\LoadThread.h">
+    <ClInclude Include="header\Graphic\GraphicThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\GlobalSetting.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\core\Component.cpp" />
+    <ClCompile Include="source\core\GameObject.cpp" />
+    <ClCompile Include="source\core\Global.cpp" />
+    <ClCompile Include="source\core\LifeTime.cpp" />
+    <ClCompile Include="source\core\LoadThread.cpp" />
+    <ClCompile Include="source\core\Objecct.cpp" />
+    <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
+    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\Thread.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
+    <ClCompile Include="source\Graphic\GraphicThread.cpp" />
+    <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
+    <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
+    <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
   </ItemGroup>
 </Project>
