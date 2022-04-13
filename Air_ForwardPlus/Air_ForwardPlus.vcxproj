@@ -28,6 +28,7 @@
     <ClInclude Include="header\core\Object.h" />
     <ClInclude Include="header\core\ObjectFactory.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
+    <ClInclude Include="header\Graphic\Creator\RenderPassCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
     <ClInclude Include="header\Graphic\GlobalSetting.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
+    <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />

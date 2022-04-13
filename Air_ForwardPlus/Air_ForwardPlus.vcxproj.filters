@@ -59,6 +59,9 @@
     <ClInclude Include="header\Graphic\GlobalSetting.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Creator\RenderPassCreator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -78,5 +81,6 @@
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
+    <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
   </ItemGroup>
 </Project>

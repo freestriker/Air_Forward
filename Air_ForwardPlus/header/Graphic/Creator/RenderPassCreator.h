@@ -45,19 +45,17 @@ namespace Graphic
 			friend class GlobalInstance;
 		public:
 			std::string name;
+			VkPipelineBindPoint pipelineBindPoint;
 			std::vector<std::string> colorAttachmentNames;
 			std::string depthStencilAttachmentName;
-			std::string resolveAttachmentName;
 			bool useDepthStencilAttachment;
-			bool useResolveAttachment;
 
-			SubpassDescriptor(std::string name, std::vector<std::string> colorAttachmentNames, bool useDepthStencilAttachment, std::string depthStencilAttachmentName, bool useResolveAttachment, std::string resolveAttachmentName)
+			SubpassDescriptor(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames, bool useDepthStencilAttachment, std::string depthStencilAttachmentName)
 				: name(name)
+				, pipelineBindPoint(pipelineBindPoint)
 				, colorAttachmentNames(colorAttachmentNames)
 				, useDepthStencilAttachment(useDepthStencilAttachment)
 				, depthStencilAttachmentName(depthStencilAttachmentName)
-				, useResolveAttachment()
-				, resolveAttachmentName(resolveAttachmentName)
 			{
 
 			}
@@ -92,8 +90,8 @@ namespace Graphic
 		~RenderPassCreator();
 		void AddColorAttachment(std::string name, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkImageLayout layout);
 		void AddDepthAttachment(std::string name, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkImageLayout layout);
-		void AddSubpassWithColorAttachment(std::string name, std::vector<std::string> colorAttachmentNames);
-		void AddSubpassWithColorDepthAttachment(std::string name, std::vector<std::string> colorAttachmentNames, std::string depthAttachmentName);
+		void AddSubpassWithColorAttachment(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames);
+		void AddSubpassWithColorDepthAttachment(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames, std::string depthAttachmentName);
 		void AddDependency(std::string srcSubpassName, std::string dstSubpassName, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask);
 	};
 }
