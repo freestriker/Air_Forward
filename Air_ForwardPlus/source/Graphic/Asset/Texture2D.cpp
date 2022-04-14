@@ -10,13 +10,14 @@ Texture2D::~Texture2D()
 {
 }
 
-void Texture2D::LoadTexture2D(const char* path, Texture2D& texture)
+void Texture2D::LoadTexture2D(VkCommandBuffer commandBuffer, std::string path, Texture2D& texture)
 {
-	auto fileType = FreeImage_GetFileType(path);
-	if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(path);
+	auto p = path.c_str();
+	auto fileType = FreeImage_GetFileType(p);
+	if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(p);
 	if ((fileType != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fileType))
 	{
-		FIBITMAP* bitmap = FreeImage_Load(fileType, path);
+		FIBITMAP* bitmap = FreeImage_Load(fileType, p);
 		uint32_t pixelDepth = FreeImage_GetBPP(bitmap);
 		if (pixelDepth != 32)
 		{

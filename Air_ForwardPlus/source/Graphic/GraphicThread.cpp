@@ -5,6 +5,9 @@
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Creator/RenderPassCreator.h"
 #include "Graphic/GlobalSetting.h"
+
+Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
+
 Graphic::GraphicThread::GraphicThread()
 	: _stopped(true)
 {
@@ -23,6 +26,11 @@ void Graphic::GraphicThread::OnStart()
 	Graphic::VulkanInstanceCreator vulkanInstanceCreator = Graphic::VulkanInstanceCreator();
 	Graphic::GlobalInstance::CreateVulkanInstance(&vulkanInstanceCreator);
 	Graphic::VulkanDeviceCreator vulkanDeviceCreator = Graphic::VulkanDeviceCreator();
+	vulkanDeviceCreator.SetDeviceFeature([](VkPhysicalDeviceFeatures& features)
+		{
+			features.geometryShader = VK_TRUE;
+		});
+	vulkanDeviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
 
 	_stopped = false;

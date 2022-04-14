@@ -8,25 +8,25 @@
 
 namespace Graphic
 {
-	class GraphicQueue
+	class Queue
 	{
 	public:
 		std::string name;
 		uint32_t queueFamilyIndex;
 		VkQueue queue;
-		GraphicQueue(std::string& name, uint32_t queueFamilyIndex, VkQueue queue) :
+		Queue(std::string& name, uint32_t queueFamilyIndex, VkQueue queue) :
 			name(name), queueFamilyIndex(queueFamilyIndex), queue(queue)
 		{
 
 		}
-		GraphicQueue()
+		Queue()
 			: name()
 			, queueFamilyIndex()
 			, queue(VK_NULL_HANDLE)
 		{
 
 		}
-		~GraphicQueue()
+		~Queue()
 		{
 
 		}
@@ -45,7 +45,7 @@ namespace Graphic
 		static VkSurfaceKHR surface;
 		static VkPhysicalDevice physicalDevice;
 		static VkDevice device;
-		static std::map<std::string, GraphicQueue> queues;
+		static std::map<std::string, Queue> queues;
 		static VkSwapchainKHR windowSwapchain;
 		static std::vector<VkImage> windowSwapchainImages;
 		static std::vector<VkImageView> windowSwapchainImageViews;
@@ -66,6 +66,8 @@ namespace Graphic
 		static void CreateVulkanDevice(VulkanDeviceCreator* creator);
 
 		static void CreateRenderPass(RenderPassCreator* creator);
+		static void CreateCommandPool(VkCommandPoolCreateFlags flag, const char* queueName, VkCommandPool& commandPool);
+		static void CreateCommandBuffer(VkCommandPool& commandPool, VkCommandBufferLevel level, VkCommandBuffer& commandBuffer);
 	private:
 		GlobalInstance();
 		~GlobalInstance();

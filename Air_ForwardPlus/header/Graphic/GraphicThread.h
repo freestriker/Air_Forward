@@ -5,6 +5,7 @@ namespace Graphic
 	class GraphicThread final : public Thread
 	{
 	public:
+		static GraphicThread* const instance;
 	private:
 		bool _stopped;
 	public:

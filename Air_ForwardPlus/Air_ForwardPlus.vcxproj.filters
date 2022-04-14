@@ -62,6 +62,15 @@
     <ClInclude Include="header\Graphic\Creator\RenderPassCreator.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Asset\Texture2D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\utils\ThreadPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\core\SubLoadThread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -82,5 +91,8 @@
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
+    <ClCompile Include="source\utils\ThreadPool.cpp" />
+    <ClCompile Include="source\core\SubLoadThread.cpp" />
   </ItemGroup>
 </Project>

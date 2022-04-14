@@ -15,7 +15,7 @@ VkDebugUtilsMessengerEXT Graphic::GlobalInstance::_debugMessenger(VK_NULL_HANDLE
 VkSurfaceKHR Graphic::GlobalInstance::surface(VK_NULL_HANDLE);
 VkPhysicalDevice Graphic::GlobalInstance::physicalDevice(VK_NULL_HANDLE);
 VkDevice Graphic::GlobalInstance::device(VK_NULL_HANDLE);
-std::map<std::string, Graphic::GraphicQueue> Graphic::GlobalInstance::queues({});
+std::map<std::string, Graphic::Queue> Graphic::GlobalInstance::queues({});
 VkSwapchainKHR Graphic::GlobalInstance::windowSwapchain(VK_NULL_HANDLE);
 std::vector<VkImage> Graphic::GlobalInstance::windowSwapchainImages({});
 std::vector<VkImageView> Graphic::GlobalInstance::windowSwapchainImageViews({});
@@ -350,8 +350,8 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
                 {
                     const auto& queueFamilie = queueFamilies[j];
 
-                    VkBool32 presentSupport = false;
-                    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+                    VkBool32 presentSupport = VK_FALSE;
+                    vkGetPhysicalDeviceSurfaceSupportKHR(device, j, surface, &presentSupport);
                     if (presentSupport && queueFamilie.queueCount - usedCounts[j] > 1)
                     {
                         usedIndexs[i] = j;
@@ -441,9 +441,9 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         {
             const uint32_t& queueIndex = usedIndexs[i];
             std::string name = std::string(creator->_desiredQueues[i].name);
-            GraphicQueue gq = GraphicQueue(name, queueIndex, VK_NULL_HANDLE);
+            Queue gq = Queue(name, queueIndex, VK_NULL_HANDLE);
             vkGetDeviceQueue(GlobalInstance::device, queueIndex, usedCounts[queueIndex]++, &(gq.queue));
-            GlobalInstance::queues.insert(std::pair<std::string, GraphicQueue>(name, gq));
+            GlobalInstance::queues.insert(std::pair<std::string, Queue>(name, gq));
         }
 
         CreateWindowSwapchain();
@@ -566,4 +566,32 @@ void Graphic::GlobalInstance::CreateRenderPass(RenderPassCreator* creator)
     }
 
     renderpasss[creator->_name] = newRenderPass;
+}
+
+void Graphic::GlobalInstance::CreateCommandPool(VkCommandPoolCreateFlags flag, const char* queueName, VkCommandPool& commandPool)
+{
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = flag;
+    poolInfo.queueFamilyIndex = queues[std::string(queueName)].queueFamilyIndex;
+
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create graphics command pool!");
+    }
+}
+
+void Graphic::GlobalInstance::CreateCommandBuffer(VkCommandPool& commandPool, VkCommandBufferLevel level, VkCommandBuffer& commandBuffer)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = commandPool;
+    allocInfo.level = level;
+    allocInfo.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
+
 }
