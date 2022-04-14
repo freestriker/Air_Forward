@@ -86,8 +86,7 @@ int main()
 	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
 	go0->AddComponent(testTransform);
 
-	LoadThread* loadThread = new LoadThread();
-	loadThread->Start();
+	LoadThread::instance->Start();
 
 	Graphic::GraphicThread* graphicThread = new Graphic::GraphicThread();
 	graphicThread->Start();
@@ -95,8 +94,7 @@ int main()
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
 	graphicThread->End();
-	loadThread->End();
+	LoadThread::instance->End();
 	delete graphicThread;
-	delete loadThread;
 }
 // outputs: "Hello World"

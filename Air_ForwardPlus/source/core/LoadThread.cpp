@@ -1,6 +1,8 @@
 #include "core/LoadThread.h"
 #include <iostream>
 #include <chrono> 
+LoadThread* const LoadThread::instance = new LoadThread();
+
 void LoadThread::OnStart()
 {
 	std::cout << "LoadThread::OnStart()" << std::endl;
@@ -20,4 +22,12 @@ void LoadThread::OnEnd()
 {
 	isStop = true;
 	std::cout << "LoadThread::OnEnd()" << std::endl;
+}
+
+LoadThread::LoadThread(): Thread(), ThreadPool(4)
+{
+}
+
+LoadThread::~LoadThread()
+{
 }
