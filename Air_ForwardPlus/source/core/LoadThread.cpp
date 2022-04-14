@@ -23,7 +23,10 @@ void LoadThread::OnRun()
 	{
 		std::cout << "LoadThread::OnRun()" << std::endl;
 		Texture2D texture = Texture2D();
-		AddTask(Texture2D::LoadTexture2D, std::string("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png"), texture);
+		std::string s = std::string("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto result = AddTask([s, &texture](VkCommandBuffer cb) {
+				Texture2D::LoadTexture2D(cb, s, texture);
+			});
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	}

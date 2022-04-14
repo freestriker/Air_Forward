@@ -30,14 +30,13 @@ private:
 public:
 	static LoadThread* const instance;
 	template<typename F, typename... Args>
-	auto AddTask(F&& f, Args&&... args)
-		->std::future<typename std::invoke_result<F(VkCommandBuffer, Args...)>::type>;
+	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, VkCommandBuffer, Args...>::type>;
 };
 
 template<typename F, typename ...Args>
-inline auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F(VkCommandBuffer, Args...)>::type>
+auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, VkCommandBuffer, Args...>::type>
 {
-	using return_type = typename std::invoke_result<F(VkCommandBuffer, Args...)>::type;
+	using return_type = typename std::invoke_result<F, VkCommandBuffer, Args...>::type;
 
 	auto task = std::make_shared< std::packaged_task<return_type(VkCommandBuffer)> >(
 		std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)
