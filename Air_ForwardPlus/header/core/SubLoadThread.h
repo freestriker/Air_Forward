@@ -11,14 +11,16 @@ class SubLoadThread: public Thread
 {
 	friend class LoadThread;
 public:
-	SubLoadThread();
-	SubLoadThread(const SubLoadThread& src);
 	SubLoadThread(LoadThread& _loadThread);
+	SubLoadThread();
 	virtual ~SubLoadThread();
+	SubLoadThread(const SubLoadThread&) = delete;
+	SubLoadThread& operator=(const SubLoadThread&) = delete;
+	SubLoadThread(SubLoadThread&&) = delete;
+	SubLoadThread& operator=(SubLoadThread&&) = delete;
 
 private:
 	std::unique_ptr<Graphic::CommandPool> _commandPool;
-	Graphic::CommandBuffer* const _commandBuffer;
 	LoadThread* const _loadThread;
 
 	void OnStart()override;

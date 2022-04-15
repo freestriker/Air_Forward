@@ -86,6 +86,9 @@ int main()
 	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
 	go0->AddComponent(testTransform);
 
+	Graphic::GraphicThread::instance->Init();
+	LoadThread::instance->Init();
+
 	Graphic::GraphicThread::instance->Start();
 	LoadThread::instance->Start();
 

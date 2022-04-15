@@ -19,7 +19,11 @@ Thread::Thread(): _thread()
 
 Thread::~Thread()
 {
-	End();
+
+}
+
+void Thread::Init()
+{
 }
 
 void Thread::Start()

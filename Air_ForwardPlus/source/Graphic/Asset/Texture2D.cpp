@@ -36,6 +36,8 @@ void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer& commandBuffer, st
 
 	commandBuffer.Submit({}, {}, VK_NULL_HANDLE);
 	
+	commandBuffer.WaitForFinish();
+	commandBuffer.Reset();
 }
 void Graphic::Texture2D::LoadBitmap(std::string& path, Graphic::Texture2D& texture)
 {
@@ -148,9 +150,11 @@ void Graphic::Texture2D::TransitionToTransferLayout(VkImage image, Graphic::Comm
 	barrier.image = image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 0;
+	barrier.subresourceRange.levelCount = 1;
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
+	barrier.srcAccessMask = 0;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 	std::vector<VkMemoryBarrier> memoryBarriers; std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers; std::vector<VkImageMemoryBarrier> imageMemoryBarriers = { barrier };
 	commandBuffer.AddPipelineBarrier(
@@ -193,12 +197,14 @@ void Graphic::Texture2D::TransitionToShaderLayout(VkImage image, Graphic::Comman
 	barrier.image = image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 0;
+	barrier.subresourceRange.levelCount = 1;
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	std::vector<VkMemoryBarrier> memoryBarriers; std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers; std::vector<VkImageMemoryBarrier> imageMemoryBarriers = { barrier };
 	commandBuffer.AddPipelineBarrier(
-		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		memoryBarriers,
 		bufferMemoryBarriers,
 		imageMemoryBarriers

@@ -8,6 +8,7 @@ private:
 public:
 	Thread();
 	virtual ~Thread();
+	virtual void Init();
 	void Start();
 	void End();
 protected:

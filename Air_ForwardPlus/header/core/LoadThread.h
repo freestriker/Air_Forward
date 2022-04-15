@@ -9,6 +9,7 @@
 #include <functional>
 #include <future>
 #include <vulkan/vulkan_core.h>
+#include <memory>
 namespace Graphic
 {
 	class CommandBuffer;
@@ -17,44 +18,51 @@ class LoadThread : public Thread
 {
 	friend class SubLoadThread;
 private:
-	std::queue< std::function<void(Graphic::CommandBuffer&)> > tasks;
-	std::vector<SubLoadThread> subLoadThreads;
-	std::mutex queue_mutex;
-	std::condition_variable condition;
-	bool stop = false;
+	std::queue<std::function<void(Graphic::CommandBuffer* const)>> _tasks;
+	std::vector<std::unique_ptr<SubLoadThread>> _subLoadThreads;
+
+	std::mutex _queueMutex;
+	std::condition_variable _queueVariable;
+	bool _stopped = false;
 
 	void OnStart()override;
 	void OnRun()override;
 	void OnEnd() override;
+
 	LoadThread();
 	~LoadThread();
+	LoadThread(const LoadThread&) = delete;
+	LoadThread& operator=(const LoadThread&) = delete;
+	LoadThread(LoadThread&&) = delete;
+	LoadThread& operator=(LoadThread&&) = delete;
 
 
 public:
 	static LoadThread* const instance;
+	void Init()override;
 	template<typename F, typename... Args>
-	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type>;
+	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type>;
 };
 
 template<typename F, typename ...Args>
-auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type>
+auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type>
 {
-	using return_type = typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type;
+	using return_type = typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(Graphic::CommandBuffer&)> >(
+	auto task = std::make_shared< std::packaged_task<return_type(Graphic::CommandBuffer* const)> >(
 		std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)
 		);
 
 	std::future<return_type> res = task->get_future();
 	{
-		std::unique_lock<std::mutex> lock(queue_mutex);
+		std::unique_lock<std::mutex> lock(_queueMutex);
 
 		// don't allow enqueueing after stopping the pool
-		if (stop)
+		if (_stopped)
 			throw std::runtime_error("enqueue on stopped ThreadPool");
 
-		tasks.emplace([task](Graphic::CommandBuffer& commandBuffer) { (*task)(commandBuffer); });
+		_tasks.emplace([task](Graphic::CommandBuffer* const commandBuffer) { (*task)(commandBuffer); });
 	}
-	condition.notify_one();
+	_queueVariable.notify_one();
 	return res;
 }

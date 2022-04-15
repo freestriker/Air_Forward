@@ -11,6 +11,7 @@ namespace Graphic
 	public:
 		GraphicThread();
 		~GraphicThread();
+		void Init()override;
 	private:
 		void OnStart() override;
 		void OnRun() override;

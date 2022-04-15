@@ -2,6 +2,7 @@
 #include <vulkan/vulkan_core.h>
 #include <map>
 #include <string>
+#include <memory>
 namespace Graphic
 {
 	
@@ -9,19 +10,16 @@ namespace Graphic
 	{
 		friend class CommandBuffer;
 	private:
-		VkCommandPool  _commandPool;
-		std::map<std::string, Graphic::CommandBuffer> _commandBuffers;
+		VkCommandPool  _vkCommandPool;
+		std::map<std::string, std::unique_ptr<Graphic::CommandBuffer>> _commandBuffers;
+
 	public:
 		CommandPool();
 		CommandPool(VkCommandPoolCreateFlags flag, const char* queueName);
 		~CommandPool();
 
-		void CreateCommandPool(VkCommandPoolCreateFlags flag, const char* queueName);
-		void DestoryCommandPool();
-		void CreateCommandBuffer(Graphic::CommandBuffer& commandBuffer, VkCommandBufferLevel level);
-
-		Graphic::CommandBuffer& CreateCommandBuffer(const char* name, VkCommandBufferLevel level);
-		Graphic::CommandBuffer& GetCommandBuffer(const char* name);
+		Graphic::CommandBuffer* const CreateCommandBuffer(const char* name, VkCommandBufferLevel level);
+		Graphic::CommandBuffer* const GetCommandBuffer(const char* name);
 		void DestoryCommandBuffer(const char* name);
 	};
 }

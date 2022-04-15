@@ -19,7 +19,7 @@ Graphic::GraphicThread::~GraphicThread()
 
 }
 
-void Graphic::GraphicThread::OnStart()
+void Graphic::GraphicThread::Init()
 {
 	Graphic::GlfwWindowCreator glfwWindowCreator = Graphic::GlfwWindowCreator();
 	Graphic::GlobalInstance::CreateGlfwWindow(&glfwWindowCreator);
@@ -34,8 +34,6 @@ void Graphic::GraphicThread::OnStart()
 	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
-
-	_stopped = false;
 
 	RenderPassCreator renderPassCreator = RenderPassCreator("TestRenderPass");
 	renderPassCreator.AddColorAttachment(
@@ -60,6 +58,14 @@ void Graphic::GraphicThread::OnStart()
 		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
 	);
 	Graphic::GlobalInstance::CreateRenderPass(&renderPassCreator);
+
+}
+
+void Graphic::GraphicThread::OnStart()
+{
+
+	_stopped = false;
+
 }
 
 void Graphic::GraphicThread::OnRun()
