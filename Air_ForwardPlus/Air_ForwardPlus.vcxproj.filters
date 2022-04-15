@@ -71,6 +71,12 @@
     <ClInclude Include="header\core\SubLoadThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\CommandBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\CommandPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -94,5 +100,7 @@
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
+    <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
+    <ClCompile Include="source\Graphic\CommandPool.cpp" />
   </ItemGroup>
 </Project>

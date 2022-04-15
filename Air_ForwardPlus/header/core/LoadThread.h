@@ -9,12 +9,15 @@
 #include <functional>
 #include <future>
 #include <vulkan/vulkan_core.h>
-
+namespace Graphic
+{
+	class CommandBuffer;
+}
 class LoadThread : public Thread
 {
 	friend class SubLoadThread;
 private:
-	std::queue< std::function<void(VkCommandBuffer)> > tasks;
+	std::queue< std::function<void(Graphic::CommandBuffer&)> > tasks;
 	std::vector<SubLoadThread> subLoadThreads;
 	std::mutex queue_mutex;
 	std::condition_variable condition;
@@ -30,15 +33,15 @@ private:
 public:
 	static LoadThread* const instance;
 	template<typename F, typename... Args>
-	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, VkCommandBuffer, Args...>::type>;
+	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type>;
 };
 
 template<typename F, typename ...Args>
-auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, VkCommandBuffer, Args...>::type>
+auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type>
 {
-	using return_type = typename std::invoke_result<F, VkCommandBuffer, Args...>::type;
+	using return_type = typename std::invoke_result<F, Graphic::CommandBuffer&, Args...>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(VkCommandBuffer)> >(
+	auto task = std::make_shared< std::packaged_task<return_type(Graphic::CommandBuffer&)> >(
 		std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)
 		);
 
@@ -50,7 +53,7 @@ auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::in
 		if (stop)
 			throw std::runtime_error("enqueue on stopped ThreadPool");
 
-		tasks.emplace([task](VkCommandBuffer commandBuffer) { (*task)(commandBuffer); });
+		tasks.emplace([task](Graphic::CommandBuffer& commandBuffer) { (*task)(commandBuffer); });
 	}
 	condition.notify_one();
 	return res;
