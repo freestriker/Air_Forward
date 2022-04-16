@@ -22,6 +22,10 @@ Graphic::CommandPool::~CommandPool()
 {
     if (_vkCommandPool != VK_NULL_HANDLE)
     {
+        for (auto i = _commandBuffers.begin(); i != _commandBuffers.end(); i++)
+        {
+            delete (* i).second;
+        }
         _commandBuffers.clear();
         vkDestroyCommandPool(Graphic::GlobalInstance::device, _vkCommandPool, nullptr);
         _vkCommandPool = VK_NULL_HANDLE;
@@ -30,16 +34,18 @@ Graphic::CommandPool::~CommandPool()
 
 Graphic::CommandBuffer* const Graphic::CommandPool::CreateCommandBuffer(const char* name, VkCommandBufferLevel level)
 {
-    _commandBuffers.emplace(std::string(name), std::unique_ptr<Graphic::CommandBuffer>(new Graphic::CommandBuffer( name, this, level )));
-    return _commandBuffers[name].get();
+    auto p = new Graphic::CommandBuffer(name, this, level);
+    _commandBuffers.emplace(std::string(name), p);
+    return p;
 }
 
 Graphic::CommandBuffer* const Graphic::CommandPool::GetCommandBuffer(const char* name)
 {
-    return _commandBuffers[name].get();
+    return _commandBuffers[name];
 }
 
 void Graphic::CommandPool::DestoryCommandBuffer(const char* name)
 {
+    delete _commandBuffers[name];
     _commandBuffers.erase(name);
 }

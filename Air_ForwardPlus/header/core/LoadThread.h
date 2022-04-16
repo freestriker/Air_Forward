@@ -19,7 +19,7 @@ class LoadThread : public Thread
 	friend class SubLoadThread;
 private:
 	std::queue<std::function<void(Graphic::CommandBuffer* const)>> _tasks;
-	std::vector<std::unique_ptr<SubLoadThread>> _subLoadThreads;
+	std::vector<SubLoadThread*> _subLoadThreads;
 
 	std::mutex _queueMutex;
 	std::condition_variable _queueVariable;

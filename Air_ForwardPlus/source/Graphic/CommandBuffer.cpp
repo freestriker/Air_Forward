@@ -55,16 +55,16 @@ void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMas
         _vkCommandBuffer,
         srcStageMask, dstStageMask,
         0,
-        memoryBarriers.size(), memoryBarriers.data(),
-        bufferMemoryBarriers.size(), bufferMemoryBarriers.data(),
-        imageMemoryBarriers.size(), imageMemoryBarriers.data()
+        static_cast<uint32_t>(memoryBarriers.size()), memoryBarriers.data(),
+        static_cast<uint32_t>(bufferMemoryBarriers.size()), bufferMemoryBarriers.data(),
+        static_cast<uint32_t>(imageMemoryBarriers.size()), imageMemoryBarriers.data()
     );
 
 }
 
 void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions)
 {
-    vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer, dstImage, dstImageLayout, regions.size(), regions.data());
+    vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
 }
 
 
@@ -80,9 +80,9 @@ void Graphic::CommandBuffer::Submit(std::vector<VkSemaphore> waitSemaphores, std
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &_vkCommandBuffer;
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.signalSemaphoreCount = signalSemaphores.size();
+    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
     submitInfo.pSignalSemaphores = signalSemaphores.data();
 
     vkQueueSubmit(Graphic::GlobalInstance::queues["TransferQueue"].queue, 1, &submitInfo, _vkFence);

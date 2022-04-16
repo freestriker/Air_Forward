@@ -7,18 +7,20 @@ namespace Graphic
 	class CommandPool;
 	class CommandBuffer;
 }
-class SubLoadThread: public Thread
+class SubLoadThread final : public Thread
 {
 	friend class LoadThread;
 public:
+
+
+private:
 	SubLoadThread(LoadThread& _loadThread);
-	virtual ~SubLoadThread();
+	~SubLoadThread();
 
 	SubLoadThread(const SubLoadThread&) = delete;
 	SubLoadThread& operator=(const SubLoadThread&) = delete;
 	SubLoadThread(SubLoadThread&&) = delete;
 	SubLoadThread& operator=(SubLoadThread&&) = delete;
-
 private:
 	std::unique_ptr<Graphic::CommandPool> _commandPool;
 	LoadThread* const _loadThread;

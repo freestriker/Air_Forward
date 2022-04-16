@@ -13,16 +13,16 @@ namespace Graphic
 		VkFence _vkFence;
 	public:
 		std::string const name;
+
 	private:
 		CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level);
+		~CommandBuffer();
 
 		CommandBuffer(const CommandBuffer&) = delete;
 		CommandBuffer& operator=(const CommandBuffer&) = delete;
 		CommandBuffer(CommandBuffer&&) = delete;
 		CommandBuffer& operator=(CommandBuffer&&) = delete;
 	public:
-		~CommandBuffer();
-
 		void Reset();
 		void BeginRecord(VkCommandBufferUsageFlags flag);
 		void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier>& memoryBarriers, std::vector <VkBufferMemoryBarrier>& bufferMemoryBarriers, std::vector < VkImageMemoryBarrier>& imageMemoryBarriers);

@@ -36,7 +36,7 @@ void SubLoadThread::OnRun()
 			_loadThread->_tasks.pop();
 		}
 
-		task(_commandPool->GetCommandBuffer("TransferCommandBuffer"));
+		task(_commandBuffer);
 	}
 }
 

@@ -9,10 +9,10 @@ LoadThread* const LoadThread::instance = new LoadThread();
 
 void LoadThread::Init()
 {
-	_subLoadThreads.emplace_back(std::unique_ptr<SubLoadThread>(new SubLoadThread(*this)));
-	_subLoadThreads.emplace_back(std::unique_ptr<SubLoadThread>(new SubLoadThread(*this)));
-	_subLoadThreads.emplace_back(std::unique_ptr<SubLoadThread>(new SubLoadThread(*this)));
-	_subLoadThreads.emplace_back(std::unique_ptr<SubLoadThread>(new SubLoadThread(*this)));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
 	std::cout << "LoadThread::Init()" << std::endl;
 }
 
@@ -47,7 +47,6 @@ void LoadThread::OnEnd()
 	{
 		subLoadThread->End();
 	}
-	_subLoadThreads.clear();
 	std::cout << "LoadThread::OnEnd()" << std::endl;
 }
 
@@ -64,4 +63,10 @@ LoadThread::LoadThread()
 LoadThread::~LoadThread()
 {
 	End();
+
+	for (size_t i = 0; i < _subLoadThreads.size(); i++)
+	{
+		delete _subLoadThreads[i];
+	}
+	_subLoadThreads.clear();
 }
