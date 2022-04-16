@@ -28,21 +28,10 @@ Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* co
 
 }
 
-Graphic::CommandBuffer::CommandBuffer()
-    : name()
-    , _vkFence(VK_NULL_HANDLE)
-    , _vkCommandBuffer(VK_NULL_HANDLE)
-    , _parentCommandPool()
-{
-
-}
 Graphic::CommandBuffer::~CommandBuffer()
 {
-    if (_vkCommandBuffer != VK_NULL_HANDLE)
-    {
-        WaitForFinish();
-        vkFreeCommandBuffers(GlobalInstance::device, _parentCommandPool->_vkCommandPool, 1, nullptr);
-    }
+    WaitForFinish();
+    vkFreeCommandBuffers(GlobalInstance::device, _parentCommandPool->_vkCommandPool, 1, nullptr);
 }
 
 void Graphic::CommandBuffer::Reset()

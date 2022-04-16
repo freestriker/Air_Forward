@@ -6,14 +6,10 @@
 SubLoadThread::SubLoadThread(LoadThread& loadThread)
 	: _loadThread(&loadThread)
 	, _commandPool(new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "TransferQueue"))
-{
-	_commandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-}
-SubLoadThread::SubLoadThread()
-	: _loadThread(nullptr)
-	, _commandPool()
+	, _commandBuffer(_commandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY))
 {
 }
+
 SubLoadThread::~SubLoadThread()
 {
 

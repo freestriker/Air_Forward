@@ -2,12 +2,6 @@
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
 #include "Graphic/CommandBuffer.h"
-Graphic::CommandPool::CommandPool()
-    : _vkCommandPool(VK_NULL_HANDLE)
-    , _commandBuffers()
-{
-
-}
 
 Graphic::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, const char* queueName)
     : _commandBuffers()

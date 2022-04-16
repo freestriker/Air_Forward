@@ -14,8 +14,13 @@ namespace Graphic
 		std::map<std::string, std::unique_ptr<Graphic::CommandBuffer>> _commandBuffers;
 
 	public:
-		CommandPool();
 		CommandPool(VkCommandPoolCreateFlags flag, const char* queueName);
+
+		CommandPool(const CommandPool&) = delete;
+		CommandPool& operator=(const CommandPool&) = delete;
+		CommandPool(CommandPool&&) = delete;
+		CommandPool& operator=(CommandPool&&) = delete;
+
 		~CommandPool();
 
 		Graphic::CommandBuffer* const CreateCommandBuffer(const char* name, VkCommandBufferLevel level);

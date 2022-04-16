@@ -15,8 +15,12 @@ namespace Graphic
 		std::string const name;
 	private:
 		CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level);
+
+		CommandBuffer(const CommandBuffer&) = delete;
+		CommandBuffer& operator=(const CommandBuffer&) = delete;
+		CommandBuffer(CommandBuffer&&) = delete;
+		CommandBuffer& operator=(CommandBuffer&&) = delete;
 	public:
-		CommandBuffer();
 		~CommandBuffer();
 
 		void Reset();
