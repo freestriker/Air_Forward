@@ -11,7 +11,7 @@ Graphic::Texture2D::~Texture2D()
 {
 }
 
-void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Texture2DConfig config, Graphic::Texture2D& texture)
+void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DConfig config, Graphic::Texture2D& texture)
 {
 	LoadBitmap(config, texture);
 
@@ -25,14 +25,21 @@ void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const commandBuff
 
 	CreateImage(config, texture);
 	
-	commandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	TransitionToTransferLayout(texture.textureImage, *commandBuffer);
-	CopyBufferToImage(stagingBuffer, texture.textureImage, texture.size.width, texture.size.height, *commandBuffer);
-	TransitionToShaderLayout(texture.textureImage, *commandBuffer);
-	commandBuffer->EndRecord();
-	commandBuffer->Submit({}, {});
-	commandBuffer->WaitForFinish();
-	commandBuffer->Reset();
+	transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	TransitionToTransferLayout(texture.textureImage, *transferCommandBuffer);
+	CopyBufferToImage(stagingBuffer, texture.textureImage, texture.size.width, texture.size.height, *transferCommandBuffer);
+	TransitionToShaderLayoutInTransferQueue(texture.textureImage, *transferCommandBuffer);
+	transferCommandBuffer->EndRecord();
+	transferCommandBuffer->Submit({}, {});
+	transferCommandBuffer->WaitForFinish();
+	transferCommandBuffer->Reset();
+
+	graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	TransitionToShaderLayoutInGraphicQueue(texture.textureImage, *graphicCommandBuffer);
+	graphicCommandBuffer->EndRecord();
+	graphicCommandBuffer->Submit({}, {});
+	graphicCommandBuffer->WaitForFinish();
+	graphicCommandBuffer->Reset();
 
 	CreateImageView(config, texture);
 	CreateTextureSampler(config, texture);
@@ -183,7 +190,7 @@ void Graphic::Texture2D::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage,
 	commandBuffer.CopyBufferToImage(srcBuffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions);
 }
 
-void Graphic::Texture2D::TransitionToShaderLayout(VkImage image, Graphic::CommandBuffer& commandBuffer)
+void Graphic::Texture2D::TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
 {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -206,6 +213,31 @@ void Graphic::Texture2D::TransitionToShaderLayout(VkImage image, Graphic::Comman
 		bufferMemoryBarriers,
 		imageMemoryBarriers
 	);
+}
+void Graphic::Texture2D::TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
+{
+	VkImageMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"].queueFamilyIndex;
+	barrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"].queueFamilyIndex;
+	barrier.image = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	std::vector<VkMemoryBarrier> memoryBarriers; std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers; std::vector<VkImageMemoryBarrier> imageMemoryBarriers = { barrier };
+	commandBuffer.AddPipelineBarrier(
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		memoryBarriers,
+		bufferMemoryBarriers,
+		imageMemoryBarriers
+	);
+
 }
 void Graphic::Texture2D::CreateImageView(Texture2DConfig& config, Graphic::Texture2D& texture)
 {

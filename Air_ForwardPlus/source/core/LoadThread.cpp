@@ -33,8 +33,8 @@ void LoadThread::OnRun()
 		std::cout << "LoadThread::OnRun()" << std::endl;
 		Graphic::Texture2D texture = Graphic::Texture2D();
 		Graphic::Texture2DConfig config = Graphic::Texture2DConfig("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto result = AddTask([config, &texture](Graphic::CommandBuffer* const cb) {
-				Graphic::Texture2D::LoadTexture2D(cb, config, texture);
+		auto result = AddTask([config, &texture](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb) {
+				Graphic::Texture2D::LoadTexture2D(tcb, gcb, config, texture);
 			});
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		result.get();

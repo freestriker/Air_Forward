@@ -42,7 +42,7 @@ namespace Graphic
 		VkImageView textureImageView;
 		VkSampler textureSampler;
 		VkSampler sampler;
-		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Texture2DConfig config, Texture2D& texture);
+		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DConfig config, Texture2D& texture);
 	private:
 		std::vector<unsigned char> data;
 		static void LoadBitmap(Texture2DConfig& config, Graphic::Texture2D& texture);
@@ -53,7 +53,8 @@ namespace Graphic
 		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
 
 		static void CreateImage(Texture2DConfig& config, Graphic::Texture2D& texture);
-		static void TransitionToShaderLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
+		static void TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
+		static void TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void CreateImageView(Texture2DConfig& config, Graphic::Texture2D& texture);
 		static void CreateTextureSampler(Texture2DConfig& config, Graphic::Texture2D& texture);
 	};

@@ -18,7 +18,7 @@ class LoadThread : public Thread
 {
 	friend class SubLoadThread;
 private:
-	std::queue<std::function<void(Graphic::CommandBuffer* const)>> _tasks;
+	std::queue<std::function<void(Graphic::CommandBuffer* const, Graphic::CommandBuffer* const)>> _tasks;
 	std::vector<SubLoadThread*> _subLoadThreads;
 
 	std::mutex _queueMutex;
@@ -41,16 +41,16 @@ public:
 	static LoadThread* const instance;
 	void Init()override;
 	template<typename F, typename... Args>
-	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type>;
+	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Graphic::CommandBuffer* const, Args...>::type>;
 };
 
 template<typename F, typename ...Args>
-auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type>
+auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Graphic::CommandBuffer* const, Args...>::type>
 {
-	using return_type = typename std::invoke_result<F, Graphic::CommandBuffer* const, Args...>::type;
+	using return_type = typename std::invoke_result<F, Graphic::CommandBuffer* const, Graphic::CommandBuffer* const, Args...>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(Graphic::CommandBuffer* const)> >(
-		std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)
+	auto task = std::make_shared< std::packaged_task<return_type(Graphic::CommandBuffer* const, Graphic::CommandBuffer* const)> >(
+		std::bind(std::forward<F>(f), std::placeholders::_1, std::placeholders::_2, std::forward<Args>(args)...)
 		);
 
 	std::future<return_type> res = task->get_future();
@@ -61,7 +61,7 @@ auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::in
 		if (_stopped)
 			throw std::runtime_error("enqueue on stopped ThreadPool");
 
-		_tasks.emplace([task](Graphic::CommandBuffer* const commandBuffer) { (*task)(commandBuffer); });
+		_tasks.emplace([task](Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer) { (*task)(transferCommandBuffer, graphicCommandBuffer); });
 	}
 	_queueVariable.notify_one();
 	return res;

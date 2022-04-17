@@ -22,9 +22,11 @@ private:
 	SubLoadThread(SubLoadThread&&) = delete;
 	SubLoadThread& operator=(SubLoadThread&&) = delete;
 private:
-	std::unique_ptr<Graphic::CommandPool> _commandPool;
+	std::unique_ptr<Graphic::CommandPool> _transferCommandPool;
+	std::unique_ptr<Graphic::CommandPool> _graphiccCommandPool;
 	LoadThread* const _loadThread;
-	Graphic::CommandBuffer* const _commandBuffer;
+	Graphic::CommandBuffer* const _transferCommandBuffer;
+	Graphic::CommandBuffer* const _graphicCommandBuffer;
 	void OnStart()override;
 	void OnRun()override;
 	void OnEnd()override;
