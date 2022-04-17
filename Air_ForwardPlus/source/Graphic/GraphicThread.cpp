@@ -70,9 +70,9 @@ void Graphic::GraphicThread::OnStart()
 
 void Graphic::GraphicThread::OnRun()
 {
-	while (!_stopped)
+	while (!_stopped && !glfwWindowShouldClose(Graphic::GlobalInstance::window))
 	{
-
+		glfwPollEvents();
 	}
 }
 

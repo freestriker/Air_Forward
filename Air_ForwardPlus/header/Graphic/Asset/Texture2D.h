@@ -6,27 +6,55 @@
 namespace Graphic
 {
 	class CommandBuffer;
+	struct Texture2DConfig
+	{
+		std::string path;
+		VkSampleCountFlagBits sampleCount;
+		VkFormat format;
+		VkFilter magFilter;
+		VkFilter minFilter;
+		VkSamplerAddressMode addressMode;
+		float anisotropy;
+		VkBorderColor borderColor;
+
+		Texture2DConfig(const char* path)
+			: path(path)
+			, sampleCount(VK_SAMPLE_COUNT_1_BIT)
+			, format(VK_FORMAT_R8G8B8A8_SRGB)
+			, magFilter(VK_FILTER_LINEAR)
+			, minFilter(VK_FILTER_LINEAR)
+			, addressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT)
+			, anisotropy(0.0f)
+			, borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+		{
+
+		}
+	};
 	class Texture2D
 	{
 	public:
 		Texture2D();
 		virtual ~Texture2D();
 		VkExtent2D size;
-		uint32_t mipLevels;
 		VkImage textureImage;
 		VkFormat textureFormat;
 		VkDeviceMemory textureImageMemory;
 		VkImageView textureImageView;
 		VkSampler textureSampler;
-		static void LoadTexture2D(Graphic::CommandBuffer& commandBuffer, std::string path, Texture2D& texture);
+		VkSampler sampler;
+		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Texture2DConfig config, Texture2D& texture);
 	private:
 		std::vector<unsigned char> data;
-		static void LoadBitmap(std::string& path, Graphic::Texture2D& texture);
+		static void LoadBitmap(Texture2DConfig& config, Graphic::Texture2D& texture);
+
 		static void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		static void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		static void TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
+
+		static void CreateImage(Texture2DConfig& config, Graphic::Texture2D& texture);
 		static void TransitionToShaderLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
+		static void CreateImageView(Texture2DConfig& config, Graphic::Texture2D& texture);
+		static void CreateTextureSampler(Texture2DConfig& config, Graphic::Texture2D& texture);
 	};
 }

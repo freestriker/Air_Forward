@@ -28,7 +28,7 @@ namespace Graphic
 		void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier>& memoryBarriers, std::vector <VkBufferMemoryBarrier>& bufferMemoryBarriers, std::vector < VkImageMemoryBarrier>& imageMemoryBarriers);
 		void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions);
 		void EndRecord();
-		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkSemaphore> signalSemaphores, VkFence fence);
+		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkSemaphore> signalSemaphores);
 		void WaitForFinish();
 	};
 }

@@ -61,7 +61,7 @@ void LoadTexture(std::string path)
 int main()
 {
 
-    type::invoke("f", {});
+    //type::invoke("f", {});
 
 	GameObject* go0 = ObjectFactory::InstantiateGameObject();
 	go0->name = "go0";

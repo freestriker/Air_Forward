@@ -74,7 +74,7 @@ void Graphic::CommandBuffer::EndRecord()
     vkEndCommandBuffer(_vkCommandBuffer);
 }
 
-void Graphic::CommandBuffer::Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkSemaphore> signalSemaphores, VkFence fence)
+void Graphic::CommandBuffer::Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkSemaphore> signalSemaphores)
 {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

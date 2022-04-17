@@ -11,37 +11,35 @@ Graphic::Texture2D::~Texture2D()
 {
 }
 
-void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer& commandBuffer, std::string path, Graphic::Texture2D& texture)
+void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Texture2DConfig config, Graphic::Texture2D& texture)
 {
-	LoadBitmap(path, texture);
+	LoadBitmap(config, texture);
 
 	VkBuffer stagingBuffer{};
 	VkDeviceMemory stagingBufferMemory{};
-	CreateBuffer(texture.size.width * texture.size.height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
+	CreateBuffer(static_cast<uint64_t>(texture.size.width) * texture.size.height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 	void* tranferData;
 	vkMapMemory(Graphic::GlobalInstance::device, stagingBufferMemory, 0, texture.size.width * texture.size.height * 4, 0, &tranferData);
 	memcpy(tranferData, texture.data.data(), static_cast<size_t>(texture.size.width * texture.size.height * 4));
 	vkUnmapMemory(Graphic::GlobalInstance::device, stagingBufferMemory);
 
-	CreateImage(texture.size.width, texture.size.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.textureImage, texture.textureImageMemory);
+	CreateImage(config, texture);
 	
-	commandBuffer.BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	commandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	TransitionToTransferLayout(texture.textureImage, *commandBuffer);
+	CopyBufferToImage(stagingBuffer, texture.textureImage, texture.size.width, texture.size.height, *commandBuffer);
+	TransitionToShaderLayout(texture.textureImage, *commandBuffer);
+	commandBuffer->EndRecord();
+	commandBuffer->Submit({}, {});
+	commandBuffer->WaitForFinish();
+	commandBuffer->Reset();
 
-	TransitionToTransferLayout(texture.textureImage, commandBuffer);
-	CopyBufferToImage(stagingBuffer, texture.textureImage, texture.size.width, texture.size.height, commandBuffer);
-	TransitionToShaderLayout(texture.textureImage, commandBuffer);
-
-	commandBuffer.EndRecord();
-
-	commandBuffer.Submit({}, {}, VK_NULL_HANDLE);
-	
-	commandBuffer.WaitForFinish();
-	commandBuffer.Reset();
+	CreateImageView(config, texture);
+	CreateTextureSampler(config, texture);
 }
-void Graphic::Texture2D::LoadBitmap(std::string& path, Graphic::Texture2D& texture)
+void Graphic::Texture2D::LoadBitmap(Texture2DConfig& config, Graphic::Texture2D& texture)
 {
-	auto p = path.c_str();
+	auto p = config.path.c_str();
 	auto fileType = FreeImage_GetFileType(p);
 	if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(p);
 	if ((fileType != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fileType))
@@ -57,11 +55,10 @@ void Graphic::Texture2D::LoadBitmap(std::string& path, Graphic::Texture2D& textu
 
 		uint32_t pitch = FreeImage_GetPitch(bitmap);
 		texture.size = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
-		texture.data.resize(texture.size.width * texture.size.height * 4);
+		texture.data.resize(static_cast<size_t>(texture.size.width) * texture.size.height * 4);
 		FreeImage_ConvertToRawBits(texture.data.data(), bitmap, pitch, pixelDepth, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, 0L);
 		FreeImage_Unload(bitmap);
 	}
-
 }
 void Graphic::Texture2D::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
@@ -103,40 +100,40 @@ uint32_t Graphic::Texture2D::FindMemoryType(uint32_t typeFilter, VkMemoryPropert
 
 	throw std::runtime_error("failed to find suitable memory type!");
 }
-void Graphic::Texture2D::CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+void Graphic::Texture2D::CreateImage(Texture2DConfig& config, Graphic::Texture2D& texture)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = width;
-	imageInfo.extent.height = height;
+	imageInfo.extent.width = texture.size.width;
+	imageInfo.extent.height = texture.size.height;
 	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = mipLevels;
+	imageInfo.mipLevels = 1;
 	imageInfo.arrayLayers = 1;
-	imageInfo.format = format;
-	imageInfo.tiling = tiling;
+	imageInfo.format = config.format;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = usage;
-	imageInfo.samples = numSamples;
+	imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageInfo.samples = config.sampleCount;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+	if (vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &texture.textureImage) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create image!");
 	}
 
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, image, &memRequirements);
+	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, texture.textureImage, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+	if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &texture.textureImageMemory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	vkBindImageMemory(Graphic::GlobalInstance::device, image, imageMemory, 0);
+	vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.textureImageMemory, 0);
 }
 
 void Graphic::Texture2D::TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer)
@@ -209,4 +206,47 @@ void Graphic::Texture2D::TransitionToShaderLayout(VkImage image, Graphic::Comman
 		bufferMemoryBarriers,
 		imageMemoryBarriers
 	);
+}
+void Graphic::Texture2D::CreateImageView(Texture2DConfig& config, Graphic::Texture2D& texture)
+{
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = texture.textureImage;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = config.format;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	if (vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &texture.textureImageView) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create texture image view!");
+	}
+}
+void Graphic::Texture2D::CreateTextureSampler(Texture2DConfig& config, Graphic::Texture2D& texture)
+{
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = config.magFilter;
+	samplerInfo.minFilter = config.minFilter;
+	samplerInfo.addressModeU = config.addressMode;
+	samplerInfo.addressModeV = config.addressMode;
+	samplerInfo.addressModeW = config.addressMode;
+	samplerInfo.anisotropyEnable = config.anisotropy < 1.0f ? VK_FALSE :VK_TRUE;
+	samplerInfo.maxAnisotropy = config.anisotropy < 1.0f ? 1.0f : config.anisotropy;
+	samplerInfo.borderColor = config.borderColor;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = static_cast<float>(0);
+	samplerInfo.mipLodBias = 0.0f;
+
+	if (vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture.sampler) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create texture sampler!");
+	}
 }
