@@ -30,8 +30,24 @@ namespace Graphic
 	{
 		friend class DescriptorPool;
 	public:
+		struct WriteData
+		{
+			VkDescriptorType type;
+
+			VkBuffer buffer;
+			VkDeviceSize offset;
+			VkDeviceSize range;
+
+			VkImageLayout layout;
+			VkImageView view;
+			VkSampler sampler;
+
+			WriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range);
+			WriteData(VkDescriptorType type, VkImageLayout layout, VkImageView view, VkSampler sampler);
+		};
 		VkDescriptorPool const sourcePool;
 		VkDescriptorSet const descriptorSet;
+		void WriteBindingData(std::vector<WriteData> data);
 	private:
 		DescriptorSet(VkDescriptorPool sourcePool, VkDescriptorSet set);
 		~DescriptorSet();
