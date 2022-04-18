@@ -48,6 +48,7 @@ namespace Graphic
 		VkDescriptorPool const sourcePool;
 		VkDescriptorSet const descriptorSet;
 		void WriteBindingData(std::vector<WriteData> data);
+		void WriteBindingData(std::vector<uint32_t>bindingIndex, std::vector<WriteData> data);
 	private:
 		DescriptorSet(VkDescriptorPool sourcePool, VkDescriptorSet set);
 		~DescriptorSet();
