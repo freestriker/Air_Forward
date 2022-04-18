@@ -3,6 +3,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <string>
+#include <glm/vec4.hpp>
 namespace Graphic
 {
 	class CommandBuffer;
@@ -33,15 +34,23 @@ namespace Graphic
 	class Texture2D
 	{
 	public:
+		struct TexelInfo
+		{
+			glm::vec4 size;
+			glm::vec4 tilingScale;
+		};
 		Texture2D();
 		virtual ~Texture2D();
 		VkExtent2D size;
 		VkImage textureImage;
 		VkFormat textureFormat;
 		VkDeviceMemory textureImageMemory;
+		VkDeviceMemory bufferMemory;
+		VkBuffer buffer;
 		VkImageView textureImageView;
 		VkSampler textureSampler;
 		VkSampler sampler;
+		TexelInfo texelInfo;
 		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DConfig config, Texture2D& texture);
 	private:
 		std::vector<unsigned char> data;

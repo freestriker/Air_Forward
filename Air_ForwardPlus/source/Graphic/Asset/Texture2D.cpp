@@ -31,6 +31,13 @@ void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const transferCom
 	TransitionToShaderLayoutInTransferQueue(texture.textureImage, *transferCommandBuffer);
 	transferCommandBuffer->EndRecord();
 	transferCommandBuffer->Submit({}, {});
+
+	CreateBuffer(sizeof(texelInfo), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, texture.buffer, texture.bufferMemory);
+	void* texelInfoData;
+	vkMapMemory(Graphic::GlobalInstance::device, texture.bufferMemory, 0, sizeof(texelInfo), 0, &texelInfoData);
+	memcpy(texelInfoData, &texture.texelInfo, sizeof(texelInfo));
+	vkUnmapMemory(Graphic::GlobalInstance::device, texture.bufferMemory);
+
 	transferCommandBuffer->WaitForFinish();
 	transferCommandBuffer->Reset();
 
@@ -65,6 +72,8 @@ void Graphic::Texture2D::LoadBitmap(Texture2DConfig& config, Graphic::Texture2D&
 
 		uint32_t pitch = FreeImage_GetPitch(bitmap);
 		texture.size = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
+		texture.texelInfo.size = glm::vec4(1.0 / texture.size.width, 1.0 / texture.size.height, texture.size.width, texture.size.height);
+		texture.texelInfo.tilingScale = glm::vec4(0, 0, 1, 1);
 		texture.data.resize(static_cast<size_t>(texture.size.width) * texture.size.height * 4);
 		FreeImage_ConvertToRawBits(texture.data.data(), bitmap, pitch, pixelDepth, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, 0L);
 		FreeImage_Unload(bitmap);
