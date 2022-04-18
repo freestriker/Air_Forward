@@ -5,6 +5,7 @@
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Creator/RenderPassCreator.h"
 #include "Graphic/GlobalSetting.h"
+#include "Graphic/DescriptorSetUtils.h"
 
 Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
 
@@ -59,6 +60,13 @@ void Graphic::GraphicThread::Init()
 	);
 	Graphic::GlobalInstance::CreateRenderPass(&renderPassCreator);
 
+	Graphic::DescriptorSetLayout layout = Graphic::DescriptorSetLayoutUtils::CreateDescriptrSetLayout(
+		{
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , VK_SHADER_STAGE_VERTEX_BIT },
+			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
+		}
+	);
+	Graphic::DescriptorSetLayoutUtils::DescoryDescriptorSetLayout(layout);
 }
 
 void Graphic::GraphicThread::OnStart()
