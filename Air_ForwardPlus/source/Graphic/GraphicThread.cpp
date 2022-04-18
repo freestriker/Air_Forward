@@ -60,13 +60,24 @@ void Graphic::GraphicThread::Init()
 	);
 	Graphic::GlobalInstance::CreateRenderPass(&renderPassCreator);
 
-	Graphic::DescriptorSetLayout layout = Graphic::DescriptorSetLayoutUtils::CreateDescriptrSetLayout(
+	Graphic::DescriptorSetLayout* layout = new Graphic::DescriptorSetLayout(
 		{
 			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , VK_SHADER_STAGE_VERTEX_BIT },
 			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
 		}
 	);
-	Graphic::DescriptorSetLayoutUtils::DescoryDescriptorSetLayout(layout);
+
+	Graphic::DescriptorPool* pool = new DescriptorPool(layout, 1);
+
+	Graphic::DescriptorSet* set1 = pool->GetDescripterSet();
+	Graphic::DescriptorSet* set2 = pool->GetDescripterSet();
+
+	pool->RecycleDescripterSet(set1);
+	pool->RecycleDescripterSet(set2);
+
+	delete pool;
+
+	delete layout;
 }
 
 void Graphic::GraphicThread::OnStart()

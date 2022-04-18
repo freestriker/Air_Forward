@@ -1,17 +1,10 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 #include <vector>
+#include <map>
 
 namespace Graphic
 {
-	class DescriptorSetLayout
-	{
-	public:
-		VkDescriptorSetLayout vkDescriptorSetLayout;
-		std::vector<VkDescriptorType> descriptorTypes;
-		DescriptorSetLayout();
-		~DescriptorSetLayout();
-	};
 	class DescriptorSetLayoutBinding
 	{
 	public:
@@ -20,10 +13,47 @@ namespace Graphic
 		DescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
 		~DescriptorSetLayoutBinding();
 	};
-	class DescriptorSetLayoutUtils
+
+	class DescriptorSetLayout
 	{
+	private:
+		static std::vector<VkDescriptorType> _GetDescriptorTypes(std::vector<DescriptorSetLayoutBinding>& bindings);
+		static VkDescriptorSetLayout _CreateDescriptorSetLayout(std::vector<DescriptorSetLayoutBinding>& bindings);
 	public:
-		static DescriptorSetLayout CreateDescriptrSetLayout(std::vector<DescriptorSetLayoutBinding> bindings);
-		static void DescoryDescriptorSetLayout(DescriptorSetLayout descriptorSetLayout);
+		DescriptorSetLayout(std::vector<DescriptorSetLayoutBinding> bindings);
+		~DescriptorSetLayout();
+		VkDescriptorSetLayout const vkDescriptorSetLayout;
+		std::vector<VkDescriptorType> const descriptorTypes;
+	};
+
+	class DescriptorSet
+	{
+		friend class DescriptorPool;
+	public:
+		VkDescriptorPool const sourcePool;
+		VkDescriptorSet const descriptorSet;
+	private:
+		DescriptorSet(VkDescriptorPool sourcePool, VkDescriptorSet set);
+		~DescriptorSet();
+	};
+
+	class DescriptorPool
+	{
+	private:
+		int const _chunkSize;
+		DescriptorSetLayout* const _templateLayout;
+		std::vector<VkDescriptorPoolSize> const _poolSizes;
+
+		std::vector<VkDescriptorPool> _pools;
+		std::map<VkDescriptorPool, int> _poolRemainingCounts;
+	public:
+		DescriptorPool(DescriptorSetLayout* templateLayout, int chunkSize);
+		~DescriptorPool();
+		DescriptorSet* GetDescripterSet();
+		void RecycleDescripterSet(DescriptorSet* descriptorSet);
+	private:
+		size_t _CreateNewPool();
+		void _DestoryPool(size_t index);
+		static std::vector<VkDescriptorPoolSize> _GetPoolSizes(DescriptorSetLayout* templateLayout, int chunkSize);
 	};
 }
