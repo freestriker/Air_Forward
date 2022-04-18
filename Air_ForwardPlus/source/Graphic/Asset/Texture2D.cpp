@@ -34,12 +34,15 @@ void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const transferCom
 	transferCommandBuffer->WaitForFinish();
 	transferCommandBuffer->Reset();
 
-	graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	TransitionToShaderLayoutInGraphicQueue(texture.textureImage, *graphicCommandBuffer);
-	graphicCommandBuffer->EndRecord();
-	graphicCommandBuffer->Submit({}, {});
-	graphicCommandBuffer->WaitForFinish();
-	graphicCommandBuffer->Reset();
+	if (Graphic::GlobalInstance::queues["TransferQueue"].queueFamilyIndex != Graphic::GlobalInstance::queues["RenderQueue"].queueFamilyIndex)
+	{
+		graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		TransitionToShaderLayoutInGraphicQueue(texture.textureImage, *graphicCommandBuffer);
+		graphicCommandBuffer->EndRecord();
+		graphicCommandBuffer->Submit({}, {});
+		graphicCommandBuffer->WaitForFinish();
+		graphicCommandBuffer->Reset();
+	}
 
 	CreateImageView(config, texture);
 	CreateTextureSampler(config, texture);
