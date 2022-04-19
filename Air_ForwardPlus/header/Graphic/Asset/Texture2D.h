@@ -82,6 +82,7 @@ namespace Graphic
 		~Texture2D();
 
 		static std::future<Texture2D*>LoadAsync(const char* path);
+		static Texture2D* Load(const char* path);
 	private:
 		Texture2D(Texture2DInstance* assetInstance);
 	};

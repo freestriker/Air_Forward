@@ -43,7 +43,7 @@ AssetManager::~AssetManager()
 
 void AssetManager::AddInstance(std::string path, IAssetInstance* assetInstance)
 {
-	_warps.emplace(path, AssetInstanceWarp{ path , 0, assetInstance });
+	_warps.emplace(path, AssetInstanceWarp{ 0, assetInstance });
 }
 
 IAssetInstance* AssetManager::GetInstance(std::string path)

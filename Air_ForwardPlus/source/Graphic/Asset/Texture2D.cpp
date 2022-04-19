@@ -309,25 +309,9 @@ Graphic::Texture2D::~Texture2D()
 
 std::future<Graphic::Texture2D*> Graphic::Texture2D::LoadAsync(const char* path)
 {
-	auto manager = LoadThread::instance->assetManager.get();
 	Graphic::Texture2DInstance* asset = nullptr;
-	bool alreadyCreated = false;
+	bool alreadyCreated = IAssetInstance::GetAssetInstance(LoadThread::instance->assetManager.get(), path, asset);
 
-	{
-		std::unique_lock<std::mutex> lock(manager->mutex);
-		if (manager->ContainsInstance(path))
-		{
-			asset = dynamic_cast<Graphic::Texture2DInstance * >(manager->GetInstance(path));
-			alreadyCreated = true;
-		}
-		else
-		{
-			asset = new Texture2DInstance(path);
-			manager->AddInstance(path, asset);
-			manager->GetInstance(path);
-			alreadyCreated = false;
-		}
-	}
 
 	if (alreadyCreated)
 	{
@@ -346,6 +330,10 @@ std::future<Graphic::Texture2D*> Graphic::Texture2D::LoadAsync(const char* path)
 			Graphic::Texture2DInstance::LoadTexture2D(tcb, gcb, config, *asset);
 			return t;
 		});
-
 	}
+}
+
+Graphic::Texture2D* Graphic::Texture2D::Load(const char* path)
+{
+	return Graphic::Texture2D::LoadAsync(path).get();
 }
