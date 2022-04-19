@@ -37,6 +37,15 @@ void LoadThread::OnRun()
 		auto r2 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
 		auto r3 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
 		auto r4 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+
+		auto r5 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r6 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+
+		auto r7 = new Graphic::Texture2D(*r5);
+		auto r8 = new Graphic::Texture2D(*r5);
+
+		delete r5;
+		delete r8;
 	}
 }
 void LoadThread::OnEnd()

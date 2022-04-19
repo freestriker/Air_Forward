@@ -10,8 +10,8 @@ protected:
 	IAssetInstance* assetInstance;
 	IAsset(IAssetInstance* assetInstance);
 	virtual ~IAsset();
+	IAsset(const IAsset& source);
 private:
-	IAsset(const IAsset& source) = delete;
 	IAsset& operator=(const IAsset&) = delete;
 	IAsset(IAsset&&) = delete;
 	IAsset& operator=(IAsset&&) = delete;
@@ -19,12 +19,13 @@ private:
 class IAssetInstance
 {
 public:
-	std::string path;
+	std::string const path;
 	AssetManager* const assetManager;
 	IAssetInstance(std::string path, AssetManager* assetManager);
+	virtual ~IAssetInstance();
+
 	template<typename T, typename ...Args>
 	static bool GetAssetInstance(AssetManager* manager, std::string path, T*& dstAssetInstance, Args && ...args);
-	virtual ~IAssetInstance();
 };
 class AssetManager
 {

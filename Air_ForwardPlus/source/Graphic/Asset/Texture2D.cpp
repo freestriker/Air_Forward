@@ -303,6 +303,11 @@ Graphic::Texture2D::Texture2D(Texture2DInstance* assetInstance)
 
 }
 
+Graphic::Texture2D::Texture2D(const Texture2D& source)
+	: IAsset(source)
+{
+}
+
 Graphic::Texture2D::~Texture2D()
 {
 }

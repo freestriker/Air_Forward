@@ -4,6 +4,11 @@ IAsset::IAsset(IAssetInstance* assetInstance)
 	: assetInstance(assetInstance)
 {
 }
+IAsset::IAsset(const IAsset& source)
+{
+	std::unique_lock<std::mutex> lock(source.assetInstance->assetManager->mutex);
+	assetInstance = source.assetInstance->assetManager->GetInstance(source.assetInstance->path);
+}
 
 IAsset::~IAsset()
 {
