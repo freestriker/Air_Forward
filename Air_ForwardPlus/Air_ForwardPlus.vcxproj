@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\Component\Transform\Transform.h" />
+    <ClInclude Include="header\core\AssetUtils.h" />
     <ClInclude Include="header\core\Component.h" />
     <ClInclude Include="header\core\GameObject.h" />
     <ClInclude Include="header\core\Global.h" />
@@ -46,6 +47,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\core\AssetUtils.cpp" />
     <ClCompile Include="source\core\Component.cpp" />
     <ClCompile Include="source\core\GameObject.cpp" />
     <ClCompile Include="source\core\Global.cpp" />

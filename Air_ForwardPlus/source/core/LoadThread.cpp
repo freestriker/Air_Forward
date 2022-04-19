@@ -4,6 +4,7 @@
 #include <core/SubLoadThread.h>
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/CommandBuffer.h"
+#include "core/AssetUtils.h"
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -55,7 +56,7 @@ LoadThread::LoadThread()
 	, _queueMutex()
 	, _queueVariable()
 	, _stopped(true)
-	, assetInstanceManager()
+	, assetManager(new AssetManager())
 {
 }
 
@@ -70,37 +71,3 @@ LoadThread::~LoadThread()
 	_subLoadThreads.clear();
 }
 
-AssetInstanceManager::AssetInstanceManager()
-	: _warps()
-	, mutex()
-{
-}
-
-AssetInstanceManager::~AssetInstanceManager()
-{
-	for (const auto& pair : _warps)
-	{
-		delete pair.second.assetInstance;
-	}
-}
-
-void AssetInstanceManager::AddInstance(std::string path, void* assetInstance)
-{
-	_warps.emplace(path, AssetInstanceWarp{ path , 0, assetInstance });
-}
-
-void* AssetInstanceManager::GetInstance(std::string path)
-{
-	_warps[path].refCount++;
-	return _warps[path].assetInstance;
-}
-
-bool AssetInstanceManager::ContainsInstance(std::string path)
-{
-	return _warps.count(path);
-}
-
-void AssetInstanceManager::RecycleInstance(std::string path)
-{
-	--_warps[path].refCount;
-}

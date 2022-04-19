@@ -5,6 +5,7 @@
 #include <string>
 #include <glm/vec4.hpp>
 #include <future>
+#include "core/AssetUtils.h"
 namespace Graphic
 {
 	class CommandBuffer;
@@ -32,16 +33,17 @@ namespace Graphic
 
 		}
 	};
-	class Texture2DAsset
+	class Texture2DInstance: public IAssetInstance
 	{
+		friend class Texture2D;
 	public:
 		struct TexelInfo
 		{
 			glm::vec4 size;
 			glm::vec4 tilingScale;
 		};
-		Texture2DAsset();
-		virtual ~Texture2DAsset();
+		Texture2DInstance(std::string path);
+		virtual ~Texture2DInstance();
 		VkExtent2D size;
 		VkImage textureImage;
 		VkFormat textureFormat;
@@ -52,26 +54,35 @@ namespace Graphic
 		VkSampler textureSampler;
 		VkSampler sampler;
 		TexelInfo texelInfo;
-		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Texture2DAsset& texture);
-	private:
 		std::vector<unsigned char> data;
-		static void LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture);
+	private:
+
+		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Texture2DInstance& texture);
+		static void LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 
 		static void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		static void TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
 
-		static void CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture);
+		static void CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 		static void TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
-		static void CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture);
-		static void CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture);
+		static void CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
+		static void CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 	};
-	class Texture2D
+	class Texture2D: IAsset
 	{
 	public:
-		Texture2DAsset* assetInstance;
+
+		Texture2D(const Texture2D& source) = delete;
+		Texture2D& operator=(const Texture2D&) = delete; 
+		Texture2D(Texture2D&&) = delete; 
+		Texture2D& operator=(Texture2D&&) = delete; 
+		~Texture2D();
+
 		static std::future<Texture2D*>LoadAsync(const char* path);
+	private:
+		Texture2D(Texture2DInstance* assetInstance);
 	};
 }
