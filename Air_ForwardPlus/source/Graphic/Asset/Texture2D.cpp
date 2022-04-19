@@ -3,15 +3,16 @@
 #include "FreeImage/FreeImage.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/CommandBuffer.h"
-Graphic::Texture2D::Texture2D()
+#include <iostream>
+Graphic::Texture2DAsset::Texture2DAsset()
 {
 }
 
-Graphic::Texture2D::~Texture2D()
+Graphic::Texture2DAsset::~Texture2DAsset()
 {
 }
 
-void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DConfig config, Graphic::Texture2D& texture)
+void Graphic::Texture2DAsset::LoadTexture2D(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Graphic::Texture2DAsset& texture)
 {
 	LoadBitmap(config, texture);
 
@@ -54,7 +55,7 @@ void Graphic::Texture2D::LoadTexture2D(Graphic::CommandBuffer* const transferCom
 	CreateImageView(config, texture);
 	CreateTextureSampler(config, texture);
 }
-void Graphic::Texture2D::LoadBitmap(Texture2DConfig& config, Graphic::Texture2D& texture)
+void Graphic::Texture2DAsset::LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture)
 {
 	auto p = config.path.c_str();
 	auto fileType = FreeImage_GetFileType(p);
@@ -79,7 +80,7 @@ void Graphic::Texture2D::LoadBitmap(Texture2DConfig& config, Graphic::Texture2D&
 		FreeImage_Unload(bitmap);
 	}
 }
-void Graphic::Texture2D::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+void Graphic::Texture2DAsset::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -105,7 +106,7 @@ void Graphic::Texture2D::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usag
 
 	vkBindBufferMemory(Graphic::GlobalInstance::device, buffer, bufferMemory, 0);
 }
-uint32_t Graphic::Texture2D::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+uint32_t Graphic::Texture2DAsset::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(Graphic::GlobalInstance::physicalDevice, &memProperties);
@@ -119,7 +120,7 @@ uint32_t Graphic::Texture2D::FindMemoryType(uint32_t typeFilter, VkMemoryPropert
 
 	throw std::runtime_error("failed to find suitable memory type!");
 }
-void Graphic::Texture2D::CreateImage(Texture2DConfig& config, Graphic::Texture2D& texture)
+void Graphic::Texture2DAsset::CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -155,7 +156,7 @@ void Graphic::Texture2D::CreateImage(Texture2DConfig& config, Graphic::Texture2D
 	vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.textureImageMemory, 0);
 }
 
-void Graphic::Texture2D::TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer)
+void Graphic::Texture2DAsset::TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer)
 {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -182,7 +183,7 @@ void Graphic::Texture2D::TransitionToTransferLayout(VkImage image, Graphic::Comm
 
 }
 
-void Graphic::Texture2D::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer)
+void Graphic::Texture2DAsset::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer)
 {
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
@@ -202,7 +203,7 @@ void Graphic::Texture2D::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage,
 	commandBuffer.CopyBufferToImage(srcBuffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions);
 }
 
-void Graphic::Texture2D::TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
+void Graphic::Texture2DAsset::TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
 {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -226,7 +227,7 @@ void Graphic::Texture2D::TransitionToShaderLayoutInTransferQueue(VkImage image, 
 		imageMemoryBarriers
 	);
 }
-void Graphic::Texture2D::TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
+void Graphic::Texture2DAsset::TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer)
 {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -251,7 +252,7 @@ void Graphic::Texture2D::TransitionToShaderLayoutInGraphicQueue(VkImage image, G
 	);
 
 }
-void Graphic::Texture2D::CreateImageView(Texture2DConfig& config, Graphic::Texture2D& texture)
+void Graphic::Texture2DAsset::CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture)
 {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -269,7 +270,7 @@ void Graphic::Texture2D::CreateImageView(Texture2DConfig& config, Graphic::Textu
 		throw std::runtime_error("failed to create texture image view!");
 	}
 }
-void Graphic::Texture2D::CreateTextureSampler(Texture2DConfig& config, Graphic::Texture2D& texture)
+void Graphic::Texture2DAsset::CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DAsset& texture)
 {
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -292,5 +293,50 @@ void Graphic::Texture2D::CreateTextureSampler(Texture2DConfig& config, Graphic::
 	if (vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture.sampler) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture sampler!");
+	}
+}
+
+std::future<Graphic::Texture2D*> Graphic::Texture2D::LoadAsync(const char* path)
+{
+	auto manager = &LoadThread::instance->assetInstanceManager;
+	Graphic::Texture2DAsset* asset = nullptr;
+	bool alreadyCreated = false;
+
+	{
+		std::unique_lock<std::mutex> lock(manager->mutex);
+		if (manager->ContainsInstance(path))
+		{
+			asset = reinterpret_cast<Graphic::Texture2DAsset * >(manager->GetInstance(path));
+			alreadyCreated = true;
+		}
+		else
+		{
+			asset = new Texture2DAsset();
+			manager->AddInstance(path, asset);
+			manager->GetInstance(path);
+			alreadyCreated = false;
+		}
+	}
+	std::cout << "load" << std::endl;
+	if (alreadyCreated)
+	{
+		return std::async([asset]()
+		{
+			Texture2D* t = new Texture2D();
+			t->assetInstance = asset;
+			return t;
+		});
+	}
+	else
+	{
+		return LoadThread::instance->AddTask([asset](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb) 
+		{
+			Texture2D* t = new Texture2D();
+			Graphic::Texture2DAssetConfig config = Graphic::Texture2DAssetConfig("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			Graphic::Texture2DAsset::LoadTexture2D(tcb, gcb, config, *asset);
+			t->assetInstance = asset;
+			return t;
+		});
+
 	}
 }

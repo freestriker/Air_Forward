@@ -10,16 +10,40 @@
 #include <future>
 #include <vulkan/vulkan_core.h>
 #include <memory>
+#include <map>
 namespace Graphic
 {
 	class CommandBuffer;
 }
+class AssetInstanceManager
+{
+public:
+	class AssetInstanceWarp
+	{
+	public:
+		std::string path;
+		uint32_t refCount;
+		void* assetInstance;
+	};
+	std::mutex mutex;
+private:
+	std::map<std::string, AssetInstanceWarp> _warps;
+
+public:
+	AssetInstanceManager();
+	~AssetInstanceManager();
+	void AddInstance(std::string path, void* assetInstance);
+	void* GetInstance(std::string path);
+	bool ContainsInstance(std::string path);
+	void RecycleInstance(std::string path);
+};
 class LoadThread : public Thread
 {
 	friend class SubLoadThread;
 private:
 	std::queue<std::function<void(Graphic::CommandBuffer* const, Graphic::CommandBuffer* const)>> _tasks;
 	std::vector<SubLoadThread*> _subLoadThreads;
+
 
 	std::mutex _queueMutex;
 	std::condition_variable _queueVariable;
@@ -39,6 +63,7 @@ private:
 
 public:
 	static LoadThread* const instance;
+	AssetInstanceManager assetInstanceManager;
 	void Init()override;
 	template<typename F, typename... Args>
 	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Graphic::CommandBuffer* const, Args...>::type>;

@@ -31,13 +31,11 @@ void LoadThread::OnRun()
 	while (!_stopped)
 	{
 		std::cout << "LoadThread::OnRun()" << std::endl;
-		Graphic::Texture2D texture = Graphic::Texture2D();
-		Graphic::Texture2DConfig config = Graphic::Texture2DConfig("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto result = AddTask([config, &texture](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb) {
-				Graphic::Texture2D::LoadTexture2D(tcb, gcb, config, texture);
-			});
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		result.get();
+		auto r1 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r2 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r3 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r4 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
 	}
 }
 void LoadThread::OnEnd()
@@ -57,6 +55,7 @@ LoadThread::LoadThread()
 	, _queueMutex()
 	, _queueVariable()
 	, _stopped(true)
+	, assetInstanceManager()
 {
 }
 
@@ -69,4 +68,39 @@ LoadThread::~LoadThread()
 		delete _subLoadThreads[i];
 	}
 	_subLoadThreads.clear();
+}
+
+AssetInstanceManager::AssetInstanceManager()
+	: _warps()
+	, mutex()
+{
+}
+
+AssetInstanceManager::~AssetInstanceManager()
+{
+	for (const auto& pair : _warps)
+	{
+		delete pair.second.assetInstance;
+	}
+}
+
+void AssetInstanceManager::AddInstance(std::string path, void* assetInstance)
+{
+	_warps.emplace(path, AssetInstanceWarp{ path , 0, assetInstance });
+}
+
+void* AssetInstanceManager::GetInstance(std::string path)
+{
+	_warps[path].refCount++;
+	return _warps[path].assetInstance;
+}
+
+bool AssetInstanceManager::ContainsInstance(std::string path)
+{
+	return _warps.count(path);
+}
+
+void AssetInstanceManager::RecycleInstance(std::string path)
+{
+	--_warps[path].refCount;
 }
