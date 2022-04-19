@@ -10,6 +10,8 @@
 #include <future>
 #include <vulkan/vulkan_core.h>
 #include <memory>
+#include <map>
+class AssetManager;
 namespace Graphic
 {
 	class CommandBuffer;
@@ -20,6 +22,7 @@ class LoadThread : public Thread
 private:
 	std::queue<std::function<void(Graphic::CommandBuffer* const, Graphic::CommandBuffer* const)>> _tasks;
 	std::vector<SubLoadThread*> _subLoadThreads;
+
 
 	std::mutex _queueMutex;
 	std::condition_variable _queueVariable;
@@ -39,6 +42,7 @@ private:
 
 public:
 	static LoadThread* const instance;
+	std::unique_ptr<AssetManager> assetManager;
 	void Init()override;
 	template<typename F, typename... Args>
 	auto AddTask(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Graphic::CommandBuffer* const, Graphic::CommandBuffer* const, Args...>::type>;

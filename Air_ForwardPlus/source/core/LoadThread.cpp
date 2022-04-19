@@ -4,6 +4,7 @@
 #include <core/SubLoadThread.h>
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/CommandBuffer.h"
+#include "core/AssetUtils.h"
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -31,13 +32,20 @@ void LoadThread::OnRun()
 	while (!_stopped)
 	{
 		std::cout << "LoadThread::OnRun()" << std::endl;
-		Graphic::Texture2D texture = Graphic::Texture2D();
-		Graphic::Texture2DConfig config = Graphic::Texture2DConfig("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto result = AddTask([config, &texture](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb) {
-				Graphic::Texture2D::LoadTexture2D(tcb, gcb, config, texture);
-			});
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		result.get();
+		auto r1 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r2 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r3 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r4 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+
+		auto r5 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		auto r6 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+
+		auto r7 = new Graphic::Texture2D(*r5);
+		auto r8 = new Graphic::Texture2D(*r5);
+
+		delete r5;
+		delete r8;
 	}
 }
 void LoadThread::OnEnd()
@@ -57,6 +65,7 @@ LoadThread::LoadThread()
 	, _queueMutex()
 	, _queueVariable()
 	, _stopped(true)
+	, assetManager(new AssetManager())
 {
 }
 
@@ -70,3 +79,4 @@ LoadThread::~LoadThread()
 	}
 	_subLoadThreads.clear();
 }
+

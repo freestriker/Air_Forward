@@ -80,6 +80,9 @@
     <ClInclude Include="header\Graphic\DescriptorSetUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\core\AssetUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -106,5 +109,6 @@
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
+    <ClCompile Include="source\core\AssetUtils.cpp" />
   </ItemGroup>
 </Project>
