@@ -29,6 +29,7 @@ namespace Graphic
 	public:
 		class MemoryBlock final
 		{
+			friend class MemoryManager;
 		public:
 			uint32_t const memoryTypeIndex;
 			VkDeviceMemory const memory;

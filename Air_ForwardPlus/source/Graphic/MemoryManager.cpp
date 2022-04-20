@@ -93,8 +93,30 @@ Graphic::MemoryManager::MemoryBlock Graphic::MemoryManager::GetMemoryBlock(VkMem
 
 				for (auto& usagePair : chunkPair.second.unallocated)
 				{
-					VkDeviceSize downStart = usagePair.second.start % requirement.alignment;
-					if(usagePair.second.start)
+					if (usagePair.second.size < requirement.size) continue;
+
+					VkDeviceSize newStart = (usagePair.second.start + requirement.alignment - 1) & ~(requirement.alignment - 1);
+					VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
+					VkDeviceSize newEnd = newStart + newSize;
+
+					VkDeviceSize oldStart = usagePair.second.start;
+					VkDeviceSize oldSize = usagePair.second.size;
+					VkDeviceSize oldEnd = oldStart + oldSize;
+
+					if (newEnd <= oldEnd)
+					{
+						if (newStart == oldStart)
+						{
+							chunkPair.second.unallocated.erase(oldStart);
+						}
+						else
+						{
+							usagePair.second.size = newStart - oldStart;
+						}
+						if (oldEnd > newEnd) chunkPair.second.unallocated.insert({ newEnd , MemoryChunkUsage{newEnd, oldEnd - newEnd} });
+						chunkPair.second.allocated.insert({ newStart , MemoryChunkUsage {newStart, newSize} });
+						return MemoryBlock(i, chunkPair.second.memory, newStart, newSize, chunkPair.second.mutex);
+					}
 				}
 			}
 		}
