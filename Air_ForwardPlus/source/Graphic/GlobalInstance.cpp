@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <Graphic/GlobalSetting.h>
 #include "Graphic/Creator/RenderPassCreator.h"
+#include "Graphic/MemoryManager.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -23,6 +24,7 @@ std::vector<VkSemaphore> Graphic::GlobalInstance::windowImageAvailableSemaphores
 std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores({});
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
 std::map<std::string, VkRenderPass> Graphic::GlobalInstance::renderpasss({});
+Graphic::MemoryManager* Graphic::GlobalInstance::memoryManager = nullptr;
 
 
 Graphic::GlobalInstance::GlobalInstance()
@@ -227,6 +229,11 @@ void Graphic::GlobalInstance::CreateWindowSwapchainImages()
         }
     }
 
+}
+
+void Graphic::GlobalInstance::CreateMemoryManager()
+{
+    memoryManager = new Graphic::MemoryManager(131072);
 }
 
 void Graphic::GlobalInstance::CreateVulkanInstance(VulkanInstanceCreator* creator)
@@ -445,6 +452,8 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
             vkGetDeviceQueue(GlobalInstance::device, queueIndex, usedCounts[queueIndex]++, &(gq.queue));
             GlobalInstance::queues.insert(std::pair<std::string, Queue>(name, gq));
         }
+
+        CreateMemoryManager();
 
         CreateWindowSwapchain();
         CreateWindowSwapchainImages();

@@ -36,10 +36,11 @@
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
     <ClInclude Include="header\Graphic\DescriptorSetUtils.h" />
+    <ClInclude Include="header\Graphic\GlobalInstance.h" />
     <ClInclude Include="header\Graphic\GlobalSetting.h" />
     <ClInclude Include="header\Graphic\GraphicThread.h" />
-    <ClInclude Include="header\Graphic\GlobalInstance.h" />
     <ClInclude Include="header\core\SubLoadThread.h" />
+    <ClInclude Include="header\Graphic\MemoryManager.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
     <ClInclude Include="header\utils\Thread.h" />
     <ClInclude Include="header\utils\ThreadPool.h" />
@@ -63,10 +64,11 @@
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
+    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\Graphic\GraphicThread.cpp" />
-    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
+    <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
