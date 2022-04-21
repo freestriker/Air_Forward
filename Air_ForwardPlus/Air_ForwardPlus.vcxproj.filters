@@ -41,9 +41,6 @@
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\GlobalInstance.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header\utils\ChildBrotherTree.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -83,6 +80,12 @@
     <ClInclude Include="header\core\AssetUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\MemoryManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\GlobalInstance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -97,18 +100,19 @@
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
     <ClCompile Include="source\Graphic\GraphicThread.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
-    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
     <ClCompile Include="source\core\AssetUtils.cpp" />
+    <ClCompile Include="source\Graphic\MemoryManager.cpp" />
+    <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
   </ItemGroup>
 </Project>

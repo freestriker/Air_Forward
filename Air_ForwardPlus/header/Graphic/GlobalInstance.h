@@ -32,6 +32,7 @@ namespace Graphic
 		}
 	};
 
+	class MemoryManager;
 	class VulkanDeviceCreator;
 	class VulkanInstanceCreator;
 	class GlfwWindowCreator;
@@ -53,7 +54,7 @@ namespace Graphic
 		static std::vector<VkSemaphore> renderImageFinishedSemaphores;
 		static std::vector<VkFence> frameInFlightFences;
 		static std::map<std::string, VkRenderPass> renderpasss;
-
+		static Graphic::MemoryManager* memoryManager;
 
 	private:
 #ifdef _USE_GRAPHIC_DEBUG
@@ -76,6 +77,7 @@ namespace Graphic
 		static void CreateWindowSurface();
 		static void CreateWindowSwapchain();
 		static void CreateWindowSwapchainImages();
+		static void CreateMemoryManager();
 #ifdef _USE_GRAPHIC_DEBUG
 		static void AddInstanceDebugExtension(VulkanInstanceCreator* creator);
 		static void CreateDebugMessenger(VulkanInstanceCreator* creator);

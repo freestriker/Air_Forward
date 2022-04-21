@@ -78,6 +78,8 @@ void Graphic::GraphicThread::Init()
 	delete pool;
 
 	delete layout;
+
+
 }
 
 void Graphic::GraphicThread::OnStart()
