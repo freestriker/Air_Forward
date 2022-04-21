@@ -233,7 +233,8 @@ void Graphic::GlobalInstance::CreateWindowSwapchainImages()
 
 void Graphic::GlobalInstance::CreateMemoryManager()
 {
-    memoryManager = new Graphic::MemoryManager(131072);
+    VkDeviceSize const k = 1024;
+    memoryManager = new Graphic::MemoryManager(32 * m);
 }
 
 void Graphic::GlobalInstance::CreateVulkanInstance(VulkanInstanceCreator* creator)

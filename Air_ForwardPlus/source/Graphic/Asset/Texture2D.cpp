@@ -18,12 +18,15 @@ void Graphic::Texture2DInstance::LoadTexture2D(Graphic::CommandBuffer* const tra
 	LoadBitmap(config, texture);
 
 	VkBuffer stagingBuffer{};
-	VkDeviceMemory stagingBufferMemory{};
+	Graphic::MemoryManager::MemoryBlock  stagingBufferMemory;
 	CreateBuffer(static_cast<uint64_t>(texture.size.width) * texture.size.height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 	void* tranferData;
-	vkMapMemory(Graphic::GlobalInstance::device, stagingBufferMemory, 0, texture.size.width * texture.size.height * 4, 0, &tranferData);
-	memcpy(tranferData, texture.data.data(), static_cast<size_t>(texture.size.width * texture.size.height * 4));
-	vkUnmapMemory(Graphic::GlobalInstance::device, stagingBufferMemory);
+	{
+		std::unique_lock<std::mutex> lock(*stagingBufferMemory.mutex);
+		vkMapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.memory, stagingBufferMemory.start, stagingBufferMemory.size, 0, &tranferData);
+		memcpy(tranferData, texture.data.data(), static_cast<size_t>(texture.size.width * texture.size.height * 4));
+		vkUnmapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.memory);
+	}
 
 	CreateImage(config, texture);
 	
@@ -36,9 +39,12 @@ void Graphic::Texture2DInstance::LoadTexture2D(Graphic::CommandBuffer* const tra
 
 	CreateBuffer(sizeof(texelInfo), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, texture.buffer, texture.bufferMemory);
 	void* texelInfoData;
-	vkMapMemory(Graphic::GlobalInstance::device, texture.bufferMemory, 0, sizeof(texelInfo), 0, &texelInfoData);
-	memcpy(texelInfoData, &texture.texelInfo, sizeof(texelInfo));
-	vkUnmapMemory(Graphic::GlobalInstance::device, texture.bufferMemory);
+	{		
+		std::unique_lock<std::mutex> lock(*stagingBufferMemory.mutex);
+		vkMapMemory(Graphic::GlobalInstance::device, texture.bufferMemory.memory, texture.bufferMemory.start, texture.bufferMemory.size, 0, &texelInfoData);
+		memcpy(texelInfoData, &texture.texelInfo, sizeof(texelInfo));
+		vkUnmapMemory(Graphic::GlobalInstance::device, texture.bufferMemory.memory);
+	}
 
 	transferCommandBuffer->WaitForFinish();
 	transferCommandBuffer->Reset();
@@ -52,6 +58,9 @@ void Graphic::Texture2DInstance::LoadTexture2D(Graphic::CommandBuffer* const tra
 		graphicCommandBuffer->WaitForFinish();
 		graphicCommandBuffer->Reset();
 	}
+
+	vkDestroyBuffer(Graphic::GlobalInstance::device, stagingBuffer, nullptr);
+	Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stagingBufferMemory);
 
 	CreateImageView(config, texture);
 	CreateTextureSampler(config, texture);
@@ -81,7 +90,7 @@ void Graphic::Texture2DInstance::LoadBitmap(Texture2DAssetConfig& config, Graphi
 		FreeImage_Unload(bitmap);
 	}
 }
-void Graphic::Texture2DInstance::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+void Graphic::Texture2DInstance::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, Graphic::MemoryManager::MemoryBlock& bufferMemory)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -96,16 +105,9 @@ void Graphic::Texture2DInstance::CreateBuffer(VkDeviceSize size, VkBufferUsageFl
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, buffer, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+	bufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, properties);
 
-	if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate buffer memory!");
-	}
-
-	vkBindBufferMemory(Graphic::GlobalInstance::device, buffer, bufferMemory, 0);
+	vkBindBufferMemory(Graphic::GlobalInstance::device, buffer, bufferMemory.memory, bufferMemory.start);
 }
 uint32_t Graphic::Texture2DInstance::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
@@ -145,16 +147,19 @@ void Graphic::Texture2DInstance::CreateImage(Texture2DAssetConfig& config, Graph
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, texture.textureImage, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	texture.imageMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.imageMemory.memory, texture.imageMemory.start);
 
-	if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &texture.textureImageMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate image memory!");
-	}
+	//VkMemoryAllocateInfo allocInfo{};
+	//allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	//allocInfo.allocationSize = memRequirements.size;
+	//allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.textureImageMemory, 0);
+	//if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &texture.textureImageMemory) != VK_SUCCESS) {
+	//	throw std::runtime_error("failed to allocate image memory!");
+	//}
+
+	//vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.textureImageMemory, 0);
 }
 
 void Graphic::Texture2DInstance::TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer)

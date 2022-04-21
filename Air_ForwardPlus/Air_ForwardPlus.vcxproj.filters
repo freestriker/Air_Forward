@@ -105,7 +105,6 @@
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
-    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
@@ -114,5 +113,6 @@
     <ClCompile Include="source\core\AssetUtils.cpp" />
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
   </ItemGroup>
 </Project>

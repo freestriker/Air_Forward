@@ -6,6 +6,7 @@
 #include <glm/vec4.hpp>
 #include <future>
 #include "core/AssetUtils.h"
+#include "Graphic/MemoryManager.h"
 namespace Graphic
 {
 	class CommandBuffer;
@@ -47,8 +48,8 @@ namespace Graphic
 		VkExtent2D size;
 		VkImage textureImage;
 		VkFormat textureFormat;
-		VkDeviceMemory textureImageMemory;
-		VkDeviceMemory bufferMemory;
+		MemoryManager::MemoryBlock imageMemory;
+		MemoryManager::MemoryBlock bufferMemory;
 		VkBuffer buffer;
 		VkImageView textureImageView;
 		VkSampler textureSampler;
@@ -60,7 +61,7 @@ namespace Graphic
 		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Texture2DInstance& texture);
 		static void LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 
-		static void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		static void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, MemoryManager::MemoryBlock& bufferMemory);
 		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		static void TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
