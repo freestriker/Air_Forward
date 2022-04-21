@@ -37,31 +37,51 @@ Graphic::MemoryManager::MemoryChunk::~MemoryChunk()
 	delete mutex;
 }
 
-Graphic::MemoryManager::MemoryBlock::MemoryBlock()
+Graphic::MemoryBlock::MemoryBlock()
 	: MemoryBlock(-1, VK_NULL_HANDLE, -1, -1, nullptr)
 {
 }
-Graphic::MemoryManager::MemoryBlock::MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
-	: memoryTypeIndex(memoryTypeIndex)
-	, memory(memory)
-	, start(start)
-	, size(size)
-	, mutex(mutex)
-	, isExclusive(false)
+Graphic::MemoryBlock::MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
+	: _memoryTypeIndex(memoryTypeIndex)
+	, _vkMemory(memory)
+	, _start(start)
+	, _size(size)
+	, _mutex(mutex)
+	, _isExclusive(false)
 {
 }
-Graphic::MemoryManager::MemoryBlock::MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
-	: memoryTypeIndex(memoryTypeIndex)
-	, memory(memory)
-	, start(start)
-	, size(size)
-	, mutex(mutex)
-	, isExclusive(isExclusive)
+Graphic::MemoryBlock::MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
+	: _memoryTypeIndex(memoryTypeIndex)
+	, _vkMemory(memory)
+	, _start(start)
+	, _size(size)
+	, _mutex(mutex)
+	, _isExclusive(isExclusive)
 {
 }
 
-Graphic::MemoryManager::MemoryBlock::~MemoryBlock()
+Graphic::MemoryBlock::~MemoryBlock()
 {
+}
+
+std::mutex* Graphic::MemoryBlock::Mutex()
+{
+	return _mutex;
+}
+
+VkDeviceSize Graphic::MemoryBlock::Offset()
+{
+	return _start;
+}
+
+VkDeviceSize Graphic::MemoryBlock::Size()
+{
+	return _size;
+}
+
+VkDeviceMemory Graphic::MemoryBlock::Memory()
+{
+	return _vkMemory;
 }
 
 Graphic::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
@@ -95,7 +115,7 @@ Graphic::MemoryManager::~MemoryManager()
 	}
 }
 
-Graphic::MemoryManager::MemoryBlock Graphic::MemoryManager::GetMemoryBlock(VkMemoryRequirements requirement, VkMemoryPropertyFlags properties)
+Graphic::MemoryBlock Graphic::MemoryManager::GetMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	if (newSize > _defaultSize) goto EXCLUSIVE;
@@ -171,25 +191,51 @@ EXCLUSIVE:
 	throw std::runtime_error("failed to allocate memory.");
 }
 
-void Graphic::MemoryManager::RecycleMemBlock(MemoryBlock memoryBlock)
+Graphic::MemoryBlock Graphic::MemoryManager::GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
-	if (memoryBlock.isExclusive)
+	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
+	for (uint32_t i = 0; i < _propertys.size(); i++)
 	{
-		vkFreeMemory(Graphic::GlobalInstance::device, memoryBlock.memory, nullptr);
-		delete memoryBlock.mutex;
+		if ((requirement.memoryTypeBits & (1 << i)) && (_propertys[i] & properties) == properties)
+		{
+			VkMemoryAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize = newSize;
+			allocInfo.memoryTypeIndex = i;
+
+			VkDeviceMemory newMemory = VK_NULL_HANDLE;
+			if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to allocate buffer memory!");
+			}
+			std::mutex* newMutex = new std::mutex();
+
+			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex);
+		}
+	}
+
+	throw std::runtime_error("failed to allocate memory.");
+}
+
+void Graphic::MemoryManager::RecycleMemBlock(MemoryBlock& memoryBlock)
+{
+	if (memoryBlock._isExclusive)
+	{
+		vkFreeMemory(Graphic::GlobalInstance::device, memoryBlock._vkMemory, nullptr);
+		delete memoryBlock._mutex;
 		return;
 	}
 	else
 	{
-		std::unique_lock<std::mutex> chunkSetLock(*_chunkSetMutexs[memoryBlock.memoryTypeIndex]);
-		MemoryChunk* chunk = _chunkSets[memoryBlock.memoryTypeIndex][memoryBlock.memory].get();
+		std::unique_lock<std::mutex> chunkSetLock(*_chunkSetMutexs[memoryBlock._memoryTypeIndex]);
+		MemoryChunk* chunk = _chunkSets[memoryBlock._memoryTypeIndex][memoryBlock._vkMemory].get();
 
 		{
 			std::unique_lock<std::mutex> chunkLock(*chunk->mutex);
-			chunk->allocated.erase(memoryBlock.start);
+			chunk->allocated.erase(memoryBlock._start);
 
-			VkDeviceSize recycleStart = memoryBlock.start;
-			VkDeviceSize recycleSize = memoryBlock.size;
+			VkDeviceSize recycleStart = memoryBlock._start;
+			VkDeviceSize recycleSize = memoryBlock._size;
 			VkDeviceSize recycleEnd = recycleStart + recycleSize;
 
 			bool merged = false;
