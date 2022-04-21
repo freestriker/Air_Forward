@@ -192,22 +192,37 @@ void Graphic::MemoryManager::RecycleMemBlock(MemoryBlock memoryBlock)
 			VkDeviceSize recycleSize = memoryBlock.size;
 			VkDeviceSize recycleEnd = recycleStart + recycleSize;
 
+			bool merged = false;
 			for (auto& usagePair : chunk->unallocated)
 			{
 				MemoryChunkUsage usage = usagePair.second;
-				if (usage.start + usage.size == recycleStart)
+				if (usage.start < recycleStart)
 				{
-					if (chunk->unallocated.count(recycleEnd))
+					if (usage.start + usage.size == recycleStart)
 					{
-						usagePair.second.size = usage.size + recycleSize + chunk->unallocated[recycleEnd].size;
-						chunk->unallocated.erase(recycleEnd);
+						merged = true;
+						if (chunk->unallocated.count(recycleEnd))
+						{
+							usagePair.second.size = usage.size + recycleSize + chunk->unallocated[recycleEnd].size;
+							chunk->unallocated.erase(recycleEnd);
+						}
+						else
+						{
+							usagePair.second.size = usage.size + recycleSize;
+						}
+						return;
 					}
-					else
-					{
-						usagePair.second.size = usage.size + recycleSize;
-					}
-					return;
 				}
+				else
+				{
+					break;
+				}
+
+			}
+			if (!merged)
+			{
+				chunk->unallocated.emplace(recycleStart, MemoryChunkUsage{ recycleStart , recycleSize });
+				return;
 			}
 		}
 		throw std::runtime_error("failed to recycle memory.");
