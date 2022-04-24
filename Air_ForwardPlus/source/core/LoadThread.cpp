@@ -5,6 +5,7 @@
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/CommandBuffer.h"
 #include "core/AssetUtils.h"
+#include "Graphic/Asset/Mesh.h"
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -33,19 +34,39 @@ void LoadThread::OnRun()
 	{
 		std::cout << "LoadThread::OnRun()" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		auto r1 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto r2 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto r3 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto r4 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+		{
+			auto r1 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			auto r2 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			auto r3 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			auto r4 = Graphic::Texture2D::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
 
-		auto r5 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
-		auto r6 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			auto r5 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+			auto r6 = Graphic::Texture2D::Load("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
 
-		auto r7 = new Graphic::Texture2D(*r5);
-		auto r8 = new Graphic::Texture2D(*r5);
+			auto r7 = new Graphic::Texture2D(*r5);
+			auto r8 = new Graphic::Texture2D(*r5);
 
-		delete r5;
-		delete r8;
+			delete r5;
+			delete r8;
+		}
+
+		{
+			auto r1 = Graphic::Mesh::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+			auto r2 = Graphic::Mesh::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+			auto r3 = Graphic::Mesh::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+			auto r4 = Graphic::Mesh::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+
+			auto r5 = Graphic::Mesh::Load("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+			auto r6 = Graphic::Mesh::Load("C:\\Users\\FREEstriker\\Desktop\\Flat_Wall_Normal.ply");
+
+			auto r7 = new Graphic::Mesh(*r5);
+			auto r8 = new Graphic::Mesh(*r5);
+
+			delete r5;
+			delete r8;
+		}
+
+
 	}
 }
 void LoadThread::OnEnd()

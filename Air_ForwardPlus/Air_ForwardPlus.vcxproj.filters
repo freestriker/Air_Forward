@@ -86,6 +86,9 @@
     <ClInclude Include="header\Graphic\GlobalInstance.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Asset\Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -114,5 +117,6 @@
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
   </ItemGroup>
 </Project>

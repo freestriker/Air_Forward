@@ -28,6 +28,7 @@
     <ClInclude Include="header\core\LoadThread.h" />
     <ClInclude Include="header\core\Object.h" />
     <ClInclude Include="header\core\ObjectFactory.h" />
+    <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
@@ -56,6 +57,7 @@
     <ClCompile Include="source\core\LoadThread.cpp" />
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />

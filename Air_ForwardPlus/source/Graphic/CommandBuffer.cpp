@@ -49,7 +49,7 @@ void Graphic::CommandBuffer::BeginRecord(VkCommandBufferUsageFlags flag)
     vkBeginCommandBuffer(_vkCommandBuffer, &beginInfo);
 }
 
-void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier>& memoryBarriers, std::vector<VkBufferMemoryBarrier>& bufferMemoryBarriers, std::vector<VkImageMemoryBarrier>& imageMemoryBarriers)
+void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier> memoryBarriers, std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers, std::vector<VkImageMemoryBarrier> imageMemoryBarriers)
 {
     vkCmdPipelineBarrier(
         _vkCommandBuffer,
@@ -65,6 +65,13 @@ void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMas
 void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions)
 {
     vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
+}
+
+void Graphic::CommandBuffer::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(_vkCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 }
 
 
