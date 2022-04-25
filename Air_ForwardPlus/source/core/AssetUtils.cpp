@@ -1,27 +1,36 @@
 #include "core/AssetUtils.h"
+#include <Graphic/CommandBuffer.h>
 
 IAsset::IAsset(IAssetInstance* assetInstance)
-	: assetInstance(assetInstance)
+	: _assetInstance(assetInstance)
 {
 }
 IAsset::IAsset(const IAsset& source)
 {
-	std::unique_lock<std::mutex> lock(source.assetInstance->assetManager->mutex);
-	assetInstance = source.assetInstance->assetManager->GetInstance(source.assetInstance->path);
+	std::unique_lock<std::mutex> lock(source._assetInstance->assetManager->mutex);
+	_assetInstance = source._assetInstance->assetManager->GetInstance(source._assetInstance->path);
 }
 
 IAsset::~IAsset()
 {
-	std::unique_lock<std::mutex> lock(assetInstance->assetManager->mutex);
-	assetInstance->assetManager->RecycleInstance(assetInstance->path);
+	std::unique_lock<std::mutex> lock(_assetInstance->assetManager->mutex);
+	_assetInstance->assetManager->RecycleInstance(_assetInstance->path);
 
-	assetInstance = nullptr;
+	_assetInstance = nullptr;
 }
 
+void IAssetInstance::_Wait()
+{
+	while (!this->_readyToUse)
+	{
+		std::this_thread::yield();
+	}
+}
 
 IAssetInstance::IAssetInstance(std::string path, AssetManager* assetManager)
 	: path(path)
 	, assetManager(assetManager)
+	, _readyToUse(false)
 {
 }
 

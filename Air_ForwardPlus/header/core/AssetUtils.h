@@ -2,15 +2,24 @@
 #include <string>
 #include <mutex>
 #include <map>
+#include <future>
+namespace Graphic
+{
+	class CommandBuffer;
+}
 class AssetManager;
 class IAssetInstance;
 class IAsset
 {
 protected:
-	IAssetInstance* assetInstance;
+	IAssetInstance* _assetInstance;
 	IAsset(IAssetInstance* assetInstance);
-	virtual ~IAsset();
 	IAsset(const IAsset& source);
+	virtual ~IAsset();
+	template<typename TAsset, typename TAssetInstance>
+	static std::future<TAsset*> _LoadAsync(const char* path);
+	template<typename TAsset, typename TAssetInstance>
+	static TAsset* _Load(const char* path);
 private:
 	IAsset& operator=(const IAsset&) = delete;
 	IAsset(IAsset&&) = delete;
@@ -18,14 +27,16 @@ private:
 };
 class IAssetInstance
 {
+	friend class IAsset;
+private:
+	virtual void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer) = 0;
+	void _Wait();
+	bool _readyToUse;
 public:
 	std::string const path;
 	AssetManager* const assetManager;
 	IAssetInstance(std::string path, AssetManager* assetManager);
 	virtual ~IAssetInstance();
-
-	template<typename T, typename ...Args>
-	static bool GetAssetInstance(AssetManager* manager, std::string path, T*& dstAssetInstance, Args && ...args);
 };
 class AssetManager
 {
@@ -49,25 +60,53 @@ public:
 	void RecycleInstance(std::string path);
 };
 
-template<typename T, typename ...Args>
-inline bool IAssetInstance::GetAssetInstance(AssetManager* manager, std::string path, T*& dstAssetInstance, Args && ...args)
+template<typename TAsset, typename TAssetInstance>
+inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 {
-	std::unique_lock<std::mutex> lock(manager->mutex);
-	T* asset = nullptr;
+	TAssetInstance* assetInstance = nullptr;
 	bool alreadyCreated = false;
-	if (manager->ContainsInstance(path))
+
 	{
-		asset = dynamic_cast<T*>(manager->GetInstance(path));
-		alreadyCreated = true;
+		auto manager = LoadThread::instance->assetManager.get();
+
+		std::unique_lock<std::mutex> lock(manager->mutex);
+
+		if (manager->ContainsInstance(path))
+		{
+			assetInstance = dynamic_cast<TAssetInstance*>(manager->GetInstance(path));
+			alreadyCreated = true;
+		}
+		else
+		{
+			assetInstance = new TAssetInstance(path);
+			manager->AddInstance(path, dynamic_cast<IAssetInstance*>(assetInstance));
+			manager->GetInstance(path);
+			alreadyCreated = false;
+		}
+	}
+
+	if (alreadyCreated)
+	{
+		return std::async([assetInstance]()
+		{
+			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
+			return new TAsset(assetInstance);
+		});
 	}
 	else
 	{
-		asset = new T(path, args...);
-		manager->AddInstance(path, asset);
-		manager->GetInstance(path);
-		alreadyCreated = false;
+		return LoadThread::instance->AddTask([assetInstance](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb)
+		{
+			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
+			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
+			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
+			return new TAsset(assetInstance);
+		});
 	}
+}
 
-	dstAssetInstance = asset;
-	return alreadyCreated;
+template<typename TAsset, typename TAssetInstance>
+inline TAsset* IAsset::_Load(const char* path)
+{
+	return _LoadAsync<TAsset, TAssetInstance>(path).get();
 }

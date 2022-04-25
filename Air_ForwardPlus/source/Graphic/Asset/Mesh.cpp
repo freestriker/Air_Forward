@@ -20,13 +20,6 @@ Graphic::MeshInstance::~MeshInstance()
 {
 }
 
-void Graphic::MeshInstance::_LoadMeshInstance(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)
-{
-    this->_LoadData();
-    this->LoadVertexBuffer(commandBuffer, graphicCommandBuffer);
-    this->LoadIndexBuffer(commandBuffer, graphicCommandBuffer);
-}
-
 void Graphic::MeshInstance::_LoadData()
 {
 	Assimp::Importer importer;
@@ -92,9 +85,10 @@ void Graphic::MeshInstance::_LoadData()
     }
 }
 
-void Graphic::MeshInstance::LoadVertexBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)
+void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)
 {
-    VkDeviceSize bufferSize = sizeof(VertexData) * _vertices.size();
+    VkDeviceSize vertexBufferSize = sizeof(VertexData) * _vertices.size();
+    VkDeviceSize indexBufferSize = sizeof(uint32_t) * _indices.size();
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -104,32 +98,54 @@ void Graphic::MeshInstance::LoadVertexBuffer(Graphic::CommandBuffer* const trans
         throw std::runtime_error("failed to create synchronization objects for a frame!");
     }
 
-    VkBufferCreateInfo stageBufferInfo{};
-    stageBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    stageBufferInfo.size = bufferSize;
-    stageBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    stageBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VkBuffer stagingBuffer;
-    if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageBufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS)
+    VkBufferCreateInfo stageVertexBufferInfo{};
+    stageVertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stageVertexBufferInfo.size = vertexBufferSize;
+    stageVertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stageVertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBuffer stageVertexBuffer;
+    if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageVertexBufferInfo, nullptr, &stageVertexBuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create buffer!");
     }
-    VkMemoryRequirements stageMemRequirements;
-    vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stagingBuffer, &stageMemRequirements);
-    Graphic::MemoryBlock stagingBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);  
-    vkBindBufferMemory(Graphic::GlobalInstance::device, stagingBuffer, stagingBufferMemory.Memory(), stagingBufferMemory.Offset());
-
-    void* transferData;
+    VkMemoryRequirements stageVertexMemRequirements;
+    vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageVertexBuffer, &stageVertexMemRequirements);
+    Graphic::MemoryBlock stageVertexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageVertexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);  
+    vkBindBufferMemory(Graphic::GlobalInstance::device, stageVertexBuffer, stageVertexBufferMemory.Memory(), stageVertexBufferMemory.Offset());
     {
+        void* transferData;
+        std::unique_lock<std::mutex> lock(*stageVertexBufferMemory.Mutex());
+        vkMapMemory(Graphic::GlobalInstance::device, stageVertexBufferMemory.Memory(), stageVertexBufferMemory.Offset(), stageVertexBufferMemory.Size(), 0, &transferData);
+        memcpy(transferData, _vertices.data(), static_cast<size_t>(vertexBufferSize));
+        vkUnmapMemory(Graphic::GlobalInstance::device, stageVertexBufferMemory.Memory());
+    }
+
+    VkBufferCreateInfo stageIndexBufferInfo{};
+    stageIndexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stageIndexBufferInfo.size = indexBufferSize;
+    stageIndexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stageIndexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBuffer stageIndexBuffer;
+    if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageIndexBufferInfo, nullptr, &stageIndexBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create buffer!");
+    }
+    VkMemoryRequirements stageIndexMemRequirements;
+    vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageIndexBuffer, &stageIndexMemRequirements);
+    Graphic::MemoryBlock stagingBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageIndexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkBindBufferMemory(Graphic::GlobalInstance::device, stageIndexBuffer, stagingBufferMemory.Memory(), stagingBufferMemory.Offset());
+    {
+        void* transferData;
         std::unique_lock<std::mutex> lock(*stagingBufferMemory.Mutex());
         vkMapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.Memory(), stagingBufferMemory.Offset(), stagingBufferMemory.Size(), 0, &transferData);
-        memcpy(transferData, _vertices.data(), static_cast<size_t>(bufferSize));
+        memcpy(transferData, _indices.data(), static_cast<size_t>(indexBufferSize));
         vkUnmapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.Memory());
     }
 
+
     VkBufferCreateInfo vertexBufferInfo{};
     vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    vertexBufferInfo.size = bufferSize;
+    vertexBufferInfo.size = vertexBufferSize;
     vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     vertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &vertexBufferInfo, nullptr, &_vertexBuffer) != VK_SUCCESS)
@@ -141,85 +157,9 @@ void Graphic::MeshInstance::LoadVertexBuffer(Graphic::CommandBuffer* const trans
     *_vertexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(vertexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, _vertexBuffer, _vertexBufferMemory->Memory(), _vertexBufferMemory->Offset());
 
-    transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    transferCommandBuffer->CopyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
-    VkBufferMemoryBarrier releaseBarrier = {};
-    releaseBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    releaseBarrier.pNext = nullptr;
-    releaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    releaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    releaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    releaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-    releaseBarrier.offset = 0;
-    releaseBarrier.size = bufferSize;
-    releaseBarrier.buffer = _vertexBuffer;
-    transferCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { releaseBarrier }, {});
-    transferCommandBuffer->EndRecord();
-    transferCommandBuffer->Submit({}, {}, { semaphore });
-
-    graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VkBufferMemoryBarrier requireBarrier = {};
-    requireBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    requireBarrier.pNext = nullptr;
-    requireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    requireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    requireBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    requireBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-    requireBarrier.offset = 0;
-    requireBarrier.size = bufferSize;
-    requireBarrier.buffer = _vertexBuffer;
-    graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { requireBarrier }, {});
-    graphicCommandBuffer->EndRecord();
-    graphicCommandBuffer->Submit({ semaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_INPUT_BIT}, {});
-
-    graphicCommandBuffer->WaitForFinish();
-    transferCommandBuffer->Reset();
-    graphicCommandBuffer->Reset();
-
-    vkDestroySemaphore(Graphic::GlobalInstance::device, semaphore, nullptr);
-    vkDestroyBuffer(Graphic::GlobalInstance::device, stagingBuffer, nullptr);
-    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stagingBufferMemory);
-
-}
-
-void Graphic::MeshInstance::LoadIndexBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)
-{
-    VkDeviceSize bufferSize = sizeof(uint32_t) * _indices.size();
-
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    VkSemaphore semaphore = VK_NULL_HANDLE;
-    if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create synchronization objects for a frame!");
-    }
-
-    VkBufferCreateInfo stageBufferInfo{};
-    stageBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    stageBufferInfo.size = bufferSize;
-    stageBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    stageBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VkBuffer stagingBuffer;
-    if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageBufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create buffer!");
-    }
-    VkMemoryRequirements stageMemRequirements;
-    vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stagingBuffer, &stageMemRequirements);
-    Graphic::MemoryBlock stagingBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkBindBufferMemory(Graphic::GlobalInstance::device, stagingBuffer, stagingBufferMemory.Memory(), stagingBufferMemory.Offset());
-
-    void* transferData;
-    {
-        std::unique_lock<std::mutex> lock(*stagingBufferMemory.Mutex());
-        vkMapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.Memory(), stagingBufferMemory.Offset(), stagingBufferMemory.Size(), 0, &transferData);
-        memcpy(transferData, _indices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(Graphic::GlobalInstance::device, stagingBufferMemory.Memory());
-    }
-
     VkBufferCreateInfo indexBufferInfo{};
     indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    indexBufferInfo.size = bufferSize;
+    indexBufferInfo.size = indexBufferSize;
     indexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
     indexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &indexBufferInfo, nullptr, &_indexBuffer) != VK_SUCCESS)
@@ -231,34 +171,56 @@ void Graphic::MeshInstance::LoadIndexBuffer(Graphic::CommandBuffer* const transf
     *_indexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(indexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, _indexBuffer, _indexBufferMemory->Memory(), _indexBufferMemory->Offset());
 
+
     transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    transferCommandBuffer->CopyBuffer(stagingBuffer, _indexBuffer, bufferSize);
-    VkBufferMemoryBarrier releaseBarrier = {};
-    releaseBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    releaseBarrier.pNext = nullptr;
-    releaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    releaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_INDEX_READ_BIT;
-    releaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    releaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-    releaseBarrier.offset = 0;
-    releaseBarrier.size = bufferSize;
-    releaseBarrier.buffer = _indexBuffer;
-    transferCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { releaseBarrier }, {});
+    transferCommandBuffer->CopyBuffer(stageVertexBuffer, _vertexBuffer, vertexBufferSize);
+    transferCommandBuffer->CopyBuffer(stageIndexBuffer, _indexBuffer, indexBufferSize);
+    VkBufferMemoryBarrier releaseVertexBarrier = {};
+    releaseVertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    releaseVertexBarrier.pNext = nullptr;
+    releaseVertexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+    releaseVertexBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    releaseVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
+    releaseVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+    releaseVertexBarrier.offset = 0;
+    releaseVertexBarrier.size = vertexBufferSize;
+    releaseVertexBarrier.buffer = _vertexBuffer;
+    VkBufferMemoryBarrier releaseIndexBarrier = {};
+    releaseIndexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    releaseIndexBarrier.pNext = nullptr;
+    releaseIndexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+    releaseIndexBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_INDEX_READ_BIT;
+    releaseIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
+    releaseIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+    releaseIndexBarrier.offset = 0;
+    releaseIndexBarrier.size = indexBufferSize;
+    releaseIndexBarrier.buffer = _indexBuffer;
+    transferCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { releaseVertexBarrier, releaseIndexBarrier }, {});
     transferCommandBuffer->EndRecord();
     transferCommandBuffer->Submit({}, {}, { semaphore });
 
     graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VkBufferMemoryBarrier requireBarrier = {};
-    requireBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    requireBarrier.pNext = nullptr;
-    requireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    requireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_INDEX_READ_BIT;
-    releaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    releaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-    requireBarrier.offset = 0;
-    requireBarrier.size = bufferSize;
-    requireBarrier.buffer = _indexBuffer;
-    graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { requireBarrier }, {});
+    VkBufferMemoryBarrier acquireVertexBarrier = {};
+    acquireVertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    acquireVertexBarrier.pNext = nullptr;
+    acquireVertexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+    acquireVertexBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    acquireVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
+    acquireVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+    acquireVertexBarrier.offset = 0;
+    acquireVertexBarrier.size = vertexBufferSize;
+    acquireVertexBarrier.buffer = _vertexBuffer;
+    VkBufferMemoryBarrier acquireIndexBarrier = {};
+    acquireIndexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    acquireIndexBarrier.pNext = nullptr;
+    acquireIndexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+    acquireIndexBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_INDEX_READ_BIT;
+    releaseIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
+    releaseIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+    acquireIndexBarrier.offset = 0;
+    acquireIndexBarrier.size = indexBufferSize;
+    acquireIndexBarrier.buffer = _indexBuffer;
+    graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, {}, { acquireVertexBarrier, acquireIndexBarrier }, {});
     graphicCommandBuffer->EndRecord();
     graphicCommandBuffer->Submit({ semaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_INPUT_BIT}, {});
 
@@ -267,8 +229,17 @@ void Graphic::MeshInstance::LoadIndexBuffer(Graphic::CommandBuffer* const transf
     graphicCommandBuffer->Reset();
 
     vkDestroySemaphore(Graphic::GlobalInstance::device, semaphore, nullptr);
-    vkDestroyBuffer(Graphic::GlobalInstance::device, stagingBuffer, nullptr);
+    vkDestroyBuffer(Graphic::GlobalInstance::device, stageVertexBuffer, nullptr);
+    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stageVertexBufferMemory);
+    vkDestroyBuffer(Graphic::GlobalInstance::device, stageIndexBuffer, nullptr);
     Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stagingBufferMemory);
+
+}
+
+void Graphic::MeshInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
+{
+    this->_LoadData();
+    this->_LoadBuffer(transferCommandBuffer, renderCommandBuffer);
 }
 
 Graphic::Mesh::Mesh(const Graphic::Mesh& source)
@@ -286,30 +257,10 @@ Graphic::Mesh::~Mesh()
 
 std::future<Graphic::Mesh*> Graphic::Mesh::LoadAsync(const char* path)
 {
-	Graphic::MeshInstance* asset = nullptr;
-	bool alreadyCreated = IAssetInstance::GetAssetInstance(LoadThread::instance->assetManager.get(), path, asset);
-
-
-	if (alreadyCreated)
-	{
-		return std::async([asset]()
-			{
-				Mesh* t = new Mesh(asset);
-				return t;
-			});
-	}
-	else
-	{
-		return LoadThread::instance->AddTask([asset](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb)
-			{
-				Mesh* t = new Mesh(asset);
-                asset->_LoadMeshInstance(tcb, gcb);
-                return t;
-			});
-	}
+    return _LoadAsync<Graphic::Mesh, Graphic::MeshInstance>(path);
 }
 
 Graphic::Mesh* Graphic::Mesh::Load(const char* path)
 {
-	return Graphic::Mesh::LoadAsync(path).get();
+	return _Load<Graphic::Mesh, Graphic::MeshInstance>(path);
 }

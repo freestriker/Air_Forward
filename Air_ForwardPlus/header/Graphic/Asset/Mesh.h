@@ -33,26 +33,24 @@ namespace Graphic
 		MeshInstance(std::string path);
 		virtual ~MeshInstance();
 	private:
-		void _LoadMeshInstance(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
+		void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
 		void _LoadData();
-		void LoadVertexBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
-		void LoadIndexBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
+		void _LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
 	};
 
 	class Mesh : IAsset
 	{
+		friend class IAsset;
 	public:
-
 		Mesh(const Mesh& source);
-		Mesh& operator=(const Mesh&) = delete;
-		Mesh(Mesh&&) = delete;
-		Mesh& operator=(Mesh&&) = delete;
-		~Mesh();
-
+		virtual ~Mesh();
 		static std::future<Mesh*>LoadAsync(const char* path);
 		static Mesh* Load(const char* path);
 	private:
 		Mesh(MeshInstance* assetInstance);
+		Mesh& operator=(const Mesh&) = delete;
+		Mesh(Mesh&&) = delete;
+		Mesh& operator=(Mesh&&) = delete;
 	};
 
 }
