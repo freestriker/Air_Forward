@@ -68,8 +68,6 @@ namespace Graphic
 		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
 
 		static void CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
-		static void TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
-		static void TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
 		static void CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 		static void CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 	};

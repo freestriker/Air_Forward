@@ -29,7 +29,7 @@ namespace Graphic
 		void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void EndRecord();
-		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkSemaphore> signalSemaphores);
+		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<VkSemaphore> signalSemaphores);
 		void WaitForFinish();
 	};
 }

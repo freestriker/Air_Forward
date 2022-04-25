@@ -12,6 +12,7 @@ namespace Graphic
 	private:
 		VkCommandPool  _vkCommandPool;
 		std::map<std::string, Graphic::CommandBuffer*> _commandBuffers;
+		std::string _queueName;
 
 	public:
 		CommandPool(VkCommandPoolCreateFlags flag, const char* queueName);

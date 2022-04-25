@@ -5,11 +5,12 @@
 
 Graphic::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, const char* queueName)
     : _commandBuffers()
+    , _queueName(queueName)
 {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = flag;
-    poolInfo.queueFamilyIndex = Graphic::GlobalInstance::queues[std::string(queueName)].queueFamilyIndex;
+    poolInfo.queueFamilyIndex = Graphic::GlobalInstance::queues[std::string(queueName)]->queueFamilyIndex;
 
 
     if (vkCreateCommandPool(Graphic::GlobalInstance::device, &poolInfo, nullptr, &_vkCommandPool) != VK_SUCCESS)
