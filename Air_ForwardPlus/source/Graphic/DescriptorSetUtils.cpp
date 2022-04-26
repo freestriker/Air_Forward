@@ -1,6 +1,7 @@
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
+#include <spirv_cross/spirv_reflect.hpp>
 
 Graphic::DescriptorSetLayout::DescriptorSetLayout(std::vector<DescriptorSetLayoutBinding> bindings)
 	: vkDescriptorSetLayout(_CreateDescriptorSetLayout(bindings))

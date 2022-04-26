@@ -28,6 +28,7 @@
     <ClInclude Include="header\core\LoadThread.h" />
     <ClInclude Include="header\core\Object.h" />
     <ClInclude Include="header\core\ObjectFactory.h" />
+    <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="header\core\SubLoadThread.h" />
     <ClInclude Include="header\Graphic\MemoryManager.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\spirv_reflect.h" />
     <ClInclude Include="header\utils\Thread.h" />
     <ClInclude Include="header\utils\ThreadPool.h" />
   </ItemGroup>
@@ -56,6 +58,7 @@
     <ClCompile Include="source\core\LoadThread.cpp" />
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
@@ -70,6 +73,7 @@
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
   </ItemGroup>

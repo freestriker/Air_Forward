@@ -16,7 +16,7 @@ VkDebugUtilsMessengerEXT Graphic::GlobalInstance::_debugMessenger(VK_NULL_HANDLE
 VkSurfaceKHR Graphic::GlobalInstance::surface(VK_NULL_HANDLE);
 VkPhysicalDevice Graphic::GlobalInstance::physicalDevice(VK_NULL_HANDLE);
 VkDevice Graphic::GlobalInstance::device(VK_NULL_HANDLE);
-std::map<std::string, Graphic::Queue> Graphic::GlobalInstance::queues({});
+std::map<std::string, Graphic::Queue*> Graphic::GlobalInstance::queues = std::map<std::string, Graphic::Queue*>();
 VkSwapchainKHR Graphic::GlobalInstance::windowSwapchain(VK_NULL_HANDLE);
 std::vector<VkImage> Graphic::GlobalInstance::windowSwapchainImages({});
 std::vector<VkImageView> Graphic::GlobalInstance::windowSwapchainImageViews({});
@@ -449,9 +449,9 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         {
             const uint32_t& queueIndex = usedIndexs[i];
             std::string name = std::string(creator->_desiredQueues[i].name);
-            Queue gq = Queue(name, queueIndex, VK_NULL_HANDLE);
-            vkGetDeviceQueue(GlobalInstance::device, queueIndex, usedCounts[queueIndex]++, &(gq.queue));
-            GlobalInstance::queues.insert(std::pair<std::string, Queue>(name, gq));
+            Queue* gq = new Queue(name, queueIndex, VK_NULL_HANDLE);
+            vkGetDeviceQueue(GlobalInstance::device, queueIndex, usedCounts[queueIndex]++, &(gq->queue));
+            GlobalInstance::queues.emplace(name, gq);
         }
 
         CreateMemoryManager();
@@ -583,7 +583,7 @@ void Graphic::GlobalInstance::CreateCommandPool(VkCommandPoolCreateFlags flag, c
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = flag;
-    poolInfo.queueFamilyIndex = queues[std::string(queueName)].queueFamilyIndex;
+    poolInfo.queueFamilyIndex = queues[queueName]->queueFamilyIndex;
 
     if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) 
     {

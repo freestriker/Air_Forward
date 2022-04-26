@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace Graphic
 {
@@ -14,18 +15,20 @@ namespace Graphic
 		std::string name;
 		uint32_t queueFamilyIndex;
 		VkQueue queue;
+		std::mutex submitMutex;
 		Queue(std::string& name, uint32_t queueFamilyIndex, VkQueue queue) :
-			name(name), queueFamilyIndex(queueFamilyIndex), queue(queue)
+			name(name), queueFamilyIndex(queueFamilyIndex), queue(queue), submitMutex()
 		{
 
 		}
-		Queue()
-			: name()
-			, queueFamilyIndex()
-			, queue(VK_NULL_HANDLE)
-		{
+		//Queue()
+		//	: name()
+		//	, queueFamilyIndex()
+		//	, queue(VK_NULL_HANDLE)
+		//	, submitMutex()
+		//{
 
-		}
+		//}
 		~Queue()
 		{
 
@@ -46,7 +49,7 @@ namespace Graphic
 		static VkSurfaceKHR surface;
 		static VkPhysicalDevice physicalDevice;
 		static VkDevice device;
-		static std::map<std::string, Queue> queues;
+		static std::map<std::string, Queue*> queues;
 		static VkSwapchainKHR windowSwapchain;
 		static std::vector<VkImage> windowSwapchainImages;
 		static std::vector<VkImageView> windowSwapchainImageViews;

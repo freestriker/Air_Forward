@@ -58,23 +58,22 @@ namespace Graphic
 		TexelInfo texelInfo;
 		std::vector<unsigned char> data;
 	private:
+		void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+		static void _LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Texture2DInstance& texture);
+		static void _LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 
-		static void LoadTexture2D(Graphic::CommandBuffer* const commandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer, Texture2DAssetConfig config, Texture2DInstance& texture);
-		static void LoadBitmap(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
+		static void _CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, MemoryBlock* bufferMemory);
+		static uint32_t _FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		static void _TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
+		static void _CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
 
-		static void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, MemoryBlock* bufferMemory);
-		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		static void TransitionToTransferLayout(VkImage image, Graphic::CommandBuffer& commandBuffer);
-		static void CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height, Graphic::CommandBuffer& commandBuffer);
-
-		static void CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
-		static void TransitionToShaderLayoutInTransferQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
-		static void TransitionToShaderLayoutInGraphicQueue(VkImage image, Graphic::CommandBuffer& commandBuffer);
-		static void CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
-		static void CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
+		static void _CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
+		static void _CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
+		static void _CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 	};
 	class Texture2D: IAsset
 	{
+		friend class IAsset;
 	public:
 
 		Texture2D(const Texture2D& source);
