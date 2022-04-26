@@ -6,7 +6,7 @@
 #include <iostream>
 #include "Graphic/MemoryManager.h"
 Graphic::Texture2DInstance::Texture2DInstance(std::string path)
-	: IAssetInstance(path, LoadThread::instance->assetManager.get())
+	: IAssetInstance(path)
 	, imageMemory(std::unique_ptr<MemoryBlock>(new MemoryBlock()))
 	, bufferMemory(std::unique_ptr<MemoryBlock>(new MemoryBlock()))
 {

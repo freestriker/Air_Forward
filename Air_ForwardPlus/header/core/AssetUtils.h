@@ -4,6 +4,7 @@
 #include <map>
 #include <future>
 #include <iostream>
+#include "LoadThread.h"
 namespace Graphic
 {
 	class CommandBuffer;
@@ -36,7 +37,7 @@ private:
 public:
 	std::string const path;
 	AssetManager* const assetManager;
-	IAssetInstance(std::string path, AssetManager* assetManager);
+	IAssetInstance(std::string path);
 	virtual ~IAssetInstance();
 };
 class AssetManager

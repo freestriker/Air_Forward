@@ -6,6 +6,7 @@
 #include "Graphic/CommandBuffer.h"
 #include "core/AssetUtils.h"
 #include "Graphic/Asset/Mesh.h"
+#include "Graphic/Asset/Shader.h"
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -64,6 +65,22 @@ void LoadThread::OnRun()
 
 			delete r5;
 			delete r8;
+		}
+
+		{
+			auto r1 = Graphic::Asset::Shader::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+			auto r2 = Graphic::Asset::Shader::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+			auto r3 = Graphic::Asset::Shader::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+			auto r4 = Graphic::Asset::Shader::LoadAsync("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+
+			auto r5 = Graphic::Asset::Shader::Load("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+			auto r6 = Graphic::Asset::Shader::Load("C:\\Users\\FREEstriker\\Desktop\\Test.shader");
+
+			auto r7 = new Graphic::Asset::Shader(*r5);
+			auto r8 = new Graphic::Asset::Shader(*r5);
+
+			//delete r5;
+			//delete r8;
 		}
 
 

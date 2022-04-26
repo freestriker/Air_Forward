@@ -1,5 +1,6 @@
 #include "core/AssetUtils.h"
 #include <Graphic/CommandBuffer.h>
+#include <core/LoadThread.h>
 
 IAsset::IAsset(IAssetInstance* assetInstance)
 	: _assetInstance(assetInstance)
@@ -27,9 +28,9 @@ void IAssetInstance::_Wait()
 	}
 }
 
-IAssetInstance::IAssetInstance(std::string path, AssetManager* assetManager)
+IAssetInstance::IAssetInstance(std::string path)
 	: path(path)
-	, assetManager(assetManager)
+	, assetManager(LoadThread::instance->assetManager.get())
 	, _readyToUse(false)
 {
 }

@@ -8,7 +8,7 @@
 #include <Graphic/MemoryManager.h>
 
 Graphic::MeshInstance::MeshInstance(std::string path)
-	: IAssetInstance(path, LoadThread::instance->assetManager.get())
+	: IAssetInstance(path)
     , _vertexBuffer(VK_NULL_HANDLE)
     , _indexBuffer(VK_NULL_HANDLE)
 	, _indexBufferMemory(std::unique_ptr<Graphic::MemoryBlock>(new Graphic::MemoryBlock))
