@@ -41,8 +41,8 @@ namespace Graphic
 	public:
 		struct TexelInfo
 		{
-			glm::vec4 size;
-			glm::vec4 tilingScale;
+			alignas(16) glm::vec4 size;
+			alignas(16) glm::vec4 tilingScale;
 		};
 		Texture2DInstance(std::string path);
 		virtual ~Texture2DInstance();
