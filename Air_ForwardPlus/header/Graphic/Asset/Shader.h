@@ -5,6 +5,9 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <json.hpp>
+#include <map>
+#include <utils/spirv_reflect.h>
 
 namespace Graphic
 {
@@ -17,21 +20,9 @@ namespace Graphic
 			friend class IAsset;
 		public:
 		private:
-			class ShaderInstance :public IAssetInstance
-			{
-				friend class Shader;
-				friend class IAsset;
-			public:
-				ShaderInstance(std::string path);
-				virtual ~ShaderInstance();
-				int m;
-			private:
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-
-			};
 			struct ShaderData
 			{
-				std::vector<std::string> shaderPaths;	
+				std::vector<std::string> shaderPaths;
 				VkCullModeFlags cullMode;
 				VkBool32 blendEnable;
 				VkBlendFactor srcColorBlendFactor;
@@ -44,6 +35,29 @@ namespace Graphic
 
 				ShaderData();
 				~ShaderData();
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShaderData, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask);
+			};
+			struct PipelineData
+			{
+				std::vector< VkPipelineShaderStageCreateInfo> stageInfos;
+			};
+			class ShaderInstance :public IAssetInstance
+			{
+				friend class Shader;
+				friend class IAsset;
+			public:
+				ShaderInstance(std::string path);
+				virtual ~ShaderInstance();
+				ShaderData data;
+			private:
+				std::map<std::string, std::vector<char>> _spirvs;
+				std::map< VkShaderStageFlagBits, VkShaderModule> _shaderModules;
+				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				void _ParseShaderData();
+				void _LoadSpirvs();
+				bool _CreateShaderModule(SpvReflectShaderModule& reflectModule, std::vector<char>& code);
+
+				void PopulateShaderStage(PipelineData& pipelineData);
 			};
 
 		public:

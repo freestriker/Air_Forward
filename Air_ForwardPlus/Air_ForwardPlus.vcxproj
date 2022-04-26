@@ -179,7 +179,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions);RTTR_DLL</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
     </ClCompile>
@@ -198,7 +198,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
     </ClCompile>
