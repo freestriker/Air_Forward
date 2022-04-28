@@ -1,4 +1,6 @@
 {
+  "renderPass": "OpaqueRenderPass",
+  "subPassNumber": 0,
   "alphaBlendOp": 0,
   "blendEnable": 1,
   "colorBlendOp": 0,

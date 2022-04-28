@@ -20,8 +20,10 @@ namespace Graphic
 			friend class IAsset;
 		public:
 		private:
-			struct ShaderData
+			struct _ShaderData
 			{
+				std::string renderPass;
+				uint32_t subPassNumber;
 				std::vector<std::string> shaderPaths;
 				VkCullModeFlags cullMode;
 				VkBool32 blendEnable;
@@ -33,31 +35,42 @@ namespace Graphic
 				VkBlendOp alphaBlendOp;
 				VkColorComponentFlags colorWriteMask;
 
-				ShaderData();
-				~ShaderData();
-				NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShaderData, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask);
+				_ShaderData();
+				~_ShaderData();
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(_ShaderData, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subPassNumber);
 			};
-			struct PipelineData
+			struct _PipelineData
 			{
 				std::vector< VkPipelineShaderStageCreateInfo> stageInfos;
+
+				VkPipelineVertexInputStateCreateInfo vertexInputInfo;
+				VkVertexInputBindingDescription vertexInputBindingDescription;
+				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
 			};
-			class ShaderInstance :public IAssetInstance
+			struct _ShaderModuleWarp
+			{
+				VkShaderStageFlagBits stage;
+				VkShaderModule shaderModule;
+				SpvReflectShaderModule reflectModule;
+			};
+			class _ShaderInstance :public IAssetInstance
 			{
 				friend class Shader;
 				friend class IAsset;
 			public:
-				ShaderInstance(std::string path);
-				virtual ~ShaderInstance();
-				ShaderData data;
+				_ShaderInstance(std::string path);
+				virtual ~_ShaderInstance();
+				_ShaderData data;
 			private:
 				std::map<std::string, std::vector<char>> _spirvs;
-				std::map< VkShaderStageFlagBits, VkShaderModule> _shaderModules;
+				std::vector<_ShaderModuleWarp> _shaderModuleWarps;
 				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
 				void _ParseShaderData();
 				void _LoadSpirvs();
-				bool _CreateShaderModule(SpvReflectShaderModule& reflectModule, std::vector<char>& code);
+				void _CreateShaderModules();
 
-				void PopulateShaderStage(PipelineData& pipelineData);
+				void _PopulateShaderStages(_PipelineData& pipelineData);
+				void _VertexInputState(_PipelineData& pipelineData);
 			};
 
 		public:
@@ -66,7 +79,7 @@ namespace Graphic
 			static std::future<Shader*>LoadAsync(const char* path);
 			static Shader* Load(const char* path);
 		private:
-			Shader(ShaderInstance* assetInstance);
+			Shader(_ShaderInstance* assetInstance);
 			Shader& operator=(const Shader&) = delete;
 			Shader(Shader&&) = delete;
 			Shader& operator=(Shader&&) = delete;
