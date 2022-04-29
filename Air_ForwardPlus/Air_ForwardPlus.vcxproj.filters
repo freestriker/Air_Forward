@@ -56,9 +56,6 @@
     <ClInclude Include="header\Graphic\GlobalSetting.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\Creator\RenderPassCreator.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header\Graphic\Asset\Texture2D.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -95,6 +92,9 @@
     <ClInclude Include="header\Graphic\Asset\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\RenderPassUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -113,7 +113,6 @@
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
-    <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
@@ -126,5 +125,6 @@
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
+    <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
   </ItemGroup>
 </Project>

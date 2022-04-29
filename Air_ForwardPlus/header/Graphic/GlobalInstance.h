@@ -9,6 +9,10 @@
 
 namespace Graphic
 {
+	namespace Render
+	{
+		class RenderPassManager;
+	}
 	class Queue
 	{
 	public:
@@ -39,7 +43,6 @@ namespace Graphic
 	class VulkanDeviceCreator;
 	class VulkanInstanceCreator;
 	class GlfwWindowCreator;
-	class RenderPassCreator;
 	class GlobalInstance final
 	{
 		friend class VulkanInstanceCreator;
@@ -56,9 +59,8 @@ namespace Graphic
 		static std::vector<VkSemaphore> windowImageAvailableSemaphores;
 		static std::vector<VkSemaphore> renderImageFinishedSemaphores;
 		static std::vector<VkFence> frameInFlightFences;
-		static std::map<std::string, VkRenderPass> renderpasss;
 		static Graphic::MemoryManager* memoryManager;
-
+		static Graphic::Render::RenderPassManager* const renderPassManager;
 	private:
 #ifdef _USE_GRAPHIC_DEBUG
 		static VkDebugUtilsMessengerEXT _debugMessenger;
@@ -69,7 +71,6 @@ namespace Graphic
 		static void CreateVulkanInstance(VulkanInstanceCreator* creator);
 		static void CreateVulkanDevice(VulkanDeviceCreator* creator);
 
-		static void CreateRenderPass(RenderPassCreator* creator);
 		static void CreateCommandPool(VkCommandPoolCreateFlags flag, const char* queueName, VkCommandPool& commandPool);
 		static void CreateCommandBuffer(VkCommandPool& commandPool, VkCommandBufferLevel level, VkCommandBuffer& commandBuffer);
 	private:

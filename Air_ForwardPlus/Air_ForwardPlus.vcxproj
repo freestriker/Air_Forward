@@ -34,7 +34,6 @@
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
-    <ClInclude Include="header\Graphic\Creator\RenderPassCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
     <ClInclude Include="header\Graphic\DescriptorSetUtils.h" />
@@ -43,6 +42,7 @@
     <ClInclude Include="header\Graphic\GraphicThread.h" />
     <ClInclude Include="header\core\SubLoadThread.h" />
     <ClInclude Include="header\Graphic\MemoryManager.h" />
+    <ClInclude Include="header\Graphic\RenderPassUtils.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
     <ClInclude Include="header\utils\spirv_reflect.h" />
     <ClInclude Include="header\utils\Thread.h" />
@@ -65,7 +65,6 @@
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
-    <ClCompile Include="source\Graphic\Creator\RenderPassCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
     <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
@@ -74,6 +73,7 @@
     <ClCompile Include="source\Graphic\GraphicThread.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
+    <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
