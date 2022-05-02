@@ -16,7 +16,7 @@ namespace Graphic
 			std::string const name;
 			VkRenderPass const vkRenderPass;
 			std::map<std::string, uint32_t> const subPassMap;
-			std::map<std::string, std::map<std::string, uint32_t>> const colorAttachmentMap;
+			std::map<std::string, std::map<std::string, uint32_t>> colorAttachmentMap;
 
 		private:
 			RenderPass(std::string& name, VkRenderPass vkRenderPass, std::map<std::string, uint32_t>& subPassMap, std::map<std::string, std::map<std::string, uint32_t>>& colorAttachmentMap);

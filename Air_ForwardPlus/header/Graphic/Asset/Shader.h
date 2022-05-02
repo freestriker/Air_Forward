@@ -20,10 +20,10 @@ namespace Graphic
 			friend class IAsset;
 		public:
 		private:
-			struct _ShaderData
+			struct _ShaderSetting
 			{
 				std::string renderPass;
-				uint32_t subPassNumber;
+				std::string subpass;
 				std::vector<std::string> shaderPaths;
 				VkCullModeFlags cullMode;
 				VkBool32 blendEnable;
@@ -34,10 +34,17 @@ namespace Graphic
 				VkBlendFactor dstAlphaBlendFactor;
 				VkBlendOp alphaBlendOp;
 				VkColorComponentFlags colorWriteMask;
+				VkBool32 depthTestEnable;
+				VkBool32 depthWriteEnable;
+				VkCompareOp depthCompareOp;
 
-				_ShaderData();
-				~_ShaderData();
-				NLOHMANN_DEFINE_TYPE_INTRUSIVE(_ShaderData, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subPassNumber);
+				_ShaderSetting();
+				~_ShaderSetting();
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(_ShaderSetting, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subpass
+					, depthTestEnable
+					, depthWriteEnable
+					, depthCompareOp
+				);
 			};
 			struct _PipelineData
 			{
@@ -46,6 +53,17 @@ namespace Graphic
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 				VkVertexInputBindingDescription vertexInputBindingDescription;
 				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+
+				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+				VkViewport viewport{};
+				VkRect2D scissor{};
+				VkPipelineViewportStateCreateInfo viewportState{};
+				VkPipelineRasterizationStateCreateInfo rasterizer{};
+				VkPipelineMultisampleStateCreateInfo multisampling{};
+				VkPipelineDepthStencilStateCreateInfo depthStencil{};
+				VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+				VkPipelineColorBlendStateCreateInfo colorBlending{};
+
 			};
 			struct _ShaderModuleWarp
 			{
@@ -60,7 +78,7 @@ namespace Graphic
 			public:
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
-				_ShaderData data;
+				_ShaderSetting shaderSettings;
 			private:
 				std::map<std::string, std::vector<char>> _spirvs;
 				std::vector<_ShaderModuleWarp> _shaderModuleWarps;
@@ -70,7 +88,10 @@ namespace Graphic
 				void _CreateShaderModules();
 
 				void _PopulateShaderStages(_PipelineData& pipelineData);
-				void _VertexInputState(_PipelineData& pipelineData);
+				void _PopulateVertexInputState(_PipelineData& pipelineData);
+				void _CheckAttachmentOutputState(_PipelineData& pipelineData);
+				void _PopulatePipelineSettings(_PipelineData& pipelineData);
+				void _CreateDescriptorLayouts(_PipelineData& pipelineData);
 			};
 
 		public:

@@ -2,8 +2,8 @@
 
 layout(location = 0) in vec4 inColor;
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out vec4 colorAttachment;
 
 void main() {
-    outColor = inColor;
+    colorAttachment = inColor;
 }
