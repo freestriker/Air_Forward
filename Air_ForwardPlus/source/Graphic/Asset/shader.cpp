@@ -294,6 +294,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 
 void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_PipelineData& pipelineData)
 {
+	std::map<uint32_t, SlotLayout> slotLayoutMap = std::map<uint32_t, SlotLayout>();
 	for (const auto& shaderModuleWarp : _shaderModuleWarps)
 	{
 		uint32_t count = 0;
@@ -306,12 +307,17 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 
 		for (size_t i_set = 0; i_set < sets.size(); ++i_set) 
 		{
+			
+
 			const SpvReflectDescriptorSet& refl_set = *(sets[i_set]);
+			SlotLayout slotLayout = SlotLayout();
+			slotLayout.descriptorTypes.resize(refl_set.binding_count);
+			std::vector< VkDescriptorSetLayoutBinding> bindings = std::vector< VkDescriptorSetLayoutBinding>(refl_set.binding_count);
 
 			for (uint32_t i_binding = 0; i_binding < refl_set.binding_count; ++i_binding) 
 			{
 				const SpvReflectDescriptorBinding& refl_binding = *(refl_set.bindings[i_binding]);
-				VkDescriptorSetLayoutBinding layout_binding = {};
+				VkDescriptorSetLayoutBinding& layout_binding = bindings[i_binding];
 				layout_binding.binding = refl_binding.binding;
 				layout_binding.descriptorType = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
 				layout_binding.descriptorCount = 1;
@@ -320,6 +326,32 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 					layout_binding.descriptorCount *= refl_binding.array.dims[i_dim];
 				}
 				layout_binding.stageFlags = static_cast<VkShaderStageFlagBits>(shaderModuleWarp.reflectModule.shader_stage);
+
+				slotLayout.descriptorTypes[i_binding] = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
+			}
+
+			if (refl_set.binding_count > 0)
+			{
+				const SpvReflectDescriptorBinding& refl_binding = *(refl_set.bindings[0]);
+
+				VkDescriptorSetLayoutCreateInfo layoutInfo{};
+				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+				layoutInfo.pBindings = bindings.data();
+				if (vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout) != VK_SUCCESS) 
+				{
+					throw std::runtime_error("failed to create descriptor set layout!");
+				}
+
+				slotLayout.slotName = refl_binding.name;
+				if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+				{
+					slotLayout.slotType = SlotLayoutType::UNIFORM_BUFFER;
+				}
+				else if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && refl_binding.image.dim == SpvDim::SpvDim2D)
+				{
+					slotLayout.slotType = SlotLayoutType::TEXTURE2D;
+				}
 			}
 		}
 

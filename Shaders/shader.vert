@@ -9,11 +9,12 @@ layout(set = 1, binding = 0) uniform ObjectMatrix{
     mat4 model;
 } objectMatrix;
 
-layout(set = 2, binding = 0) uniform sampler2D testTexture2D;
 layout(set = 2, binding = 1) uniform Texture2DInfo{
     vec4 size;
 	vec4 tilingScale;
 } testTexture2D_Texture2DInfo;
+
+layout(set = 2, binding = 0) uniform sampler2D testTexture2D;
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec2 vertexTexCoords;

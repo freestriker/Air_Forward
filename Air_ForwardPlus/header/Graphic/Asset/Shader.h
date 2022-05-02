@@ -19,6 +19,19 @@ namespace Graphic
 		{
 			friend class IAsset;
 		public:
+			enum class SlotLayoutType
+			{
+				UNIFORM_BUFFER,
+				TEXTURE2D
+			};
+			struct SlotLayout
+			{
+				std::string slotName;
+				VkDescriptorSetLayout descriptorSetLayout;
+				SlotLayoutType slotType;
+				std::vector<VkDescriptorType> descriptorTypes;
+				uint32_t setIndex;
+			};
 		private:
 			struct _ShaderSetting
 			{
@@ -79,6 +92,7 @@ namespace Graphic
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
 				_ShaderSetting shaderSettings;
+				std::map<std::string, SlotLayout> slotLayouts;
 			private:
 				std::map<std::string, std::vector<char>> _spirvs;
 				std::vector<_ShaderModuleWarp> _shaderModuleWarps;
