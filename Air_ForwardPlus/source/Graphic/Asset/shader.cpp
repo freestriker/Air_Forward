@@ -9,6 +9,8 @@
 
 Graphic::Asset::Shader::_ShaderInstance::_ShaderInstance(std::string path)
 	: IAssetInstance(path)
+	, vkPipelineLayout(VK_NULL_HANDLE)
+	, vkPipeline(VK_NULL_HANDLE)
 {
 }
 
@@ -18,20 +20,25 @@ Graphic::Asset::Shader::_ShaderInstance::~_ShaderInstance()
 
 void Graphic::Asset::Shader::_ShaderInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
 {
-	_ParseShaderData();
-	_LoadSpirvs();
-
-	_CreateShaderModules();
-
 	_PipelineData pipelineData = _PipelineData();
+
+	_ParseShaderData(pipelineData);
+	_LoadSpirvs(pipelineData);
+
+	_CreateShaderModules(pipelineData);
+
 	_PopulateShaderStages(pipelineData);
 	_PopulateVertexInputState(pipelineData);
 	_CheckAttachmentOutputState(pipelineData);
 	_PopulatePipelineSettings(pipelineData);
 	_CreateDescriptorLayouts(pipelineData);
+	_PopulateDescriptorLayouts(pipelineData);
+	_CreatePipeline(pipelineData);
+
+	_DestroyData(pipelineData);
 }
 
-void Graphic::Asset::Shader::_ShaderInstance::_ParseShaderData()
+void Graphic::Asset::Shader::_ShaderInstance::_ParseShaderData(_PipelineData& pipelineData)
 {
 	std::ifstream input_file(path);
 	if (!input_file.is_open()) {
@@ -39,10 +46,10 @@ void Graphic::Asset::Shader::_ShaderInstance::_ParseShaderData()
 	}
 	std::string text = std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 	nlohmann::json j = nlohmann::json::parse(text);
-	this->shaderSettings = j.get< Graphic::Asset::Shader::_ShaderSetting>();
+	this->shaderSettings = j.get< Graphic::Asset::Shader::ShaderSetting>();
 }
 
-void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs()
+void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs(_PipelineData& pipelineData)
 {
 	for (const auto& spirvPath : shaderSettings.shaderPaths)
 	{
@@ -56,15 +63,15 @@ void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs()
 		file.read(buffer.data(), fileSize);
 		file.close();
 
-		_spirvs.emplace(spirvPath, std::move(buffer));
+		pipelineData.spirvs.emplace(spirvPath, std::move(buffer));
 	}
 }
 
-void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules()
+void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules(_PipelineData& pipelineData)
 {
 	std::set<VkShaderStageFlagBits> stageSet = std::set<VkShaderStageFlagBits>();
 	
-	for (auto& spirvPair : _spirvs)
+	for (auto& spirvPair : pipelineData.spirvs)
 	{
 		SpvReflectShaderModule reflectModule = {};
 		SpvReflectResult result = spvReflectCreateShaderModule(spirvPair.second.size(), reinterpret_cast<const uint32_t*>(spirvPair.second.data()), &reflectModule);
@@ -87,16 +94,16 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules()
 				throw std::runtime_error("failed to create shader module!");
 			}
 
-			_shaderModuleWarps.emplace_back(_ShaderModuleWarp{ static_cast<VkShaderStageFlagBits>(reflectModule.shader_stage), shaderModule , reflectModule });
+			pipelineData.shaderModuleWarps.emplace_back(_ShaderModuleWarp{ static_cast<VkShaderStageFlagBits>(reflectModule.shader_stage), shaderModule , reflectModule });
 		}
 	}
 }
 
 void Graphic::Asset::Shader::_ShaderInstance::_PopulateShaderStages(_PipelineData& pipelineData)
 {
-	pipelineData.stageInfos.resize(_shaderModuleWarps.size());
+	pipelineData.stageInfos.resize(pipelineData.shaderModuleWarps.size());
 	size_t i = 0;
-	for (auto& warp : _shaderModuleWarps)
+	for (auto& warp : pipelineData.shaderModuleWarps)
 	{
 		VkPipelineShaderStageCreateInfo shaderStageInfo{};
 		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -116,11 +123,11 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulateVertexInputState(_Pipelin
 
 	_ShaderModuleWarp vertexShaderWarp;
 	bool containsVertexShader = false;
-	for (size_t i = 0; i < _shaderModuleWarps.size(); i++)
+	for (size_t i = 0; i < pipelineData.shaderModuleWarps.size(); i++)
 	{
-		if (_shaderModuleWarps[i].stage == VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
+		if (pipelineData.shaderModuleWarps[i].stage == VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
 		{
-			vertexShaderWarp = _shaderModuleWarps[i];
+			vertexShaderWarp = pipelineData.shaderModuleWarps[i];
 			containsVertexShader = true;
 			break;
 		}
@@ -199,11 +206,11 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 {
 	_ShaderModuleWarp fragmentShaderWarp;
 	bool containsFragmentShader = false;
-	for (size_t i = 0; i < _shaderModuleWarps.size(); i++)
+	for (size_t i = 0; i < pipelineData.shaderModuleWarps.size(); i++)
 	{
-		if (_shaderModuleWarps[i].stage == VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
+		if (pipelineData.shaderModuleWarps[i].stage == VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
 		{
-			fragmentShaderWarp = _shaderModuleWarps[i];
+			fragmentShaderWarp = pipelineData.shaderModuleWarps[i];
 			containsFragmentShader = true;
 			break;
 		}
@@ -295,68 +302,146 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_PipelineData& pipelineData)
 {
 	std::map<uint32_t, SlotLayout> slotLayoutMap = std::map<uint32_t, SlotLayout>();
-	for (const auto& shaderModuleWarp : _shaderModuleWarps)
+	std::map<uint32_t, std::map<uint32_t, VkDescriptorSetLayoutBinding>> setBindings = std::map<uint32_t, std::map<uint32_t, VkDescriptorSetLayoutBinding>>();
+	for (const auto& shaderModuleWarp : pipelineData.shaderModuleWarps)
 	{
 		uint32_t count = 0;
 		SpvReflectResult result = spvReflectEnumerateDescriptorSets(&shaderModuleWarp.reflectModule, &count, NULL);
 		assert(result == SPV_REFLECT_RESULT_SUCCESS);
 
-		std::vector<SpvReflectDescriptorSet*> sets(count);
-		result = spvReflectEnumerateDescriptorSets(&shaderModuleWarp.reflectModule, &count, sets.data());
+		std::vector<SpvReflectDescriptorSet*> reflectSets(count);
+		result = spvReflectEnumerateDescriptorSets(&shaderModuleWarp.reflectModule, &count, reflectSets.data());
 		assert(result == SPV_REFLECT_RESULT_SUCCESS);
 
-		for (size_t i_set = 0; i_set < sets.size(); ++i_set) 
+		for (size_t i_set = 0; i_set < reflectSets.size(); ++i_set) 
 		{
+			const SpvReflectDescriptorSet& refl_set = *(reflectSets[i_set]);
+
+			if (!setBindings.count(refl_set.set))
+			{
+				setBindings.emplace(refl_set.set, std::map<uint32_t, VkDescriptorSetLayoutBinding>());
+			}
+			std::map<uint32_t, VkDescriptorSetLayoutBinding>& bindings = setBindings[refl_set.set];
 			
-
-			const SpvReflectDescriptorSet& refl_set = *(sets[i_set]);
-			SlotLayout slotLayout = SlotLayout();
-			slotLayout.descriptorTypes.resize(refl_set.binding_count);
-			std::vector< VkDescriptorSetLayoutBinding> bindings = std::vector< VkDescriptorSetLayoutBinding>(refl_set.binding_count);
-
 			for (uint32_t i_binding = 0; i_binding < refl_set.binding_count; ++i_binding) 
 			{
 				const SpvReflectDescriptorBinding& refl_binding = *(refl_set.bindings[i_binding]);
-				VkDescriptorSetLayoutBinding& layout_binding = bindings[i_binding];
-				layout_binding.binding = refl_binding.binding;
-				layout_binding.descriptorType = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
-				layout_binding.descriptorCount = 1;
-				for (uint32_t i_dim = 0; i_dim < refl_binding.array.dims_count; ++i_dim) 
-				{
-					layout_binding.descriptorCount *= refl_binding.array.dims[i_dim];
-				}
-				layout_binding.stageFlags = static_cast<VkShaderStageFlagBits>(shaderModuleWarp.reflectModule.shader_stage);
 
-				slotLayout.descriptorTypes[i_binding] = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
+				if (bindings.count(refl_binding.binding))
+				{
+					bindings[refl_binding.binding].stageFlags |= static_cast<VkShaderStageFlagBits>(shaderModuleWarp.reflectModule.shader_stage);
+				}
+				else
+				{
+					VkDescriptorSetLayoutBinding layout_binding = {};
+					layout_binding.binding = refl_binding.binding;
+					layout_binding.descriptorType = static_cast<VkDescriptorType>(refl_binding.descriptor_type);
+					layout_binding.descriptorCount = 1;
+					for (uint32_t i_dim = 0; i_dim < refl_binding.array.dims_count; ++i_dim)
+					{
+						layout_binding.descriptorCount *= refl_binding.array.dims[i_dim];
+					}
+					layout_binding.stageFlags = static_cast<VkShaderStageFlagBits>(shaderModuleWarp.reflectModule.shader_stage);
+
+					bindings[refl_binding.binding] = layout_binding;
+
+					if (refl_binding.binding == 0)
+					{
+						SlotLayout newSlotLayout = SlotLayout();
+						newSlotLayout.slotName = refl_binding.name;
+						newSlotLayout.set = refl_set.set;
+						if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+						{
+							newSlotLayout.slotType = SlotLayoutType::UNIFORM_BUFFER;
+						}
+						else if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && refl_binding.image.dim == SpvDim::SpvDim2D)
+						{
+							newSlotLayout.slotType = SlotLayoutType::TEXTURE2D;
+						}
+
+						slotLayoutMap.emplace(refl_set.set, newSlotLayout);
+					}
+				}
 			}
 
-			if (refl_set.binding_count > 0)
-			{
-				const SpvReflectDescriptorBinding& refl_binding = *(refl_set.bindings[0]);
-
-				VkDescriptorSetLayoutCreateInfo layoutInfo{};
-				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-				layoutInfo.pBindings = bindings.data();
-				if (vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout) != VK_SUCCESS) 
-				{
-					throw std::runtime_error("failed to create descriptor set layout!");
-				}
-
-				slotLayout.slotName = refl_binding.name;
-				if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-				{
-					slotLayout.slotType = SlotLayoutType::UNIFORM_BUFFER;
-				}
-				else if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && refl_binding.image.dim == SpvDim::SpvDim2D)
-				{
-					slotLayout.slotType = SlotLayoutType::TEXTURE2D;
-				}
-			}
 		}
 
 	}
+	
+	for (auto& setBindingPair : setBindings)
+	{
+		std::vector< VkDescriptorSetLayoutBinding> bindings = std::vector< VkDescriptorSetLayoutBinding>(setBindingPair.second.size());
+		SlotLayout& slotLayout = slotLayoutMap[setBindingPair.first];
+		slotLayout.descriptorTypes.resize(setBindingPair.second.size());
 
+		for (size_t i = 0; i < bindings.size(); i++)
+		{
+			bindings[i] = setBindingPair.second[static_cast<uint32_t>(i)];
+			slotLayout.descriptorTypes[i] = setBindingPair.second[static_cast<uint32_t>(i)].descriptorType;
+		}
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+		layoutInfo.pBindings = bindings.data();
+
+		if (vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
+
+		slotLayouts.emplace(slotLayout.slotName, slotLayout);
+	}
+}
+
+void Graphic::Asset::Shader::_ShaderInstance::_PopulateDescriptorLayouts(_PipelineData& pipelineData)
+{
+	pipelineData.descriptorSetLayouts.resize(slotLayouts.size());
+	for (auto& slotLayoutPair : slotLayouts)
+	{
+		pipelineData.descriptorSetLayouts[slotLayoutPair.second.set] = slotLayoutPair.second.descriptorSetLayout;
+	}
+}
+
+void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pipelineData)
+{
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(pipelineData.descriptorSetLayouts.size());
+	pipelineLayoutInfo.pSetLayouts = pipelineData.descriptorSetLayouts.data();
+
+	if (vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = static_cast<uint32_t>(pipelineData.stageInfos.size());
+	pipelineInfo.pStages = pipelineData.stageInfos.data();
+	pipelineInfo.pVertexInputState = &pipelineData.vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &pipelineData.inputAssembly;
+	pipelineInfo.pViewportState = &pipelineData.viewportState;
+	pipelineInfo.pRasterizationState = &pipelineData.rasterizer;
+	pipelineInfo.pMultisampleState = &pipelineData.multisampling;
+	pipelineInfo.pDepthStencilState = &pipelineData.depthStencil;
+	pipelineInfo.pColorBlendState = &pipelineData.colorBlending;
+	pipelineInfo.layout = vkPipelineLayout;
+	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(shaderSettings.renderPass.c_str())->vkRenderPass;
+	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(shaderSettings.renderPass.c_str())->subPassMap.find(shaderSettings.subpass)->second;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	if (vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+}
+
+void Graphic::Asset::Shader::_ShaderInstance::_DestroyData(_PipelineData& pipelineData)
+{
+	for (auto& warp : pipelineData.shaderModuleWarps)
+	{
+		vkDestroyShaderModule(Graphic::GlobalInstance::device, warp.shaderModule, nullptr);
+		spvReflectDestroyShaderModule(&warp.reflectModule);
+	}
 }
 
 Graphic::Asset::Shader::Shader(const Shader& source)
@@ -382,7 +467,7 @@ Graphic::Asset::Shader* Graphic::Asset::Shader::Load(const char* path)
 	return _Load<Graphic::Asset::Shader, Graphic::Asset::Shader::_ShaderInstance>(path);
 }
 
-Graphic::Asset::Shader::_ShaderSetting::_ShaderSetting()
+Graphic::Asset::Shader::ShaderSetting::ShaderSetting()
 	: cullMode(VK_CULL_MODE_NONE)
 	, blendEnable(VK_TRUE)
 	, srcColorBlendFactor(VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA)
@@ -397,6 +482,6 @@ Graphic::Asset::Shader::_ShaderSetting::_ShaderSetting()
 {
 }
 
-Graphic::Asset::Shader::_ShaderSetting::~_ShaderSetting()
+Graphic::Asset::Shader::ShaderSetting::~ShaderSetting()
 {
 }

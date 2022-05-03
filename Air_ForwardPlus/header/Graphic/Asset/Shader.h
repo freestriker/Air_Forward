@@ -30,10 +30,9 @@ namespace Graphic
 				VkDescriptorSetLayout descriptorSetLayout;
 				SlotLayoutType slotType;
 				std::vector<VkDescriptorType> descriptorTypes;
-				uint32_t setIndex;
+				uint32_t set;
 			};
-		private:
-			struct _ShaderSetting
+			struct ShaderSetting
 			{
 				std::string renderPass;
 				std::string subpass;
@@ -51,16 +50,25 @@ namespace Graphic
 				VkBool32 depthWriteEnable;
 				VkCompareOp depthCompareOp;
 
-				_ShaderSetting();
-				~_ShaderSetting();
-				NLOHMANN_DEFINE_TYPE_INTRUSIVE(_ShaderSetting, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subpass
+				ShaderSetting();
+				~ShaderSetting();
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShaderSetting, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subpass
 					, depthTestEnable
 					, depthWriteEnable
 					, depthCompareOp
 				);
 			};
+		private:
+			struct _ShaderModuleWarp
+			{
+				VkShaderStageFlagBits stage;
+				VkShaderModule shaderModule;
+				SpvReflectShaderModule reflectModule;
+			};
 			struct _PipelineData
 			{
+				std::map<std::string, std::vector<char>> spirvs;
+				std::vector<_ShaderModuleWarp> shaderModuleWarps;
 				std::vector< VkPipelineShaderStageCreateInfo> stageInfos;
 
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo;
@@ -77,12 +85,8 @@ namespace Graphic
 				VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 				VkPipelineColorBlendStateCreateInfo colorBlending{};
 
-			};
-			struct _ShaderModuleWarp
-			{
-				VkShaderStageFlagBits stage;
-				VkShaderModule shaderModule;
-				SpvReflectShaderModule reflectModule;
+				std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+
 			};
 			class _ShaderInstance :public IAssetInstance
 			{
@@ -91,21 +95,25 @@ namespace Graphic
 			public:
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
-				_ShaderSetting shaderSettings;
-				std::map<std::string, SlotLayout> slotLayouts;
-			private:
-				std::map<std::string, std::vector<char>> _spirvs;
-				std::vector<_ShaderModuleWarp> _shaderModuleWarps;
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-				void _ParseShaderData();
-				void _LoadSpirvs();
-				void _CreateShaderModules();
 
+				ShaderSetting shaderSettings;
+				std::map<std::string, SlotLayout> slotLayouts;
+				VkPipeline vkPipeline;
+				VkPipelineLayout vkPipelineLayout;
+			private:
+				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				
+				void _ParseShaderData(_PipelineData& pipelineData);
+				void _LoadSpirvs(_PipelineData& pipelineData);
+				void _CreateShaderModules(_PipelineData& pipelineData);
 				void _PopulateShaderStages(_PipelineData& pipelineData);
 				void _PopulateVertexInputState(_PipelineData& pipelineData);
 				void _CheckAttachmentOutputState(_PipelineData& pipelineData);
 				void _PopulatePipelineSettings(_PipelineData& pipelineData);
 				void _CreateDescriptorLayouts(_PipelineData& pipelineData);
+				void _PopulateDescriptorLayouts(_PipelineData& pipelineData);
+				void _CreatePipeline(_PipelineData& pipelineData);
+				void _DestroyData(_PipelineData& pipelineData);
 			};
 
 		public:
