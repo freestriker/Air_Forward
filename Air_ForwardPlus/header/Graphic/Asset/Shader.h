@@ -19,11 +19,23 @@ namespace Graphic
 		{
 			friend class IAsset;
 		public:
-		private:
-			struct _ShaderData
+			enum class SlotLayoutType
+			{
+				UNIFORM_BUFFER,
+				TEXTURE2D
+			};
+			struct SlotLayout
+			{
+				std::string slotName;
+				VkDescriptorSetLayout descriptorSetLayout;
+				SlotLayoutType slotType;
+				std::vector<VkDescriptorType> descriptorTypes;
+				uint32_t set;
+			};
+			struct ShaderSetting
 			{
 				std::string renderPass;
-				uint32_t subPassNumber;
+				std::string subpass;
 				std::vector<std::string> shaderPaths;
 				VkCullModeFlags cullMode;
 				VkBool32 blendEnable;
@@ -34,24 +46,47 @@ namespace Graphic
 				VkBlendFactor dstAlphaBlendFactor;
 				VkBlendOp alphaBlendOp;
 				VkColorComponentFlags colorWriteMask;
+				VkBool32 depthTestEnable;
+				VkBool32 depthWriteEnable;
+				VkCompareOp depthCompareOp;
 
-				_ShaderData();
-				~_ShaderData();
-				NLOHMANN_DEFINE_TYPE_INTRUSIVE(_ShaderData, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subPassNumber);
+				ShaderSetting();
+				~ShaderSetting();
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(ShaderSetting, shaderPaths, cullMode, blendEnable, srcColorBlendFactor, dstColorBlendFactor, colorBlendOp, srcAlphaBlendFactor, dstAlphaBlendFactor, alphaBlendOp, colorWriteMask, renderPass, subpass
+					, depthTestEnable
+					, depthWriteEnable
+					, depthCompareOp
+				);
 			};
-			struct _PipelineData
-			{
-				std::vector< VkPipelineShaderStageCreateInfo> stageInfos;
-
-				VkPipelineVertexInputStateCreateInfo vertexInputInfo;
-				VkVertexInputBindingDescription vertexInputBindingDescription;
-				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
-			};
+		private:
 			struct _ShaderModuleWarp
 			{
 				VkShaderStageFlagBits stage;
 				VkShaderModule shaderModule;
 				SpvReflectShaderModule reflectModule;
+			};
+			struct _PipelineData
+			{
+				std::map<std::string, std::vector<char>> spirvs;
+				std::vector<_ShaderModuleWarp> shaderModuleWarps;
+				std::vector< VkPipelineShaderStageCreateInfo> stageInfos;
+
+				VkPipelineVertexInputStateCreateInfo vertexInputInfo;
+				VkVertexInputBindingDescription vertexInputBindingDescription;
+				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+
+				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+				VkViewport viewport{};
+				VkRect2D scissor{};
+				VkPipelineViewportStateCreateInfo viewportState{};
+				VkPipelineRasterizationStateCreateInfo rasterizer{};
+				VkPipelineMultisampleStateCreateInfo multisampling{};
+				VkPipelineDepthStencilStateCreateInfo depthStencil{};
+				VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+				VkPipelineColorBlendStateCreateInfo colorBlending{};
+
+				std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+
 			};
 			class _ShaderInstance :public IAssetInstance
 			{
@@ -60,17 +95,25 @@ namespace Graphic
 			public:
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
-				_ShaderData data;
-			private:
-				std::map<std::string, std::vector<char>> _spirvs;
-				std::vector<_ShaderModuleWarp> _shaderModuleWarps;
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-				void _ParseShaderData();
-				void _LoadSpirvs();
-				void _CreateShaderModules();
 
+				ShaderSetting shaderSettings;
+				std::map<std::string, SlotLayout> slotLayouts;
+				VkPipeline vkPipeline;
+				VkPipelineLayout vkPipelineLayout;
+			private:
+				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				
+				void _ParseShaderData(_PipelineData& pipelineData);
+				void _LoadSpirvs(_PipelineData& pipelineData);
+				void _CreateShaderModules(_PipelineData& pipelineData);
 				void _PopulateShaderStages(_PipelineData& pipelineData);
-				void _VertexInputState(_PipelineData& pipelineData);
+				void _PopulateVertexInputState(_PipelineData& pipelineData);
+				void _CheckAttachmentOutputState(_PipelineData& pipelineData);
+				void _PopulatePipelineSettings(_PipelineData& pipelineData);
+				void _CreateDescriptorLayouts(_PipelineData& pipelineData);
+				void _PopulateDescriptorLayouts(_PipelineData& pipelineData);
+				void _CreatePipeline(_PipelineData& pipelineData);
+				void _DestroyData(_PipelineData& pipelineData);
 			};
 
 		public:

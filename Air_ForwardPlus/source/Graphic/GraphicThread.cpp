@@ -3,7 +3,7 @@
 #include "Graphic/Creator/VulkanInstanceCreator.h"
 #include "Graphic/Creator/VulkanDeviceCreator.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/Creator/RenderPassCreator.h"
+#include "Graphic/RenderPassUtils.h"
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/DescriptorSetUtils.h"
 
@@ -36,29 +36,31 @@ void Graphic::GraphicThread::Init()
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
 
-	RenderPassCreator renderPassCreator = RenderPassCreator("TestRenderPass");
-	renderPassCreator.AddColorAttachment(
-		"ColorAttachment",
-		GlobalSetting::windowImageFormat,
-		VK_ATTACHMENT_LOAD_OP_CLEAR,
-		VK_ATTACHMENT_STORE_OP_STORE,
-		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-	);
-	renderPassCreator.AddSubpassWithColorAttachment(
-		"TestSubpass",
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		{ "ColorAttachment" }
-	);
-	renderPassCreator.AddDependency(
-		"VK_SUBPASS_EXTERNAL",
-		"TestSubpass",
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		0,
-		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-	);
-	Graphic::GlobalInstance::CreateRenderPass(&renderPassCreator);
+	{
+		Graphic::Render::RenderPassCreator renderPassCreator = Graphic::Render::RenderPassCreator("OpaqueRenderPass");
+		renderPassCreator.AddColorAttachment(
+			"ColorAttachment",
+			GlobalSetting::windowImageFormat,
+			VK_ATTACHMENT_LOAD_OP_CLEAR,
+			VK_ATTACHMENT_STORE_OP_STORE,
+			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		);
+		renderPassCreator.AddSubpassWithColorAttachment(
+			"DrawSubpass",
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			{ "ColorAttachment" }
+		);
+		renderPassCreator.AddDependency(
+			"VK_SUBPASS_EXTERNAL",
+			"DrawSubpass",
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			0,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+		);
+		Graphic::GlobalInstance::renderPassManager->CreateRenderPass(renderPassCreator);
+	}
 
 	Graphic::DescriptorSetLayout* layout = new Graphic::DescriptorSetLayout(
 		{
