@@ -467,6 +467,11 @@ Graphic::Asset::Shader* Graphic::Asset::Shader::Load(const char* path)
 	return _Load<Graphic::Asset::Shader, Graphic::Asset::Shader::_ShaderInstance>(path);
 }
 
+const std::map<std::string, Graphic::Asset::Shader::SlotLayout>& Graphic::Asset::Shader::SlotLayouts()
+{
+	return dynamic_cast<Graphic::Asset::Shader::_ShaderInstance*>(_assetInstance)->slotLayouts;
+}
+
 Graphic::Asset::Shader::ShaderSetting::ShaderSetting()
 	: cullMode(VK_CULL_MODE_NONE)
 	, blendEnable(VK_TRUE)

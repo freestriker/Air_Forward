@@ -119,8 +119,11 @@ namespace Graphic
 		public:
 			Shader(const Shader& source);
 			virtual ~Shader();
+
 			static std::future<Shader*>LoadAsync(const char* path);
 			static Shader* Load(const char* path);
+
+			const std::map<std::string, SlotLayout>& SlotLayouts();
 		private:
 			Shader(_ShaderInstance* assetInstance);
 			Shader& operator=(const Shader&) = delete;

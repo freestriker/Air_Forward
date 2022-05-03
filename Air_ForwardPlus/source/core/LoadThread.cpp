@@ -7,6 +7,7 @@
 #include "core/AssetUtils.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Asset/Shader.h"
+#include "Graphic/Material.h"
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -83,6 +84,10 @@ void LoadThread::OnRun()
 			//delete r8;
 		}
 
+		{
+			auto r1 = Graphic::Asset::Shader::Load("..\\Asset\\Shader\\Test.shader");
+			auto material = new Graphic::Material(r1);
+		}
 
 	}
 }

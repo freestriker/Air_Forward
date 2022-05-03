@@ -95,6 +95,9 @@
     <ClInclude Include="header\Graphic\RenderPassUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Material.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -126,5 +129,6 @@
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
+    <ClCompile Include="source\Graphic\Material.cpp" />
   </ItemGroup>
 </Project>
