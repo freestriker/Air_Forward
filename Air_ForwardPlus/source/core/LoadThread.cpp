@@ -85,8 +85,12 @@ void LoadThread::OnRun()
 		}
 
 		{
-			auto r1 = Graphic::Asset::Shader::Load("..\\Asset\\Shader\\Test.shader");
-			auto material = new Graphic::Material(r1);
+			auto r1 = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
+			auto r2 = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
+			auto material = new Graphic::Material(r1.get());
+			material->SetTexture2D("testTexture2D", r2.get());
+			auto texture2d = material->GetTexture2D("testTexture2D");
+			delete material;
 		}
 
 	}

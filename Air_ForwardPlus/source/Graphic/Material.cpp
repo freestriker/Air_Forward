@@ -1,5 +1,6 @@
 #include "Graphic/Material.h"
 #include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/Texture2D.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
 	: _shader(shader)
@@ -25,6 +26,30 @@ Graphic::Material::Material(Asset::Shader* shader)
 		}
 
 		_slots.emplace(newSlot.name, newSlot);
+	}
+}
+
+const Graphic::Texture2D* Graphic::Material::GetTexture2D(const char* name)
+{
+	if (_slots.count(name) && _slots[name].slotType == Material::_SlotType::TEXTURE2D)
+	{
+		return static_cast<const Graphic::Texture2D*>(_slots[name].asset);
+	}
+	else
+	{
+		throw std::runtime_error("Failed to get texture2d.");
+	}
+}
+
+void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
+{
+	if (_slots.count(name) && _slots[name].slotType == Material::_SlotType::TEXTURE2D)
+	{
+		_slots[name].asset = texture2d;
+	}
+	else
+	{
+		throw std::runtime_error("Failed to get texture2d.");
 	}
 }
 

@@ -5,7 +5,7 @@
 namespace Graphic
 {
 	class CommandBuffer;
-
+	class Texture2D;
 	namespace Asset
 	{
 		class Shader;
@@ -32,6 +32,8 @@ namespace Graphic
 		std::map<std::string, _Slot> _slots;
 	public:
 		Material(Asset::Shader* shader);
+		const Texture2D* GetTexture2D(const char* name);
+		void SetTexture2D(const char* name, Texture2D* texture2d);
 		~Material();
 	};
 }
