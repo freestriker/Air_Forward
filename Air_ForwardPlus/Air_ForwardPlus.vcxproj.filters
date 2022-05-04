@@ -98,6 +98,9 @@
     <ClInclude Include="header\Graphic\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Asset\UniformBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -130,5 +133,6 @@
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
+    <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
   </ItemGroup>
 </Project>

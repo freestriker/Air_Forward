@@ -8,6 +8,8 @@
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Material.h"
+#include "Graphic/Asset/UniformBuffer.h"
+#include <glm/glm.hpp>
 
 LoadThread* const LoadThread::instance = new LoadThread();
 
@@ -85,8 +87,13 @@ void LoadThread::OnRun()
 		}
 
 		{
+			glm::mat4 modelMatrix = glm::mat4(1.0f);
+
 			auto r1 = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
 			auto r2 = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
+			auto r3 = new Graphic::Asset::UniformBuffer(sizeof(modelMatrix), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			r3->WriteBuffer(&modelMatrix, sizeof(modelMatrix));
+
 			auto material = new Graphic::Material(r1.get());
 			material->SetTexture2D("testTexture2D", r2.get());
 			auto texture2d = material->GetTexture2D("testTexture2D");

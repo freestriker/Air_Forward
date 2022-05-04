@@ -18,7 +18,7 @@ Graphic::Texture2DInstance::~Texture2DInstance()
 
 void Graphic::Texture2DInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
 {
-	Graphic::Texture2DAssetConfig config = Graphic::Texture2DAssetConfig("C:\\Users\\FREEstriker\\Desktop\\Screenshot 2022-04-08 201144.png");
+	Graphic::Texture2DAssetConfig config = Graphic::Texture2DAssetConfig("..\\Asset\\Texture\\Wall.png");
 	_LoadTexture2D(transferCommandBuffer, renderCommandBuffer, config, *this);
 }
 
