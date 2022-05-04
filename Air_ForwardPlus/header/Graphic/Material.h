@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <vulkan/vulkan_core.h>
 
 namespace Graphic
 {
@@ -8,6 +9,7 @@ namespace Graphic
 	class Texture2D;
 	namespace Asset
 	{
+		enum class SlotType;
 		class Shader;
 	}
 
@@ -15,16 +17,12 @@ namespace Graphic
 	class Material
 	{
 	private:
-		enum class _SlotType
-		{
-			UNIFORM_BUFFER,
-			TEXTURE2D
-		};
 		struct _Slot
 		{
 			std::string name;
 			void* asset;
-			_SlotType slotType;
+			VkDescriptorSet vkDescriptorSet;
+			Asset::SlotType slotType;
 		};
 
 	private:

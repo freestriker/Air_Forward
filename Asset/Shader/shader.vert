@@ -18,5 +18,5 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     gl_Position = cameraMatrix.proj * cameraMatrix.view * objectMatrix.model * vec4(vertexPosition, 1.0);
-    outColor = texture(testTexture2D, vertexTexCoords);;
+    outColor = texture(testTexture2D, vertexTexCoords);
 }

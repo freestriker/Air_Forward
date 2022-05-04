@@ -352,22 +352,27 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 						newSlotLayout.set = refl_set.set;
 						if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 						{
-							newSlotLayout.slotType = SlotLayoutType::UNIFORM_BUFFER;
+							newSlotLayout.slotType = SlotType::UNIFORM_BUFFER;
 						}
 						else if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && refl_binding.image.dim == SpvDim::SpvDim2D)
 						{
-							newSlotLayout.slotType = SlotLayoutType::TEXTURE2D;
+							newSlotLayout.slotType = SlotType::TEXTURE2D;
+						}
+						else
+						{
+							throw std::runtime_error("failed to parse this type.");
 						}
 
 						slotLayoutMap.emplace(refl_set.set, newSlotLayout);
 					}
+
 				}
 			}
 
 		}
 
 	}
-	
+
 	for (auto& setBindingPair : setBindings)
 	{
 		std::vector< VkDescriptorSetLayoutBinding> bindings = std::vector< VkDescriptorSetLayoutBinding>(setBindingPair.second.size());
@@ -389,7 +394,24 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
 
+		{
+			
+			const auto& binding = setBindingPair.second[static_cast<uint32_t>(0)];
+			if (binding.descriptorType == VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER && setBindingPair.second.size() == 1)
+			{
+				slotLayout.slotType = SlotType::UNIFORM_BUFFER;
+			}
+			else if (binding.descriptorType == VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && slotLayout.slotType == Asset::SlotType::TEXTURE2D && setBindingPair.second.size() == 1)
+			{
+				slotLayout.slotType = SlotType::TEXTURE2D;
+			}
+			else if (binding.descriptorType == VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && slotLayout.slotType == Asset::SlotType::TEXTURE2D && setBindingPair.second.size() == 2 && setBindingPair.second[1].descriptorType == VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+			{
+				slotLayout.slotType = SlotType::TEXTURE2D_WITH_INFO;
+			}
+		}
 		slotLayouts.emplace(slotLayout.slotName, slotLayout);
+
 	}
 }
 

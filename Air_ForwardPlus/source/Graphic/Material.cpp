@@ -11,19 +11,7 @@ Graphic::Material::Material(Asset::Shader* shader)
 		_Slot newSlot = _Slot();
 		newSlot.asset = nullptr;
 		newSlot.name = pair.second.slotName;
-		switch (pair.second.slotType)
-		{
-			case Asset::Shader::SlotLayoutType::TEXTURE2D:
-			{
-				newSlot.slotType = Material::_SlotType::TEXTURE2D;
-				break;
-			}
-			case Asset::Shader::SlotLayoutType::UNIFORM_BUFFER:
-			{
-				newSlot.slotType = Material::_SlotType::UNIFORM_BUFFER;
-				break;
-			}
-		}
+		newSlot.slotType = pair.second.slotType;
 
 		_slots.emplace(newSlot.name, newSlot);
 	}
@@ -31,7 +19,7 @@ Graphic::Material::Material(Asset::Shader* shader)
 
 const Graphic::Texture2D* Graphic::Material::GetTexture2D(const char* name)
 {
-	if (_slots.count(name) && _slots[name].slotType == Material::_SlotType::TEXTURE2D)
+	if (_slots.count(name) && (_slots[name].slotType == Asset::SlotType::TEXTURE2D || _slots[name].slotType == Asset::SlotType::TEXTURE2D_WITH_INFO))
 	{
 		return static_cast<const Graphic::Texture2D*>(_slots[name].asset);
 	}
@@ -43,7 +31,7 @@ const Graphic::Texture2D* Graphic::Material::GetTexture2D(const char* name)
 
 void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
 {
-	if (_slots.count(name) && _slots[name].slotType == Material::_SlotType::TEXTURE2D)
+	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D)
 	{
 		_slots[name].asset = texture2d;
 	}

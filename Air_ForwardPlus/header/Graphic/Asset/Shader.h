@@ -15,20 +15,21 @@ namespace Graphic
 	class MemoryBlock;
 	namespace Asset
 	{
+		enum class SlotType
+		{
+			UNIFORM_BUFFER,
+			TEXTURE2D,
+			TEXTURE2D_WITH_INFO
+		};
 		class Shader:public IAsset
 		{
 			friend class IAsset;
 		public:
-			enum class SlotLayoutType
-			{
-				UNIFORM_BUFFER,
-				TEXTURE2D
-			};
 			struct SlotLayout
 			{
 				std::string slotName;
 				VkDescriptorSetLayout descriptorSetLayout;
-				SlotLayoutType slotType;
+				SlotType slotType;
 				std::vector<VkDescriptorType> descriptorTypes;
 				uint32_t set;
 			};
