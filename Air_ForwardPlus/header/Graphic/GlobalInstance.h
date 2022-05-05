@@ -16,6 +16,7 @@ namespace Graphic
 	namespace Manager
 	{
 		class DescriptorSetManager;
+		class FrameBufferManager;
 	}
 	class Queue
 	{
@@ -66,6 +67,7 @@ namespace Graphic
 		static Graphic::MemoryManager* memoryManager;
 		static Graphic::Render::RenderPassManager* const renderPassManager;
 		static Graphic::Manager::DescriptorSetManager* const descriptorSetManager;
+		static Graphic::Manager::FrameBufferManager* const frameBufferManager;
 	private:
 #ifdef _USE_GRAPHIC_DEBUG
 		static VkDebugUtilsMessengerEXT _debugMessenger;
