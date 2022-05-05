@@ -42,7 +42,7 @@ void Graphic::GraphicThread::Init()
 		Graphic::Render::RenderPassCreator renderPassCreator = Graphic::Render::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
 			"ColorAttachment",
-			GlobalSetting::windowImageFormat,
+			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			VK_ATTACHMENT_STORE_OP_STORE,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,

@@ -52,7 +52,8 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     _attachments.emplace(name, newAttachment);
 }
 
-void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Render::RenderPass* renderPass, std::vector<std::string> attachmentNames)
+
+void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Render::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
 {
     std::vector<Attachment*> usedAttachments = std::vector<Attachment*>(attachmentNames.size());
     std::vector<VkImageView> usedImageViews = std::vector<VkImageView>(attachmentNames.size());
@@ -84,8 +85,9 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
     if (vkCreateFramebuffer(Graphic::GlobalInstance::device, &framebufferInfo, nullptr, &newVkFrameBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create framebuffer!");
     }
-
-    _frameBuffers.emplace(name, FrameBuffer{ newVkFrameBuffer });
+    FrameBuffer newFrameBuffer = FrameBuffer();
+    newFrameBuffer._frameBuffer = newVkFrameBuffer;
+    _frameBuffers.emplace(name, newFrameBuffer);
 }
 
 const Graphic::Manager::FrameBuffer Graphic::Manager::FrameBufferManager::GetFrameBuffer(std::string name)
@@ -103,12 +105,16 @@ Graphic::Manager::FrameBufferManager::~FrameBufferManager()
 {
     for (const auto& pair : _frameBuffers)
     {
-        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second.frameBuffer, nullptr);
+        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second._frameBuffer, nullptr);
     }
     for (const auto& pair : _attachments)
     {
         delete pair.second;
     }
+}
+
+Graphic::Manager::Attachment::Attachment()
+{
 }
 
 Graphic::Manager::Attachment::~Attachment()
@@ -117,4 +123,9 @@ Graphic::Manager::Attachment::~Attachment()
     vkDestroyImage(Graphic::GlobalInstance::device, image, nullptr);
     Graphic::GlobalInstance::memoryManager->RecycleMemBlock(*memoryBlock);
     delete memoryBlock;
+}
+
+VkFramebuffer Graphic::Manager::FrameBuffer::VulkanFrameBuffer()
+{
+   return _frameBuffer;
 }

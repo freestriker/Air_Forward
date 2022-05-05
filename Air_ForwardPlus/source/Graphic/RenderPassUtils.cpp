@@ -184,17 +184,9 @@ void Graphic::Render::RenderPassManager::CreateRenderPass(Graphic::Render::Rende
     _renderPasss.emplace(creator._name, new RenderPass{ creator._name, newVkRenderPass, subpassMap, colorAttachmentMap });
 }
 
-Graphic::Render::RenderPass* const Graphic::Render::RenderPassManager::GetRenderPass(const char* renderPassName)
+Graphic::Render::RenderPassHandle const Graphic::Render::RenderPassManager::GetRenderPass(const char* renderPassName)
 {
     std::unique_lock<std::mutex> lock(this->_mutex);
 
     return _renderPasss[renderPassName];
-}
-
-void Graphic::Render::RenderPassManager::DestoryRenderPass(const char* renderPassName)
-{
-    std::unique_lock<std::mutex> lock(this->_mutex);
-    
-    delete _renderPasss[renderPassName];
-    _renderPasss.erase(renderPassName);
 }
