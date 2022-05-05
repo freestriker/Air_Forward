@@ -7,6 +7,7 @@
 #include <Graphic/GlobalSetting.h>
 #include "Graphic/MemoryManager.h"
 #include "Graphic/RenderPassUtils.h"
+#include "Graphic/DescriptorSetUtils.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -25,7 +26,7 @@ std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores(
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
 Graphic::MemoryManager* Graphic::GlobalInstance::memoryManager = nullptr;
 Graphic::Render::RenderPassManager* const Graphic::GlobalInstance::renderPassManager = new Graphic::Render::RenderPassManager();
-
+Graphic::Manager::DescriptorSetManager* const Graphic::GlobalInstance::descriptorSetManager = new Graphic::Manager::DescriptorSetManager();
 
 Graphic::GlobalInstance::GlobalInstance()
 {

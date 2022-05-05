@@ -13,6 +13,10 @@ namespace Graphic
 	{
 		class RenderPassManager;
 	}
+	namespace Manager
+	{
+		class DescriptorSetManager;
+	}
 	class Queue
 	{
 	public:
@@ -61,6 +65,7 @@ namespace Graphic
 		static std::vector<VkFence> frameInFlightFences;
 		static Graphic::MemoryManager* memoryManager;
 		static Graphic::Render::RenderPassManager* const renderPassManager;
+		static Graphic::Manager::DescriptorSetManager* const descriptorSetManager;
 	private:
 #ifdef _USE_GRAPHIC_DEBUG
 		static VkDebugUtilsMessengerEXT _debugMessenger;

@@ -2,6 +2,8 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 
 namespace Graphic
 {
@@ -11,8 +13,6 @@ namespace Graphic
 	}
 	namespace Manager
 	{
-		typedef DescriptorSet* DescriptorSetHandle;
-
 		class DescriptorSet
 		{
 			friend class DescriptorSetManager;
@@ -34,21 +34,35 @@ namespace Graphic
 			{
 			public:
 				Asset::SlotType const slotType;
-				std::mutex mutex;
-				int const chunkSize;
+				uint32_t const chunkSize;
 				std::vector<VkDescriptorPoolSize> const chunkSizes;
+				VkDescriptorPoolCreateInfo const chunkCreateInfo;
 
-				std::vector<VkDescriptorPool> chunks;
-				std::map<VkDescriptorPool, int> poolRemainingCounts;
-				_DescriptorPool(Asset::SlotType slotType, std::vector< VkDescriptorType>& types, int chunkSize);
+				std::mutex mutex;
+
+				std::map<VkDescriptorPool, uint32_t> chunks;
+
+
+				_DescriptorPool(Asset::SlotType slotType, std::vector< VkDescriptorType>& types, uint32_t chunkSize);
 				~_DescriptorPool();
 				DescriptorSet* AcquireDescripterSet(VkDescriptorSetLayout descriptorSetLayout);
 				void ReleaseDescripterSet(DescriptorSet* descriptorSet);
-				size_t CreateNewPool();
-				void DestoryPool(size_t index);
+				void CollectEmptyChunk();
+				
 				static std::vector<VkDescriptorPoolSize> GetPoolSizes(std::vector< VkDescriptorType>& types, int chunkSize);
+				static VkDescriptorPoolCreateInfo GetChunkCreateInfo(uint32_t chunkSize, std::vector<VkDescriptorPoolSize> const& chunkSizes);
 			};
+			std::shared_mutex _managerMutex;
+			std::map< Asset::SlotType, _DescriptorPool*> _pools;
+		public:
+			void AddDescriptorSetPool(Asset::SlotType slotType, std::vector< VkDescriptorType> descriptorTypes, uint32_t chunkSize);
+			void DeleteDescriptorSetPool(Asset::SlotType slotType);
+			DescriptorSet* AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout);
+			void ReleaseDescripterSet(DescriptorSet* descriptorSet);
+			void Collect();
 
+			DescriptorSetManager();
+			~DescriptorSetManager();
 		};
 
 	}

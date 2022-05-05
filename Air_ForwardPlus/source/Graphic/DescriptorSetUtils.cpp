@@ -315,26 +315,29 @@ Graphic::Manager::DescriptorSet::DescriptorSet(Asset::SlotType slotType, VkDescr
 	, _sourceDescriptorChunk(sourceDescriptorChunk)
 {
 }
+
 Graphic::Manager::DescriptorSet::~DescriptorSet()
 {
 }
 
-Graphic::Manager::DescriptorSetManager::_DescriptorPool::_DescriptorPool(Asset::SlotType slotType, std::vector<VkDescriptorType>& types, int chunkSize)
+Graphic::Manager::DescriptorSetManager::_DescriptorPool::_DescriptorPool(Asset::SlotType slotType, std::vector<VkDescriptorType>& types, uint32_t chunkSize)
 	: slotType(slotType)
 	, mutex()
 	, chunkSize(chunkSize)
 	, chunkSizes(GetPoolSizes(types, chunkSize))
+	, chunkCreateInfo(GetChunkCreateInfo(chunkSize, chunkSizes))
 	, chunks()
-	, poolRemainingCounts()
 {
 }
 
 Graphic::Manager::DescriptorSetManager::_DescriptorPool::~_DescriptorPool()
 {
-	for (const auto& chunk : chunks)
+	std::unique_lock<std::mutex> lock(mutex);
+
+	for (const auto& chunkPair : chunks)
 	{
-		vkResetDescriptorPool(Graphic::GlobalInstance::device, chunk, 0);
-		vkDestroyDescriptorPool(Graphic::GlobalInstance::device, chunk, nullptr);
+		vkResetDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, 0);
+		vkDestroyDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, nullptr);
 	}
 }
 
@@ -343,21 +346,25 @@ Graphic::Manager::DescriptorSet* Graphic::Manager::DescriptorSetManager::_Descri
 	std::unique_lock<std::mutex> lock(mutex);
 
 	VkDescriptorPool useableChunk = VK_NULL_HANDLE;
-	for (size_t i = 0; i < chunks.size(); i++)
+	for (const auto& chunkPair : chunks)
 	{
-		if (poolRemainingCounts[chunks[i]] > 0)
+		if (chunkPair.second > 0)
 		{
-			useableChunk = chunks[i];
+			useableChunk = chunkPair.first;
 			break;
 		}
 	}
-
 	if (useableChunk == VK_NULL_HANDLE)
 	{
-		auto i = CreateNewPool();
-		useableChunk = chunks[i];
+		VkDescriptorPool newChunk = VK_NULL_HANDLE;
+		if (vkCreateDescriptorPool(Graphic::GlobalInstance::device, &chunkCreateInfo, nullptr, &newChunk) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor pool!");
+		}
+		chunks.emplace(newChunk, chunkSize);
+
+		useableChunk = newChunk;
 	}
-	--poolRemainingCounts[useableChunk];
+	--chunks[useableChunk];
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -377,32 +384,116 @@ Graphic::Manager::DescriptorSet* Graphic::Manager::DescriptorSetManager::_Descri
 
 void Graphic::Manager::DescriptorSetManager::_DescriptorPool::ReleaseDescripterSet(DescriptorSet* descriptorSet)
 {
-	for (size_t i = 0; i < chunks.size(); i++)
+	std::unique_lock<std::mutex> lock(mutex);
+
+	++chunks[descriptorSet->_sourceDescriptorChunk];
+	vkFreeDescriptorSets(Graphic::GlobalInstance::device, descriptorSet->_sourceDescriptorChunk, 1, &descriptorSet->_descriptorSet);
+}
+
+void Graphic::Manager::DescriptorSetManager::_DescriptorPool::CollectEmptyChunk()
+{
+	std::unique_lock<std::mutex> lock(mutex);
+
+	for (auto it = chunks.cbegin(); it != chunks.cend(); )
 	{
-		if (descriptorSet->_sourceDescriptorChunk == chunks[i])
+		if (it->second == 0)
 		{
-			vkFreeDescriptorSets(Graphic::GlobalInstance::device, descriptorSet->_sourceDescriptorChunk, 1, &descriptorSet->_descriptorSet);
-			auto remainingCount = ++poolRemainingCounts[chunks[i]];
-
-			if (remainingCount == chunkSize)
-			{
-				DestoryPool(i);
-			}
-			return;
+			vkResetDescriptorPool(Graphic::GlobalInstance::device, it->first, 0);
+			vkDestroyDescriptorPool(Graphic::GlobalInstance::device, it->first, nullptr);
+			it = chunks.erase(it);
 		}
-
-}
-
-size_t Graphic::Manager::DescriptorSetManager::_DescriptorPool::CreateNewPool()
-{
-	return size_t();
-}
-
-void Graphic::Manager::DescriptorSetManager::_DescriptorPool::DestoryPool(size_t index)
-{
+		else
+		{
+			++it;
+		}
+	}
 }
 
 std::vector<VkDescriptorPoolSize> Graphic::Manager::DescriptorSetManager::_DescriptorPool::GetPoolSizes(std::vector<VkDescriptorType>& types, int chunkSize)
 {
-	return std::vector<VkDescriptorPoolSize>();
+	std::map<VkDescriptorType, uint32_t> typeCounts = std::map<VkDescriptorType, uint32_t>();
+	for (const auto& descriptorType : types)
+	{
+		if (!typeCounts.count(descriptorType))
+		{
+			typeCounts[descriptorType] = 0;
+		}
+		++typeCounts[descriptorType];
+	}
+	
+	std::vector<VkDescriptorPoolSize> poolSizes = std::vector<VkDescriptorPoolSize>(typeCounts.size());
+	size_t poolSizeIndex = 0;
+	for (const auto& pair : typeCounts)
+	{
+		poolSizes[poolSizeIndex].type = pair.first;
+		poolSizes[poolSizeIndex].descriptorCount = pair.second * chunkSize;
+	
+		poolSizeIndex++;
+	}
+	
+	return std::move(poolSizes);
+}
+
+VkDescriptorPoolCreateInfo Graphic::Manager::DescriptorSetManager::_DescriptorPool::GetChunkCreateInfo(uint32_t chunkSize, std::vector<VkDescriptorPoolSize> const& chunkSizes)
+{
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(chunkSizes.size());
+	poolInfo.pPoolSizes = chunkSizes.data();
+	poolInfo.maxSets = chunkSize;
+	return std::move(poolInfo);
+}
+
+void Graphic::Manager::DescriptorSetManager::AddDescriptorSetPool(Asset::SlotType slotType, std::vector<VkDescriptorType> descriptorTypes, uint32_t chunkSize)
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	_pools[slotType] = new _DescriptorPool(slotType, descriptorTypes, chunkSize);
+}
+
+void Graphic::Manager::DescriptorSetManager::DeleteDescriptorSetPool(Asset::SlotType slotType)
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	delete _pools[slotType];
+	_pools.erase(slotType);
+}
+
+Graphic::Manager::DescriptorSet* Graphic::Manager::DescriptorSetManager::AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout)
+{
+	std::shared_lock<std::shared_mutex> lock(_managerMutex);
+
+	return _pools[slotType]->AcquireDescripterSet(descriptorSetLayout);
+}
+
+void Graphic::Manager::DescriptorSetManager::ReleaseDescripterSet(Graphic::Manager::DescriptorSet* descriptorSet)
+{
+	std::shared_lock<std::shared_mutex> lock(_managerMutex);
+	_pools[descriptorSet->_slotType]->ReleaseDescripterSet(descriptorSet);
+}
+
+void Graphic::Manager::DescriptorSetManager::Collect()
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	for (auto& poolPair : _pools)
+	{
+		poolPair.second->CollectEmptyChunk();
+	}
+}
+
+Graphic::Manager::DescriptorSetManager::DescriptorSetManager()
+	: _managerMutex()
+	, _pools()
+{
+}
+
+Graphic::Manager::DescriptorSetManager::~DescriptorSetManager()
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+	for (auto& poolPair : _pools)
+	{
+		delete poolPair.second;
+	}
 }
