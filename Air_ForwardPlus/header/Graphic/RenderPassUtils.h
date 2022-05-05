@@ -22,7 +22,7 @@ namespace Graphic
 			RenderPass(std::string& name, VkRenderPass vkRenderPass, std::map<std::string, uint32_t>& subPassMap, std::map<std::string, std::map<std::string, uint32_t>>& colorAttachmentMap);
 			~RenderPass();
 		};
-
+		typedef RenderPass*  RenderPassHandle;
 		class RenderPassCreator final
 		{
 			friend class RenderPassManager;
@@ -119,8 +119,7 @@ namespace Graphic
 			RenderPassManager();
 			~RenderPassManager();
 			void CreateRenderPass(Graphic::Render::RenderPassCreator& creator);
-			RenderPass* const GetRenderPass(const char* renderPassName);
-			void DestoryRenderPass(const char* renderPassName);
+			RenderPassHandle const GetRenderPass(const char* renderPassName);
 		};
 
 	}
