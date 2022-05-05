@@ -5,6 +5,7 @@
 Graphic::Asset::UniformBuffer::UniformBuffer(size_t size, VkMemoryPropertyFlags properties)
 	: _vkBuffer(VK_NULL_HANDLE)
 	, _memoryBlock(new MemoryBlock())
+	, _size(size)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -31,6 +32,16 @@ void Graphic::Asset::UniformBuffer::WriteBuffer(const void* data, size_t dataSiz
 	vkMapMemory(Graphic::GlobalInstance::device, _memoryBlock->Memory(), _memoryBlock->Offset(), _memoryBlock->Size(), 0, &transferData);
 	memcpy(transferData, data, dataSize);
 	vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock->Memory());
+}
+
+VkBuffer Graphic::Asset::UniformBuffer::Buffer()
+{
+	return _vkBuffer;
+}
+
+size_t Graphic::Asset::UniformBuffer::Size()
+{
+	return _size;
 }
 
 Graphic::Asset::UniformBuffer::~UniformBuffer()

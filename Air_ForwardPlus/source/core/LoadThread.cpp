@@ -97,6 +97,8 @@ void LoadThread::OnRun()
 			auto material = new Graphic::Material(r1.get());
 			material->SetTexture2D("testTexture2D", r2.get());
 			auto texture2d = material->GetTexture2D("testTexture2D");
+			material->SetUniformBuffer("objectMatrix", r3);
+			auto buffer = material->GetUniformBuffer("objectMatrix");
 			delete material;
 		}
 

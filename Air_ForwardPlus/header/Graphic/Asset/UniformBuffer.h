@@ -11,6 +11,7 @@ namespace Graphic
 		private:
 			VkBuffer _vkBuffer;
 			MemoryBlock* _memoryBlock;
+			size_t _size;
 
 			UniformBuffer(const UniformBuffer& source) = delete;
 			UniformBuffer& operator=(const UniformBuffer&) = delete;
@@ -19,6 +20,8 @@ namespace Graphic
 		public:
 			UniformBuffer(size_t size, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
+			VkBuffer Buffer();
+			size_t Size();
 			~UniformBuffer();
 		};
 	}

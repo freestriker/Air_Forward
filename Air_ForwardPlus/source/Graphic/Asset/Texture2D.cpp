@@ -48,21 +48,21 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 
 	VkBuffer infoStagingBuffer{};
 	Graphic::MemoryBlock  infoStagingBufferMemory;
-	_CreateBuffer(sizeof(texelInfo), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, infoStagingBuffer, &infoStagingBufferMemory);
+	_CreateBuffer(sizeof(textureInfo), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, infoStagingBuffer, &infoStagingBufferMemory);
 	{
 		void* texelInfoData;
 		std::unique_lock<std::mutex> lock(*infoStagingBufferMemory.Mutex());
 		vkMapMemory(Graphic::GlobalInstance::device, infoStagingBufferMemory.Memory(), infoStagingBufferMemory.Offset(), infoStagingBufferMemory.Size(), 0, &texelInfoData);
-		memcpy(texelInfoData, &texture.texelInfo, sizeof(texelInfo));
+		memcpy(texelInfoData, &texture.textureInfo, sizeof(textureInfo));
 		vkUnmapMemory(Graphic::GlobalInstance::device, infoStagingBufferMemory.Memory());
 	}
-	_CreateBuffer(sizeof(texelInfo), VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.buffer, texture.bufferMemory.get());
+	_CreateBuffer(sizeof(textureInfo), VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.buffer, texture.bufferMemory.get());
 
 	
 	transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	_TransitionToTransferLayout(texture.textureImage, *transferCommandBuffer);
 	_CopyBufferToImage(textureStagingBuffer, texture.textureImage, texture.size.width, texture.size.height, *transferCommandBuffer);
-	transferCommandBuffer->CopyBuffer(infoStagingBuffer, texture.buffer, sizeof(texelInfo));
+	transferCommandBuffer->CopyBuffer(infoStagingBuffer, texture.buffer, sizeof(textureInfo));
 	VkImageMemoryBarrier releaseImageBarrier{};
 	releaseImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	releaseImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -83,7 +83,7 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 	releaseBufferBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
 	releaseBufferBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
 	releaseBufferBarrier.offset = 0;
-	releaseBufferBarrier.size = sizeof(texelInfo);
+	releaseBufferBarrier.size = sizeof(textureInfo);
 	releaseBufferBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	releaseBufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	releaseBufferBarrier.buffer = texture.buffer;
@@ -117,7 +117,7 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 	acquireBufferBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
 	acquireBufferBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
 	acquireBufferBarrier.offset = 0;
-	acquireBufferBarrier.size = sizeof(texelInfo);
+	acquireBufferBarrier.size = sizeof(textureInfo);
 	acquireBufferBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	acquireBufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	acquireBufferBarrier.buffer = texture.buffer;
@@ -160,8 +160,8 @@ void Graphic::Texture2DInstance::_LoadBitmap(Texture2DAssetConfig& config, Graph
 
 		uint32_t pitch = FreeImage_GetPitch(bitmap);
 		texture.size = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
-		texture.texelInfo.size = glm::vec4(1.0 / texture.size.width, 1.0 / texture.size.height, texture.size.width, texture.size.height);
-		texture.texelInfo.tilingScale = glm::vec4(0, 0, 1, 1);
+		texture.textureInfo.size = glm::vec4(1.0 / texture.size.width, 1.0 / texture.size.height, texture.size.width, texture.size.height);
+		texture.textureInfo.tilingScale = glm::vec4(0, 0, 1, 1);
 		texture.data.resize(static_cast<size_t>(texture.size.width) * texture.size.height * 4);
 		FreeImage_ConvertToRawBits(texture.data.data(), bitmap, pitch, pixelDepth, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, 0L);
 		FreeImage_Unload(bitmap);
@@ -341,4 +341,39 @@ std::future<Graphic::Texture2D*> Graphic::Texture2D::LoadAsync(const char* path)
 Graphic::Texture2D* Graphic::Texture2D::Load(const char* path)
 {
 	return _Load<Graphic::Texture2D, Graphic::Texture2DInstance>(path);
+}
+
+VkExtent2D Graphic::Texture2D::Size()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->size;
+}
+
+VkImage Graphic::Texture2D::TextureImage()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->textureImage;
+}
+
+VkFormat Graphic::Texture2D::TextureFormat()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->textureFormat;
+}
+
+VkImageView Graphic::Texture2D::TextureImageView()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->textureImageView;
+}
+
+VkSampler Graphic::Texture2D::TextureSampler()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->sampler;
+}
+
+VkBuffer Graphic::Texture2D::TextureInfoBuffer()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->buffer;
+}
+
+Graphic::Texture2D::TextureInfo Graphic::Texture2D::GetTextureInfo()
+{
+	return dynamic_cast<Texture2DInstance*>(_assetInstance)->textureInfo;
 }

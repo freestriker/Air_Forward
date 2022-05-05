@@ -17,8 +17,21 @@ namespace Graphic
 		{
 			friend class DescriptorSetManager;
 		public:
+			struct DescriptorSetWriteData
+			{
+				VkDescriptorType type;
+				VkBuffer        buffer;
+				VkDeviceSize    offset;
+				VkDeviceSize    range;
+				VkSampler        sampler;
+				VkImageView      imageView;
+				VkImageLayout    imageLayout;
+				DescriptorSetWriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range);
+				DescriptorSetWriteData(VkDescriptorType type, VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout);
+			};
 			VkDescriptorSet Set();
 			VkDescriptorSetLayout SetLayout();
+			void WriteBindingData(std::vector<uint32_t> bindingIndex, std::vector<Graphic::Manager::DescriptorSet::DescriptorSetWriteData> data);
 		private:
 			Asset::SlotType _slotType;
 			VkDescriptorSet _descriptorSet; 
@@ -27,6 +40,7 @@ namespace Graphic
 			DescriptorSet(Asset::SlotType slotType, VkDescriptorSet set, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool sourceDescriptorChunk);
 			~DescriptorSet();
 		};
+		typedef DescriptorSet* DescriptorSetHandle;
 		class DescriptorSetManager
 		{
 		private:
@@ -45,8 +59,8 @@ namespace Graphic
 
 				_DescriptorPool(Asset::SlotType slotType, std::vector< VkDescriptorType>& types, uint32_t chunkSize);
 				~_DescriptorPool();
-				DescriptorSet* AcquireDescripterSet(VkDescriptorSetLayout descriptorSetLayout);
-				void ReleaseDescripterSet(DescriptorSet* descriptorSet);
+				DescriptorSetHandle AcquireDescripterSet(VkDescriptorSetLayout descriptorSetLayout);
+				void ReleaseDescripterSet(DescriptorSetHandle descriptorSet);
 				void CollectEmptyChunk();
 				
 				static std::vector<VkDescriptorPoolSize> GetPoolSizes(std::vector< VkDescriptorType>& types, int chunkSize);
@@ -57,8 +71,8 @@ namespace Graphic
 		public:
 			void AddDescriptorSetPool(Asset::SlotType slotType, std::vector< VkDescriptorType> descriptorTypes, uint32_t chunkSize);
 			void DeleteDescriptorSetPool(Asset::SlotType slotType);
-			DescriptorSet* AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout);
-			void ReleaseDescripterSet(DescriptorSet* descriptorSet);
+			DescriptorSetHandle AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout);
+			void ReleaseDescripterSet(DescriptorSetHandle descriptorSet);
 			void Collect();
 
 			DescriptorSetManager();

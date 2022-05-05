@@ -5,12 +5,18 @@
 
 namespace Graphic
 {
+	namespace Manager
+	{
+		class DescriptorSet;
+		typedef DescriptorSet* DescriptorSetHandle;
+	}
 	class CommandBuffer;
 	class Texture2D;
 	namespace Asset
 	{
 		enum class SlotType;
 		class Shader;
+		class UniformBuffer;
 	}
 
 
@@ -21,8 +27,8 @@ namespace Graphic
 		{
 			std::string name;
 			void* asset;
-			VkDescriptorSet vkDescriptorSet;
 			Asset::SlotType slotType;
+			Manager::DescriptorSetHandle descriptorSet;
 		};
 
 	private:
@@ -32,6 +38,8 @@ namespace Graphic
 		Material(Asset::Shader* shader);
 		const Texture2D* GetTexture2D(const char* name);
 		void SetTexture2D(const char* name, Texture2D* texture2d);
+		const Asset::UniformBuffer* GetUniformBuffer(const char* name);
+		void SetUniformBuffer(const char* name, Asset::UniformBuffer* texture2d);
 		~Material();
 	};
 }
