@@ -35,15 +35,42 @@ namespace Graphic
 
 		}
 	};
-	class Texture2DInstance: public IAssetInstance
+	class Texture2DInstance;
+	class Texture2D : IAsset
 	{
-		friend class Texture2D;
+		friend class IAsset;
 	public:
-		struct TexelInfo
+		struct TextureInfo
 		{
 			alignas(16) glm::vec4 size;
 			alignas(16) glm::vec4 tilingScale;
 		};
+
+		Texture2D(const Texture2D& source);
+		Texture2D& operator=(const Texture2D&) = delete;
+		Texture2D(Texture2D&&) = delete;
+		Texture2D& operator=(Texture2D&&) = delete;
+		~Texture2D();
+
+		static std::future<Texture2D*>LoadAsync(const char* path);
+		static Texture2D* Load(const char* path);
+
+		VkExtent2D Size();
+		VkImage TextureImage();
+		VkFormat TextureFormat();
+		VkImageView TextureImageView();
+		VkSampler TextureSampler();
+
+		VkBuffer TextureInfoBuffer();
+		TextureInfo GetTextureInfo();
+
+	private:
+		Texture2D(Texture2DInstance* assetInstance);
+	};
+	class Texture2DInstance: public IAssetInstance
+	{
+		friend class Texture2D;
+	public:
 		Texture2DInstance(std::string path);
 		virtual ~Texture2DInstance();
 		VkExtent2D size;
@@ -53,9 +80,8 @@ namespace Graphic
 		std::unique_ptr<MemoryBlock> bufferMemory;
 		VkBuffer buffer;
 		VkImageView textureImageView;
-		VkSampler textureSampler;
 		VkSampler sampler;
-		TexelInfo texelInfo;
+		Texture2D::TextureInfo textureInfo;
 		std::vector<unsigned char> data;
 	private:
 		void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
@@ -70,21 +96,5 @@ namespace Graphic
 		static void _CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 		static void _CreateImageView(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
 		static void _CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture);
-	};
-	class Texture2D: IAsset
-	{
-		friend class IAsset;
-	public:
-
-		Texture2D(const Texture2D& source);
-		Texture2D& operator=(const Texture2D&) = delete; 
-		Texture2D(Texture2D&&) = delete; 
-		Texture2D& operator=(Texture2D&&) = delete; 
-		~Texture2D();
-
-		static std::future<Texture2D*>LoadAsync(const char* path);
-		static Texture2D* Load(const char* path);
-	private:
-		Texture2D(Texture2DInstance* assetInstance);
 	};
 }

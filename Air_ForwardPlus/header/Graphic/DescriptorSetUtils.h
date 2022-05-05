@@ -2,75 +2,86 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 
 namespace Graphic
 {
-	class DescriptorSetLayoutBinding
+	namespace Asset
 	{
-	public:
-		VkDescriptorType descriptorType;
-		VkShaderStageFlags stageFlags;
-		DescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags);
-		~DescriptorSetLayoutBinding();
-	};
-
-	class DescriptorSetLayout
+		enum class SlotType;
+	}
+	namespace Manager
 	{
-	private:
-		static std::vector<VkDescriptorType> _GetDescriptorTypes(std::vector<DescriptorSetLayoutBinding>& bindings);
-		static VkDescriptorSetLayout _CreateDescriptorSetLayout(std::vector<DescriptorSetLayoutBinding>& bindings);
-	public:
-		DescriptorSetLayout(std::vector<DescriptorSetLayoutBinding> bindings);
-		~DescriptorSetLayout();
-		VkDescriptorSetLayout const vkDescriptorSetLayout;
-		std::vector<VkDescriptorType> const descriptorTypes;
-	};
-
-	class DescriptorSet
-	{
-		friend class DescriptorPool;
-	public:
-		struct WriteData
+		class DescriptorSet
 		{
-			VkDescriptorType type;
-
-			VkBuffer buffer;
-			VkDeviceSize offset;
-			VkDeviceSize range;
-
-			VkImageLayout layout;
-			VkImageView view;
-			VkSampler sampler;
-
-			WriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range);
-			WriteData(VkDescriptorType type, VkImageLayout layout, VkImageView view, VkSampler sampler);
+			friend class DescriptorSetManager;
+		public:
+			struct DescriptorSetWriteData
+			{
+				VkDescriptorType type;
+				VkBuffer        buffer;
+				VkDeviceSize    offset;
+				VkDeviceSize    range;
+				VkSampler        sampler;
+				VkImageView      imageView;
+				VkImageLayout    imageLayout;
+				DescriptorSetWriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range);
+				DescriptorSetWriteData(VkDescriptorType type, VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout);
+			};
+			VkDescriptorSet Set();
+			VkDescriptorSetLayout SetLayout();
+			void WriteBindingData(std::vector<uint32_t> bindingIndex, std::vector<Graphic::Manager::DescriptorSet::DescriptorSetWriteData> data);
+		private:
+			Asset::SlotType _slotType;
+			VkDescriptorSet _descriptorSet; 
+			VkDescriptorSetLayout _descriptorSetLayout;
+			VkDescriptorPool _sourceDescriptorChunk;
+			DescriptorSet(Asset::SlotType slotType, VkDescriptorSet set, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool sourceDescriptorChunk);
+			~DescriptorSet();
 		};
-		VkDescriptorPool const sourcePool;
-		VkDescriptorSet const descriptorSet;
-		void WriteBindingData(std::vector<WriteData> data);
-		void WriteBindingData(std::vector<uint32_t>bindingIndex, std::vector<WriteData> data);
-	private:
-		DescriptorSet(VkDescriptorPool sourcePool, VkDescriptorSet set);
-		~DescriptorSet();
-	};
+		typedef DescriptorSet* DescriptorSetHandle;
+		class DescriptorSetManager
+		{
+		private:
+			class _DescriptorPool
+			{
+			public:
+				Asset::SlotType const slotType;
+				uint32_t const chunkSize;
+				std::vector<VkDescriptorPoolSize> const chunkSizes;
+				VkDescriptorPoolCreateInfo const chunkCreateInfo;
 
-	class DescriptorPool
-	{
-	private:
-		int const _chunkSize;
-		DescriptorSetLayout* const _templateLayout;
-		std::vector<VkDescriptorPoolSize> const _poolSizes;
+				std::mutex mutex;
 
-		std::vector<VkDescriptorPool> _pools;
-		std::map<VkDescriptorPool, int> _poolRemainingCounts;
-	public:
-		DescriptorPool(DescriptorSetLayout* templateLayout, int chunkSize);
-		~DescriptorPool();
-		DescriptorSet* GetDescripterSet();
-		void RecycleDescripterSet(DescriptorSet* descriptorSet);
-	private:
-		size_t _CreateNewPool();
-		void _DestoryPool(size_t index);
-		static std::vector<VkDescriptorPoolSize> _GetPoolSizes(DescriptorSetLayout* templateLayout, int chunkSize);
-	};
+				std::map<VkDescriptorPool, uint32_t> chunks;
+
+
+				_DescriptorPool(Asset::SlotType slotType, std::vector< VkDescriptorType>& types, uint32_t chunkSize);
+				~_DescriptorPool();
+				DescriptorSetHandle AcquireDescripterSet(VkDescriptorSetLayout descriptorSetLayout);
+				void ReleaseDescripterSet(DescriptorSetHandle descriptorSet);
+				void CollectEmptyChunk();
+				
+				static std::vector<VkDescriptorPoolSize> GetPoolSizes(std::vector< VkDescriptorType>& types, int chunkSize);
+				static VkDescriptorPoolCreateInfo GetChunkCreateInfo(uint32_t chunkSize, std::vector<VkDescriptorPoolSize> const& chunkSizes);
+			};
+			std::shared_mutex _managerMutex;
+			std::map< Asset::SlotType, _DescriptorPool*> _pools;
+		public:
+			void AddDescriptorSetPool(Asset::SlotType slotType, std::vector< VkDescriptorType> descriptorTypes, uint32_t chunkSize);
+			void DeleteDescriptorSetPool(Asset::SlotType slotType);
+			DescriptorSetHandle AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout);
+			void ReleaseDescripterSet(DescriptorSetHandle descriptorSet);
+			void Collect();
+
+			DescriptorSetManager();
+			~DescriptorSetManager();
+		};
+
+	}
+
+
+
+
 }

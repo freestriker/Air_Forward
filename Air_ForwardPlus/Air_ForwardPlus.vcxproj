@@ -31,6 +31,7 @@
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
+    <ClInclude Include="header\Graphic\Asset\UniformBuffer.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="header\Graphic\GlobalSetting.h" />
     <ClInclude Include="header\Graphic\GraphicThread.h" />
     <ClInclude Include="header\core\SubLoadThread.h" />
+    <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\MemoryManager.h" />
     <ClInclude Include="header\Graphic\RenderPassUtils.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
@@ -62,6 +64,7 @@
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
+    <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
@@ -72,6 +75,7 @@
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\Graphic\GraphicThread.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
+    <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />

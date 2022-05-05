@@ -3,107 +3,79 @@
 #include <stdexcept>
 #include <spirv_cross/spirv_reflect.hpp>
 
-Graphic::DescriptorSetLayout::DescriptorSetLayout(std::vector<DescriptorSetLayoutBinding> bindings)
-	: vkDescriptorSetLayout(_CreateDescriptorSetLayout(bindings))
-	, descriptorTypes(_GetDescriptorTypes(bindings))
+VkDescriptorSet Graphic::Manager::DescriptorSet::Set()
+{
+	return _descriptorSet;
+}
+
+VkDescriptorSetLayout Graphic::Manager::DescriptorSet::SetLayout()
+{
+	return _descriptorSetLayout;
+}
+
+Graphic::Manager::DescriptorSet::DescriptorSet(Asset::SlotType slotType, VkDescriptorSet set, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool sourceDescriptorChunk)
+	: _slotType(slotType)
+	, _descriptorSet(set)
+	, _descriptorSetLayout(descriptorSetLayout)
+	, _sourceDescriptorChunk(sourceDescriptorChunk)
 {
 }
 
-Graphic::DescriptorSetLayout::~DescriptorSetLayout()
+Graphic::Manager::DescriptorSet::~DescriptorSet()
 {
-	vkDestroyDescriptorSetLayout(Graphic::GlobalInstance::device, vkDescriptorSetLayout, nullptr);
 }
 
-std::vector<VkDescriptorType> Graphic::DescriptorSetLayout::_GetDescriptorTypes(std::vector<DescriptorSetLayoutBinding>& bindings)
+Graphic::Manager::DescriptorSetManager::_DescriptorPool::_DescriptorPool(Asset::SlotType slotType, std::vector<VkDescriptorType>& types, uint32_t chunkSize)
+	: slotType(slotType)
+	, mutex()
+	, chunkSize(chunkSize)
+	, chunkSizes(GetPoolSizes(types, chunkSize))
+	, chunkCreateInfo(GetChunkCreateInfo(chunkSize, chunkSizes))
+	, chunks()
 {
-	std::vector<VkDescriptorType> result = std::vector<VkDescriptorType>(bindings.size());
-	for (size_t i = 0; i < bindings.size(); i++)
+}
+
+Graphic::Manager::DescriptorSetManager::_DescriptorPool::~_DescriptorPool()
+{
+	std::unique_lock<std::mutex> lock(mutex);
+
+	for (const auto& chunkPair : chunks)
 	{
-		result[i] = bindings[i].descriptorType;
-	}
-	return result;
-}
-
-VkDescriptorSetLayout Graphic::DescriptorSetLayout::_CreateDescriptorSetLayout(std::vector<DescriptorSetLayoutBinding>& bindings)
-{
-	VkDescriptorSetLayout result = VkDescriptorSetLayout();
-
-	std::vector<VkDescriptorSetLayoutBinding> vkBindings = std::vector<VkDescriptorSetLayoutBinding>(bindings.size());
-	for (size_t i = 0; i < bindings.size(); i++)
-	{
-		vkBindings[i].binding = static_cast<uint32_t>(i);
-		vkBindings[i].descriptorCount = 1;
-		vkBindings[i].descriptorType = bindings[i].descriptorType;
-		vkBindings[i].pImmutableSamplers = nullptr;
-		vkBindings[i].stageFlags = bindings[i].stageFlags;
-	}
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = static_cast<uint32_t>(vkBindings.size());
-	layoutInfo.pBindings = vkBindings.data();
-
-	if (vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &result) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
-	return result;
-}
-
-Graphic::DescriptorSetLayoutBinding::DescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags)
-	: descriptorType(descriptorType)
-	, stageFlags(stageFlags)
-{
-}
-
-Graphic::DescriptorSetLayoutBinding::~DescriptorSetLayoutBinding()
-{
-}
-
-Graphic::DescriptorPool::DescriptorPool(DescriptorSetLayout* templateLayout, int chunkSize)
-	: _chunkSize(chunkSize)
-	, _templateLayout(templateLayout)
-	, _poolSizes(_GetPoolSizes(templateLayout, chunkSize))
-	, _pools()
-	, _poolRemainingCounts()
-{
-}
-
-Graphic::DescriptorPool::~DescriptorPool()
-{
-	for (const auto& pool : _pools)
-	{
-		vkResetDescriptorPool(Graphic::GlobalInstance::device, pool, 0);
-		vkDestroyDescriptorPool(Graphic::GlobalInstance::device, pool, nullptr);
+		vkResetDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, 0);
+		vkDestroyDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, nullptr);
 	}
 }
 
-Graphic::DescriptorSet* Graphic::DescriptorPool::GetDescripterSet()
+Graphic::Manager::DescriptorSet* Graphic::Manager::DescriptorSetManager::_DescriptorPool::AcquireDescripterSet(VkDescriptorSetLayout descriptorSetLayout)
 {
-	
-	VkDescriptorPool useablePool = VK_NULL_HANDLE;
-	for (size_t i = 0; i < _pools.size(); i++)
+	std::unique_lock<std::mutex> lock(mutex);
+
+	VkDescriptorPool useableChunk = VK_NULL_HANDLE;
+	for (const auto& chunkPair : chunks)
 	{
-		if (_poolRemainingCounts[_pools[i]] > 0)
+		if (chunkPair.second > 0)
 		{
-			useablePool = _pools[i];
+			useableChunk = chunkPair.first;
 			break;
 		}
 	}
-
-	if (useablePool == VK_NULL_HANDLE)
+	if (useableChunk == VK_NULL_HANDLE)
 	{
-		auto i = _CreateNewPool();
-		useablePool = _pools[i];
+		VkDescriptorPool newChunk = VK_NULL_HANDLE;
+		if (vkCreateDescriptorPool(Graphic::GlobalInstance::device, &chunkCreateInfo, nullptr, &newChunk) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor pool!");
+		}
+		chunks.emplace(newChunk, chunkSize);
+
+		useableChunk = newChunk;
 	}
-	--_poolRemainingCounts[useablePool];
+	--chunks[useableChunk];
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = useablePool;
+	allocInfo.descriptorPool = useableChunk;
 	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &_templateLayout->vkDescriptorSetLayout;
+	allocInfo.pSetLayouts = &descriptorSetLayout;
 
 	VkDescriptorSet newVkSet = VK_NULL_HANDLE;
 	if (vkAllocateDescriptorSets(Graphic::GlobalInstance::device, &allocInfo, &newVkSet) != VK_SUCCESS)
@@ -111,63 +83,43 @@ Graphic::DescriptorSet* Graphic::DescriptorPool::GetDescripterSet()
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
-	DescriptorSet* newSet = new DescriptorSet(useablePool, newVkSet);
+	DescriptorSet* newSet = new DescriptorSet(slotType, newVkSet, descriptorSetLayout, useableChunk);
 	return newSet;
 }
 
-void Graphic::DescriptorPool::RecycleDescripterSet(DescriptorSet* descriptorSet)
+void Graphic::Manager::DescriptorSetManager::_DescriptorPool::ReleaseDescripterSet(DescriptorSetHandle descriptorSet)
 {
-	for (size_t i = 0; i < _pools.size(); i++)
-	{
-		if (descriptorSet->sourcePool == _pools[i])
-		{
-			vkFreeDescriptorSets(Graphic::GlobalInstance::device, descriptorSet->sourcePool, 1, &descriptorSet->descriptorSet);
-			auto remainingCount = ++_poolRemainingCounts[_pools[i]];
+	std::unique_lock<std::mutex> lock(mutex);
 
-			if (remainingCount == _chunkSize)
-			{
-				_DestoryPool(i);
-			}
-			return;
+	++chunks[descriptorSet->_sourceDescriptorChunk];
+	vkFreeDescriptorSets(Graphic::GlobalInstance::device, descriptorSet->_sourceDescriptorChunk, 1, &descriptorSet->_descriptorSet);
+
+	delete descriptorSet;
+}
+
+void Graphic::Manager::DescriptorSetManager::_DescriptorPool::CollectEmptyChunk()
+{
+	std::unique_lock<std::mutex> lock(mutex);
+
+	for (auto it = chunks.cbegin(); it != chunks.cend(); )
+	{
+		if (it->second == 0)
+		{
+			vkResetDescriptorPool(Graphic::GlobalInstance::device, it->first, 0);
+			vkDestroyDescriptorPool(Graphic::GlobalInstance::device, it->first, nullptr);
+			it = chunks.erase(it);
+		}
+		else
+		{
+			++it;
 		}
 	}
-	throw std::runtime_error("Can not find the right pool.");
 }
 
-size_t Graphic::DescriptorPool::_CreateNewPool()
-{
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(_poolSizes.size());
-	poolInfo.pPoolSizes = _poolSizes.data();
-	poolInfo.maxSets = _chunkSize;
-
-	VkDescriptorPool newPool = VK_NULL_HANDLE;
-	if (vkCreateDescriptorPool(Graphic::GlobalInstance::device, &poolInfo, nullptr, &newPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-
-	_pools.push_back(newPool);
-	_poolRemainingCounts[newPool] = _chunkSize;
-
-	return _pools.size() - 1;
-}
-
-void Graphic::DescriptorPool::_DestoryPool(size_t index)
-{
-	_poolRemainingCounts.erase(_pools[index]);
-
-	vkResetDescriptorPool(Graphic::GlobalInstance::device, _pools[index], 0);
-	vkDestroyDescriptorPool(Graphic::GlobalInstance::device, _pools[index], nullptr);
-	_pools.erase(_pools.begin() + index);
-
-}
-
-std::vector<VkDescriptorPoolSize> Graphic::DescriptorPool::_GetPoolSizes(DescriptorSetLayout* templateLayout, int chunkSize)
+std::vector<VkDescriptorPoolSize> Graphic::Manager::DescriptorSetManager::_DescriptorPool::GetPoolSizes(std::vector<VkDescriptorType>& types, int chunkSize)
 {
 	std::map<VkDescriptorType, uint32_t> typeCounts = std::map<VkDescriptorType, uint32_t>();
-	for (const auto& descriptorType : templateLayout->descriptorTypes)
+	for (const auto& descriptorType : types)
 	{
 		if (!typeCounts.count(descriptorType))
 		{
@@ -175,21 +127,84 @@ std::vector<VkDescriptorPoolSize> Graphic::DescriptorPool::_GetPoolSizes(Descrip
 		}
 		++typeCounts[descriptorType];
 	}
-
+	
 	std::vector<VkDescriptorPoolSize> poolSizes = std::vector<VkDescriptorPoolSize>(typeCounts.size());
 	size_t poolSizeIndex = 0;
 	for (const auto& pair : typeCounts)
 	{
 		poolSizes[poolSizeIndex].type = pair.first;
 		poolSizes[poolSizeIndex].descriptorCount = pair.second * chunkSize;
-
+	
 		poolSizeIndex++;
 	}
-
+	
 	return poolSizes;
 }
 
-void Graphic::DescriptorSet::WriteBindingData(std::vector<Graphic::DescriptorSet::WriteData> data)
+VkDescriptorPoolCreateInfo Graphic::Manager::DescriptorSetManager::_DescriptorPool::GetChunkCreateInfo(uint32_t chunkSize, std::vector<VkDescriptorPoolSize> const& chunkSizes)
+{
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(chunkSizes.size());
+	poolInfo.pPoolSizes = chunkSizes.data();
+	poolInfo.maxSets = chunkSize;
+	return poolInfo;
+}
+
+void Graphic::Manager::DescriptorSetManager::AddDescriptorSetPool(Asset::SlotType slotType, std::vector<VkDescriptorType> descriptorTypes, uint32_t chunkSize)
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	_pools[slotType] = new _DescriptorPool(slotType, descriptorTypes, chunkSize);
+}
+
+void Graphic::Manager::DescriptorSetManager::DeleteDescriptorSetPool(Asset::SlotType slotType)
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	delete _pools[slotType];
+	_pools.erase(slotType);
+}
+
+Graphic::Manager::DescriptorSet* Graphic::Manager::DescriptorSetManager::AcquireDescripterSet(Asset::SlotType slotType, VkDescriptorSetLayout descriptorSetLayout)
+{
+	std::shared_lock<std::shared_mutex> lock(_managerMutex);
+
+	return _pools[slotType]->AcquireDescripterSet(descriptorSetLayout);
+}
+
+void Graphic::Manager::DescriptorSetManager::ReleaseDescripterSet(DescriptorSetHandle descriptorSet)
+{
+	std::shared_lock<std::shared_mutex> lock(_managerMutex);
+	_pools[descriptorSet->_slotType]->ReleaseDescripterSet(descriptorSet);
+}
+
+void Graphic::Manager::DescriptorSetManager::Collect()
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+	for (auto& poolPair : _pools)
+	{
+		poolPair.second->CollectEmptyChunk();
+	}
+}
+
+Graphic::Manager::DescriptorSetManager::DescriptorSetManager()
+	: _managerMutex()
+	, _pools()
+{
+}
+
+Graphic::Manager::DescriptorSetManager::~DescriptorSetManager()
+{
+	std::unique_lock<std::shared_mutex> lock(_managerMutex);
+	for (auto& poolPair : _pools)
+	{
+		delete poolPair.second;
+	}
+}
+void Graphic::Manager::DescriptorSet::WriteBindingData(std::vector<uint32_t> bindingIndex, std::vector< Graphic::Manager::DescriptorSet::DescriptorSetWriteData> data)
 {
 	std::vector< VkDescriptorBufferInfo> bufferInfos = std::vector< VkDescriptorBufferInfo>(data.size());
 	std::vector< VkDescriptorImageInfo> imageInfos = std::vector< VkDescriptorImageInfo>(data.size());
@@ -204,48 +219,7 @@ void Graphic::DescriptorSet::WriteBindingData(std::vector<Graphic::DescriptorSet
 			bufferInfos[i].range = data[i].range;
 
 			writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeInfos[i].dstSet = descriptorSet;
-			writeInfos[i].dstBinding = static_cast<uint32_t>(i);
-			writeInfos[i].dstArrayElement = 0;
-			writeInfos[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeInfos[i].descriptorCount = 1;
-			writeInfos[i].pBufferInfo = &bufferInfos[i];
-		}
-		else if (data[i].type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-		{
-			imageInfos[i].imageLayout = data[i].layout;
-			imageInfos[i].imageView = data[i].view;
-			imageInfos[i].sampler = data[i].sampler;
-
-			writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeInfos[i].dstSet = descriptorSet;
-			writeInfos[i].dstBinding = static_cast<uint32_t>(i);
-			writeInfos[i].dstArrayElement = 0;
-			writeInfos[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeInfos[i].descriptorCount = 1;
-			writeInfos[i].pImageInfo = &imageInfos[i];
-		}
-	}
-	vkUpdateDescriptorSets(Graphic::GlobalInstance::device, static_cast<uint32_t>(writeInfos.size()), writeInfos.data(), 0, nullptr);
-
-}
-
-void Graphic::DescriptorSet::WriteBindingData(std::vector<uint32_t> bindingIndex, std::vector<WriteData> data)
-{
-	std::vector< VkDescriptorBufferInfo> bufferInfos = std::vector< VkDescriptorBufferInfo>(data.size());
-	std::vector< VkDescriptorImageInfo> imageInfos = std::vector< VkDescriptorImageInfo>(data.size());
-	std::vector< VkWriteDescriptorSet> writeInfos = std::vector< VkWriteDescriptorSet>(data.size());
-
-	for (size_t i = 0; i < data.size(); i++)
-	{
-		if (data[i].type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-		{
-			bufferInfos[i].buffer = data[i].buffer;
-			bufferInfos[i].offset = data[i].offset;
-			bufferInfos[i].range = data[i].range;
-
-			writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeInfos[i].dstSet = descriptorSet;
+			writeInfos[i].dstSet = _descriptorSet;
 			writeInfos[i].dstBinding = bindingIndex[i];
 			writeInfos[i].dstArrayElement = 0;
 			writeInfos[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -254,12 +228,12 @@ void Graphic::DescriptorSet::WriteBindingData(std::vector<uint32_t> bindingIndex
 		}
 		else if (data[i].type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 		{
-			imageInfos[i].imageLayout = data[i].layout;
-			imageInfos[i].imageView = data[i].view;
+			imageInfos[i].imageLayout = data[i].imageLayout;
+			imageInfos[i].imageView = data[i].imageView;
 			imageInfos[i].sampler = data[i].sampler;
 
 			writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeInfos[i].dstSet = descriptorSet;
+			writeInfos[i].dstSet = _descriptorSet;
 			writeInfos[i].dstBinding = bindingIndex[i];
 			writeInfos[i].dstArrayElement = 0;
 			writeInfos[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -271,16 +245,7 @@ void Graphic::DescriptorSet::WriteBindingData(std::vector<uint32_t> bindingIndex
 
 }
 
-Graphic::DescriptorSet::DescriptorSet(VkDescriptorPool sourcePool, VkDescriptorSet set)
-	: sourcePool(sourcePool)
-	, descriptorSet(set)
-{
-}
-Graphic::DescriptorSet::~DescriptorSet()
-{
-}
-
-Graphic::DescriptorSet::WriteData::WriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range)
+Graphic::Manager::DescriptorSet::DescriptorSetWriteData::DescriptorSetWriteData(VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range)
 	: type(type)
 	, buffer(buffer)
 	, offset(offset)
@@ -288,10 +253,10 @@ Graphic::DescriptorSet::WriteData::WriteData(VkDescriptorType type, VkBuffer buf
 {
 }
 
-Graphic::DescriptorSet::WriteData::WriteData(VkDescriptorType type, VkImageLayout layout, VkImageView view, VkSampler sampler)
+Graphic::Manager::DescriptorSet::DescriptorSetWriteData::DescriptorSetWriteData(VkDescriptorType type, VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout)
 	: type(type)
-	, layout(layout)
-	, view(view)
 	, sampler(sampler)
+	, imageView(imageView)
+	, imageLayout(imageLayout)
 {
 }
