@@ -499,6 +499,11 @@ VkPipeline Graphic::Asset::Shader::Pipeline()
 	return dynamic_cast<_ShaderInstance*>(_assetInstance)->vkPipeline;
 }
 
+VkPipelineLayout Graphic::Asset::Shader::PipelineLayout()
+{
+	return dynamic_cast<_ShaderInstance*>(_assetInstance)->vkPipelineLayout;
+}
+
 Graphic::Asset::Shader::ShaderSetting::ShaderSetting()
 	: cullMode(VK_CULL_MODE_NONE)
 	, blendEnable(VK_TRUE)

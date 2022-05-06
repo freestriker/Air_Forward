@@ -7,9 +7,11 @@
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
+#include "Graphic/Material.h"
 Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level)
     : name(name)
     , _parentCommandPool(commandPool)
+    , _commandData()
 {
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -139,11 +141,17 @@ void Graphic::CommandBuffer::BindMesh(Mesh* mesh)
     VkBuffer vertexBuffers[] = { mesh->VertexBuffer()};
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
-
+    _commandData.indexCount = static_cast<uint32_t>(mesh->Indices().size());
     vkCmdBindIndexBuffer(_vkCommandBuffer, mesh->IndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 void Graphic::CommandBuffer::BindMaterial(Material* material)
 {
-    vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+    auto sets = material->DescriptorSets();
+    vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->PipelineLayout(), 0, static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
+}
+
+void Graphic::CommandBuffer::Draw()
+{
+    vkCmdDrawIndexed(_vkCommandBuffer, _commandData.indexCount, 1, 0, 0, 0);
 }

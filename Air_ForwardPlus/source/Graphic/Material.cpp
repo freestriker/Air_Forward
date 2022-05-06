@@ -17,7 +17,7 @@ Graphic::Material::Material(Asset::Shader* shader)
 		newSlot.name = pair.second.slotName;
 		newSlot.slotType = pair.second.slotType;
 		newSlot.descriptorSet = Graphic::GlobalInstance::descriptorSetManager->AcquireDescripterSet(pair.second.slotType, pair.second.descriptorSetLayout);
-
+		newSlot.set = pair.second.set;
 		_slots.emplace(newSlot.name, newSlot);
 	}
 }
@@ -123,6 +123,22 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		}
 
 	}
+}
+
+VkPipelineLayout Graphic::Material::PipelineLayout()
+{
+	return this->_shader->PipelineLayout();
+}
+
+std::vector<VkDescriptorSet> Graphic::Material::DescriptorSets()
+{
+	std::vector<VkDescriptorSet> sets = std::vector<VkDescriptorSet>(_slots.size());
+
+	for (const auto& slotPair : _slots)
+	{
+		sets[slotPair.second.set] = slotPair.second.descriptorSet->Set();
+	}
+	return sets;
 }
 
 Graphic::Material::~Material()

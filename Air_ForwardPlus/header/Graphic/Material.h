@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <vulkan/vulkan_core.h>
+#include <vector>
 
 namespace Graphic
 {
@@ -29,6 +30,7 @@ namespace Graphic
 			void* asset;
 			Asset::SlotType slotType;
 			Manager::DescriptorSetHandle descriptorSet;
+			uint32_t set;
 		};
 
 	private:
@@ -41,6 +43,9 @@ namespace Graphic
 		const Asset::UniformBuffer* GetUniformBuffer(const char* name);
 		void SetUniformBuffer(const char* name, Asset::UniformBuffer* texture2d);
 		void RefreshSlotData(std::vector<std::string> slotNames);
+		VkPipelineLayout PipelineLayout();
+		std::vector<VkDescriptorSet> DescriptorSets();
+
 		~Material();
 	};
 }

@@ -49,6 +49,7 @@ namespace Graphic
 
 		VkBuffer VertexBuffer();
 		VkBuffer IndexBuffer();
+		std::vector<uint32_t>& Indices();
 	private:
 		Mesh(MeshInstance* assetInstance);
 		Mesh& operator=(const Mesh&) = delete;

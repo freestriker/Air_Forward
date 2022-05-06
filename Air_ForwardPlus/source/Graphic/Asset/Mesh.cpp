@@ -276,3 +276,8 @@ VkBuffer Graphic::Mesh::IndexBuffer()
 {
     return dynamic_cast<MeshInstance*>(_assetInstance)->_indexBuffer;
 }
+
+std::vector<uint32_t>& Graphic::Mesh::Indices()
+{
+    return dynamic_cast<MeshInstance*>(_assetInstance)->_indices;
+}

@@ -126,6 +126,7 @@ namespace Graphic
 
 			const std::map<std::string, SlotLayout>& SlotLayouts();
 			VkPipeline Pipeline();
+			VkPipelineLayout PipelineLayout();
 		private:
 			Shader(_ShaderInstance* assetInstance);
 			Shader& operator=(const Shader&) = delete;

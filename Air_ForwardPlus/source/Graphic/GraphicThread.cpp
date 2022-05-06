@@ -151,8 +151,15 @@ void Graphic::GraphicThread::OnRun()
 
 		material->RefreshSlotData({ "matrix", "testTexture2D" });
 
+		commandBuffer->BindMaterial(material);
+		commandBuffer->Draw();
+
 		commandBuffer->EndRenderPass();
 		commandBuffer->EndRecord();
+
+		commandBuffer->Submit({}, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, {});
+
+
 	}
 }
 

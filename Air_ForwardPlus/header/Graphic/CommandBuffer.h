@@ -24,9 +24,15 @@ namespace Graphic
 	{
 		friend class CommandPool;
 	private:
+		struct _CommandData
+		{
+			uint32_t indexCount;
+		};
 		Graphic::CommandPool* const _parentCommandPool;
 		VkCommandBuffer _vkCommandBuffer;
 		VkFence _vkFence;
+
+		_CommandData _commandData;
 	public:
 		std::string const name;
 
@@ -52,5 +58,6 @@ namespace Graphic
 		void BindShader(Asset::Shader* shader);
 		void BindMesh(Mesh* mesh);
 		void BindMaterial(Material* material);
+		void Draw();
 	};
 }
