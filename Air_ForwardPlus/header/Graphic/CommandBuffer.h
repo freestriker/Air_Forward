@@ -4,6 +4,22 @@
 #include <vector>
 namespace Graphic
 {
+	class Material;
+	namespace Render
+	{
+		class RenderPass;
+		typedef RenderPass* RenderPassHandle;
+	}
+	namespace Manager
+	{
+		class FrameBuffer;
+		typedef FrameBuffer* FrameBufferHandle;
+	}
+	namespace Asset
+	{
+		class Shader;
+	}
+	class Mesh;
 	class CommandBuffer
 	{
 		friend class CommandPool;
@@ -31,5 +47,10 @@ namespace Graphic
 		void EndRecord();
 		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<VkSemaphore> signalSemaphores);
 		void WaitForFinish();
+		void BeginRenderPass(Render::RenderPassHandle renderPass, Manager::FrameBufferHandle frameBuffer, std::vector< VkClearValue> clearValues);
+		void EndRenderPass();
+		void BindShader(Asset::Shader* shader);
+		void BindMesh(Mesh* mesh);
+		void BindMaterial(Material* material);
 	};
 }

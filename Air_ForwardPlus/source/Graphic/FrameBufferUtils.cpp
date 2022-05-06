@@ -85,12 +85,12 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
     if (vkCreateFramebuffer(Graphic::GlobalInstance::device, &framebufferInfo, nullptr, &newVkFrameBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create framebuffer!");
     }
-    FrameBuffer newFrameBuffer = FrameBuffer();
-    newFrameBuffer._frameBuffer = newVkFrameBuffer;
+    FrameBuffer* newFrameBuffer = new FrameBuffer();
+    newFrameBuffer->_frameBuffer = newVkFrameBuffer;
     _frameBuffers.emplace(name, newFrameBuffer);
 }
 
-const Graphic::Manager::FrameBuffer Graphic::Manager::FrameBufferManager::GetFrameBuffer(std::string name)
+Graphic::Manager::FrameBufferHandle Graphic::Manager::FrameBufferManager::GetFrameBuffer(std::string name)
 {
     return _frameBuffers[name];
 }
@@ -105,7 +105,7 @@ Graphic::Manager::FrameBufferManager::~FrameBufferManager()
 {
     for (const auto& pair : _frameBuffers)
     {
-        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second._frameBuffer, nullptr);
+        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second->_frameBuffer, nullptr);
     }
     for (const auto& pair : _attachments)
     {

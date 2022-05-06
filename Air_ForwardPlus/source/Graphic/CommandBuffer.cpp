@@ -2,6 +2,11 @@
 #include <Graphic/CommandPool.h>
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
+#include "Graphic/FrameBufferUtils.h"
+#include "Graphic/RenderPassUtils.h"
+#include "Graphic/GlobalSetting.h"
+#include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/Mesh.h"
 Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level)
     : name(name)
     , _parentCommandPool(commandPool)
@@ -13,7 +18,7 @@ Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* co
     {
         throw std::runtime_error("failed to create synchronization objects for a frame!");
     }
-    vkResetFences(GlobalInstance::device, 1, &_vkFence);
+    //vkResetFences(GlobalInstance::device, 1, &_vkFence);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -103,4 +108,42 @@ void Graphic::CommandBuffer::WaitForFinish()
 {
     vkWaitForFences(Graphic::GlobalInstance::device, 1, &_vkFence, VK_TRUE, UINT64_MAX);
 
+}
+
+void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle renderPass, Graphic::Manager::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
+{
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = renderPass->vkRenderPass;
+    renderPassInfo.framebuffer = frameBuffer->VulkanFrameBuffer();
+    renderPassInfo.renderArea.offset = { 0, 0 };
+    renderPassInfo.renderArea.extent = Graphic::GlobalSetting::windowExtent;
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(_vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void Graphic::CommandBuffer::EndRenderPass()
+{
+    vkCmdEndRenderPass(_vkCommandBuffer);
+}
+
+void Graphic::CommandBuffer::BindShader(Asset::Shader* shader)
+{
+    vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->Pipeline());
+}
+
+void Graphic::CommandBuffer::BindMesh(Mesh* mesh)
+{
+    VkBuffer vertexBuffers[] = { mesh->VertexBuffer()};
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(_vkCommandBuffer, mesh->IndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+}
+
+void Graphic::CommandBuffer::BindMaterial(Material* material)
+{
+    vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 }

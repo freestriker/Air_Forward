@@ -40,6 +40,7 @@ namespace Graphic
 		void SetTexture2D(const char* name, Texture2D* texture2d);
 		const Asset::UniformBuffer* GetUniformBuffer(const char* name);
 		void SetUniformBuffer(const char* name, Asset::UniformBuffer* texture2d);
+		void RefreshSlotData(std::vector<std::string> slotNames);
 		~Material();
 	};
 }

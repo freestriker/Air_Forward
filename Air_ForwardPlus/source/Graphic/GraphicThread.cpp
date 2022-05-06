@@ -8,6 +8,15 @@
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/FrameBufferUtils.h"
+#include "Graphic/CommandPool.h"
+#include "Graphic/CommandBuffer.h"
+#include <vulkan/vulkan_core.h>
+#include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/Mesh.h"
+#include <Graphic/Asset/Texture2D.h>
+#include "Graphic/Asset/UniformBuffer.h"
+#include <glm/glm.hpp>
+#include "Graphic/Material.h"
 
 Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
 
@@ -37,7 +46,8 @@ void Graphic::GraphicThread::Init()
 	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
-
+	this->commandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
+	this->commandBuffer = this->commandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	{
 		Graphic::Render::RenderPassCreator renderPassCreator = Graphic::Render::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
@@ -97,9 +107,52 @@ void Graphic::GraphicThread::OnStart()
 
 void Graphic::GraphicThread::OnRun()
 {
+	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
+	auto meshTask = Graphic::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
+	auto texture2dTask = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
+
+	struct Matrix
+	{
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 model;
+	};
+	Matrix modelMatrix = { glm::mat4(1), glm::mat4(1), glm::mat4(1) };
+
+	auto matrixBuffer = new Graphic::Asset::UniformBuffer(sizeof(Matrix), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	matrixBuffer->WriteBuffer(&modelMatrix, sizeof(Matrix));
+
+	auto shader = shaderTask.get();
+
+	auto material = new Graphic::Material(shader);
+
+	auto mesh = meshTask.get();
+	auto texture2d = texture2dTask.get();
+
+	material->SetTexture2D("testTexture2D", texture2d);
+	material->SetUniformBuffer("matrix", matrixBuffer);
+
 	while (!_stopped && !glfwWindowShouldClose(Graphic::GlobalInstance::window))
 	{
 		glfwPollEvents();
+
+		commandBuffer->WaitForFinish();
+		commandBuffer->Reset();
+		commandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		VkClearValue clearValue{};
+		clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		commandBuffer->BeginRenderPass(
+			Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
+			Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer"),
+			{ clearValue }
+		);
+		commandBuffer->BindShader(shader);
+		commandBuffer->BindMesh(mesh);
+
+		material->RefreshSlotData({ "matrix", "testTexture2D" });
+
+		commandBuffer->EndRenderPass();
+		commandBuffer->EndRecord();
 	}
 }
 

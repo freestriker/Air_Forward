@@ -46,6 +46,9 @@ namespace Graphic
 		virtual ~Mesh();
 		static std::future<Mesh*>LoadAsync(const char* path);
 		static Mesh* Load(const char* path);
+
+		VkBuffer VertexBuffer();
+		VkBuffer IndexBuffer();
 	private:
 		Mesh(MeshInstance* assetInstance);
 		Mesh& operator=(const Mesh&) = delete;

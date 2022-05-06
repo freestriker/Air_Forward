@@ -58,7 +58,9 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 	}
 	_CreateBuffer(sizeof(textureInfo), VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.buffer, texture.bufferMemory.get());
 
-	
+	transferCommandBuffer->Reset();
+	graphicCommandBuffer->Reset();
+
 	transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	_TransitionToTransferLayout(texture.textureImage, *transferCommandBuffer);
 	_CopyBufferToImage(textureStagingBuffer, texture.textureImage, texture.size.width, texture.size.height, *transferCommandBuffer);

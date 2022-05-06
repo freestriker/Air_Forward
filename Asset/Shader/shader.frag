@@ -1,14 +1,15 @@
 #version 450
-layout(set = 2, binding = 1) uniform Texture2DInfo{
+layout(set = 1, binding = 0) uniform sampler2D testTexture2D;
+layout(set = 1, binding = 1) uniform Texture2DInfo{
     vec4 size;
 	vec4 tilingScale;
 } testTexture2D_Texture2DInfo;
 
 
-layout(location = 0) in vec4 inColor;
+layout(location = 0) in vec2 inTexCoords;
 
 layout(location = 0) out vec4 colorAttachment;
 
 void main() {
-    colorAttachment = inColor + testTexture2D_Texture2DInfo.size;
+    colorAttachment = texture(testTexture2D, inTexCoords);
 }

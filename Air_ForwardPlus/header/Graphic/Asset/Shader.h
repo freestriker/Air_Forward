@@ -125,6 +125,7 @@ namespace Graphic
 			static Shader* Load(const char* path);
 
 			const std::map<std::string, SlotLayout>& SlotLayouts();
+			VkPipeline Pipeline();
 		private:
 			Shader(_ShaderInstance* assetInstance);
 			Shader& operator=(const Shader&) = delete;

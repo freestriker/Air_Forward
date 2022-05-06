@@ -494,6 +494,11 @@ const std::map<std::string, Graphic::Asset::Shader::SlotLayout>& Graphic::Asset:
 	return dynamic_cast<Graphic::Asset::Shader::_ShaderInstance*>(_assetInstance)->slotLayouts;
 }
 
+VkPipeline Graphic::Asset::Shader::Pipeline()
+{
+	return dynamic_cast<_ShaderInstance*>(_assetInstance)->vkPipeline;
+}
+
 Graphic::Asset::Shader::ShaderSetting::ShaderSetting()
 	: cullMode(VK_CULL_MODE_NONE)
 	, blendEnable(VK_TRUE)

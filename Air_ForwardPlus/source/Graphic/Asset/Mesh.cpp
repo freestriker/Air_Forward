@@ -171,6 +171,8 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     *_indexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(indexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, _indexBuffer, _indexBufferMemory->Memory(), _indexBufferMemory->Offset());
 
+    transferCommandBuffer->Reset();
+    graphicCommandBuffer->Reset();
 
     transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     transferCommandBuffer->CopyBuffer(stageVertexBuffer, _vertexBuffer, vertexBufferSize);
@@ -263,4 +265,14 @@ std::future<Graphic::Mesh*> Graphic::Mesh::LoadAsync(const char* path)
 Graphic::Mesh* Graphic::Mesh::Load(const char* path)
 {
 	return _Load<Graphic::Mesh, Graphic::MeshInstance>(path);
+}
+
+VkBuffer Graphic::Mesh::VertexBuffer()
+{
+    return dynamic_cast<MeshInstance*>(_assetInstance)->_vertexBuffer;
+}
+
+VkBuffer Graphic::Mesh::IndexBuffer()
+{
+    return dynamic_cast<MeshInstance*>(_assetInstance)->_indexBuffer;
 }

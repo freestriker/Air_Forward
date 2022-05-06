@@ -4,6 +4,7 @@
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Asset/UniformBuffer.h"
+#include "Graphic/DescriptorSetUtils.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
 	: _shader(shader)
@@ -87,6 +88,40 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Asset::Unifo
 	else
 	{
 		throw std::runtime_error("Failed to set uniform buffer.");
+	}
+}
+
+void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
+{
+	for (const auto& slotName : slotNames)
+	{
+		const auto& slot = _slots[slotName];
+		switch (slot.slotType)
+		{
+		case Asset::SlotType::UNIFORM_BUFFER:
+		{
+			Asset::UniformBuffer* ub = static_cast<Asset::UniformBuffer*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->Buffer(), 0, ub->Size()) });
+			break;
+		}
+		case Asset::SlotType::TEXTURE2D:
+		{
+			Graphic::Texture2D* t = static_cast<Texture2D*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->TextureSampler(), t->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
+			break;
+		}
+		case Asset::SlotType::TEXTURE2D_WITH_INFO:
+		{
+			Graphic::Texture2D* t = static_cast<Texture2D*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0, 1 }, {
+				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->TextureSampler(), t->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer(), 0, sizeof(Graphic::Texture2D::TextureInfo))
+				});
+
+			break;
+		}
+		}
+
 	}
 }
 
