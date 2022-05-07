@@ -1,5 +1,7 @@
 #pragma once
 #include "utils/Thread.h"
+#include <mutex>
+#include <condition_variable>
 namespace Graphic
 {
 	class CommandPool;
@@ -10,14 +12,22 @@ namespace Graphic
 		static GraphicThread* const instance;
 	private:
 		bool _stopped;
-		CommandPool* commandPool;
-		CommandBuffer* commandBuffer;
+		CommandPool* renderCommandPool;
+		CommandBuffer* renderCommandBuffer;
+		CommandPool* presentCommandPool;
+		CommandBuffer* presentCommandBuffer;
+
+		std::mutex _mutex;
+		std::condition_variable _readyToRenderCondition;
+		bool _readyToRender;
 	public:
 		GraphicThread();
 		~GraphicThread();
 		void Init()override;
+		void StartRender();
 	private:
 		void OnStart() override;
+		void OnThreadStart() override;
 		void OnRun() override;
 		void OnEnd() override;
 	};

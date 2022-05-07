@@ -58,6 +58,7 @@ namespace Graphic
 		void BindShader(Asset::Shader* shader);
 		void BindMesh(Mesh* mesh);
 		void BindMaterial(Material* material);
+		void CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage,VkImageLayout dstImageLayout, std::vector<VkImageCopy> regions);
 		void Draw();
 	};
 }

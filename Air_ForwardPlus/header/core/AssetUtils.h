@@ -92,7 +92,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 		return std::async([assetInstance, sPath]()
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			std::cout << sPath << " load from asset pool." << std::endl;
+			std::cerr << sPath << " load from asset pool." << std::endl;
 			return new TAsset(assetInstance);
 		});
 	}
@@ -103,7 +103,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			std::cout << sPath << " load from disk." << std::endl;
+			std::cerr << sPath << " load from disk." << std::endl;
 			return new TAsset(assetInstance);
 		});
 	}

@@ -90,12 +90,14 @@ int main()
 	LoadThread::instance->Init();
 
 	Graphic::GraphicThread::instance->Start();
+	Graphic::GraphicThread::instance->WaitForStartFinish();
+
 	LoadThread::instance->Start();
 
+	Graphic::GraphicThread::instance->StartRender();
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
 	LoadThread::instance->End();
 	Graphic::GraphicThread::instance->End();
 }
-// outputs: "Hello World"

@@ -8,6 +8,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     Attachment* newAttachment = new Attachment();
     newAttachment->name = name;
     newAttachment->size = size;
+    newAttachment->aspectFlag =static_cast<VkImageAspectFlagBits>(aspectFlags);
 
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -57,11 +58,12 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
 {
     std::vector<Attachment*> usedAttachments = std::vector<Attachment*>(attachmentNames.size());
     std::vector<VkImageView> usedImageViews = std::vector<VkImageView>(attachmentNames.size());
-
+    std::map<std::string, Attachment*> usedAttachmentsMap = std::map<std::string, Attachment*>();
     for (size_t i = 0; i < attachmentNames.size(); i++)
     {
         usedAttachments[i] = _attachments[attachmentNames[i]];
         usedImageViews[i] = _attachments[attachmentNames[i]]->imageView;
+        usedAttachmentsMap[attachmentNames[i]] = _attachments[attachmentNames[i]];
     }
 
     for (const auto& pair1 : renderPass->colorAttachmentMap)
@@ -87,6 +89,7 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
     }
     FrameBuffer* newFrameBuffer = new FrameBuffer();
     newFrameBuffer->_frameBuffer = newVkFrameBuffer;
+    newFrameBuffer->_attachments = std::move(usedAttachmentsMap);
     _frameBuffers.emplace(name, newFrameBuffer);
 }
 
@@ -128,4 +131,9 @@ Graphic::Manager::Attachment::~Attachment()
 VkFramebuffer Graphic::Manager::FrameBuffer::VulkanFrameBuffer()
 {
    return _frameBuffer;
+}
+
+const Graphic::Manager::AttachmentHandle Graphic::Manager::FrameBuffer::GetAttachment(std::string name)
+{
+    return _attachments[name];
 }

@@ -23,17 +23,21 @@ namespace Graphic
 			VkImageView imageView;
 			MemoryBlock* memoryBlock;
 			VkExtent2D size;
+			VkImageAspectFlagBits aspectFlag;
 		private:
 			Attachment();
 			~Attachment();
 		};
+		typedef Attachment* AttachmentHandle;
 		class FrameBuffer
 		{
 			friend class FrameBufferManager;
 		private:
 			VkFramebuffer _frameBuffer;
+			std::map<std::string, Attachment*> _attachments;
 		public:
 			VkFramebuffer VulkanFrameBuffer();
+			const AttachmentHandle GetAttachment(std::string name);
 		};
 		typedef FrameBuffer* FrameBufferHandle;
 		class FrameBufferManager

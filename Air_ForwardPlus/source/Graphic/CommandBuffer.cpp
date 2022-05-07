@@ -151,6 +151,11 @@ void Graphic::CommandBuffer::BindMaterial(Material* material)
     vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->PipelineLayout(), 0, static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
 }
 
+void Graphic::CommandBuffer::CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkImageCopy> regions)
+{
+    vkCmdCopyImage(_vkCommandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
+}
+
 void Graphic::CommandBuffer::Draw()
 {
     vkCmdDrawIndexed(_vkCommandBuffer, _commandData.indexCount, 1, 0, 0, 0);

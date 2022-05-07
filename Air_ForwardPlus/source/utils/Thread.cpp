@@ -4,6 +4,10 @@ void Thread::OnStart()
 {
 }
 
+void Thread::OnThreadStart()
+{
+}
+
 void Thread::OnRun()
 {
 }
@@ -12,7 +16,7 @@ void Thread::OnEnd()
 {
 }
 
-Thread::Thread(): _thread()
+Thread::Thread(): _thread(), _finishOnThreadStart(false)
 {
 
 }
@@ -42,7 +46,17 @@ void Thread::End()
 	}
 }
 
+void Thread::WaitForStartFinish()
+{
+	while (!_finishOnThreadStart)
+	{
+		std::this_thread::yield();
+	}
+}
+
 void Thread::Run()
 {
+	OnThreadStart();
+	_finishOnThreadStart = true;
 	OnRun();
 }

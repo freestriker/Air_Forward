@@ -185,52 +185,52 @@ void Graphic::GlobalInstance::CreateWindowSwapchainImages()
     windowSwapchainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(device, windowSwapchain, &imageCount, windowSwapchainImages.data());
 
-    windowSwapchainImageViews.resize(imageCount);
-    for (size_t i = 0; i < imageCount; i++)
-    {
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = windowSwapchainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = GlobalSetting::windowImageFormat;
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
+    //windowSwapchainImageViews.resize(imageCount);
+    //for (size_t i = 0; i < imageCount; i++)
+    //{
+    //    VkImageViewCreateInfo createInfo{};
+    //    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    //    createInfo.image = windowSwapchainImages[i];
+    //    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    //    createInfo.format = GlobalSetting::windowImageFormat;
+    //    createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //    createInfo.subresourceRange.baseMipLevel = 0;
+    //    createInfo.subresourceRange.levelCount = 1;
+    //    createInfo.subresourceRange.baseArrayLayer = 0;
+    //    createInfo.subresourceRange.layerCount = 1;
 
-        VkResult imageViewResult = vkCreateImageView(device, &createInfo, nullptr, &windowSwapchainImageViews[i]);
-        if (imageViewResult != VK_SUCCESS)
-        {
-            std::string err = "Failed to create image view, errcode: ";
-            err += imageViewResult;
-            err += ".";
-            throw std::runtime_error(err);
-        }
-    }
+    //    VkResult imageViewResult = vkCreateImageView(device, &createInfo, nullptr, &windowSwapchainImageViews[i]);
+    //    if (imageViewResult != VK_SUCCESS)
+    //    {
+    //        std::string err = "Failed to create image view, errcode: ";
+    //        err += imageViewResult;
+    //        err += ".";
+    //        throw std::runtime_error(err);
+    //    }
+    //}
 
-    windowImageAvailableSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
-    renderImageFinishedSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
-    frameInFlightFences.resize(GlobalSetting::maxFrameInFlightCount);
+    //windowImageAvailableSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
+    //renderImageFinishedSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
+    //frameInFlightFences.resize(GlobalSetting::maxFrameInFlightCount);
 
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    //VkSemaphoreCreateInfo semaphoreInfo{};
+    //semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    //VkFenceCreateInfo fenceInfo{};
+    //fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    //fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < GlobalSetting::maxFrameInFlightCount; i++) {
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &windowImageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderImageFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &frameInFlightFences[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
-        }
-    }
+    //for (size_t i = 0; i < GlobalSetting::maxFrameInFlightCount; i++) {
+    //    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &windowImageAvailableSemaphores[i]) != VK_SUCCESS ||
+    //        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderImageFinishedSemaphores[i]) != VK_SUCCESS ||
+    //        vkCreateFence(device, &fenceInfo, nullptr, &frameInFlightFences[i]) != VK_SUCCESS) {
+    //        throw std::runtime_error("failed to create synchronization objects for a frame!");
+    //    }
+    //}
 
 }
 

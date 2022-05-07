@@ -12,6 +12,6 @@ layout(location = 1) in vec2 vertexTexCoords;
 layout(location = 0) out vec2 outTexCoords;
 
 void main() {
-    gl_Position = matrix.proj * matrix.view * matrix.model * vec4(vertexPosition, 1.0);
+    gl_Position = /*matrix.proj * matrix.view * matrix.model * */vec4(vertexPosition, 1.0);
     outTexCoords = vertexTexCoords;
 }

@@ -15,17 +15,17 @@ LoadThread* const LoadThread::instance = new LoadThread();
 
 void LoadThread::Init()
 {
-	_subLoadThreads.emplace_back(new SubLoadThread(*this));
-	_subLoadThreads.emplace_back(new SubLoadThread(*this));
-	_subLoadThreads.emplace_back(new SubLoadThread(*this));
-	_subLoadThreads.emplace_back(new SubLoadThread(*this));
-	std::cout << "LoadThread::Init()" << std::endl;
+	std::cerr << "LoadThread::Init()" << std::endl;
 }
 
 void LoadThread::OnStart()
 {
 	_stopped = false;
-	std::cout << "LoadThread::OnStart()" << std::endl;
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	_subLoadThreads.emplace_back(new SubLoadThread(*this));
+	std::cerr << "LoadThread::OnStart()" << std::endl;
 }
 
 void LoadThread::OnRun()
@@ -36,7 +36,7 @@ void LoadThread::OnRun()
 	}
 	while (!_stopped)
 	{
-		std::cout << "LoadThread::OnRun()" << std::endl;
+		std::cerr << "LoadThread::OnRun()" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		//{
 		//	auto r1 = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
@@ -111,7 +111,7 @@ void LoadThread::OnEnd()
 	{
 		subLoadThread->End();
 	}
-	std::cout << "LoadThread::OnEnd()" << std::endl;
+	std::cerr << "LoadThread::OnEnd()" << std::endl;
 }
 
 LoadThread::LoadThread()

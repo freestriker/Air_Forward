@@ -33,6 +33,23 @@ Graphic::GraphicThread::~GraphicThread()
 
 void Graphic::GraphicThread::Init()
 {
+}
+
+void Graphic::GraphicThread::StartRender()
+{
+	_readyToRender = true;
+	_readyToRenderCondition.notify_all();
+}
+
+void Graphic::GraphicThread::OnStart()
+{
+
+	_stopped = false;
+	_readyToRender = false;
+}
+
+void Graphic::GraphicThread::OnThreadStart()
+{
 	Graphic::GlfwWindowCreator glfwWindowCreator = Graphic::GlfwWindowCreator();
 	Graphic::GlobalInstance::CreateGlfwWindow(&glfwWindowCreator);
 	Graphic::VulkanInstanceCreator vulkanInstanceCreator = Graphic::VulkanInstanceCreator();
@@ -45,9 +62,12 @@ void Graphic::GraphicThread::Init()
 	vulkanDeviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
+	vulkanDeviceCreator.AddQueue("PresentQueue", VkQueueFlagBits::VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
-	this->commandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
-	this->commandBuffer = this->commandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	this->renderCommandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
+	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	this->presentCommandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
+	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	{
 		Graphic::Render::RenderPassCreator renderPassCreator = Graphic::Render::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
@@ -89,24 +109,28 @@ void Graphic::GraphicThread::Init()
 			Graphic::GlobalSetting::windowExtent,
 			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			VK_IMAGE_ASPECT_COLOR_BIT
 		);
 		Graphic::GlobalInstance::frameBufferManager->AddFrameBuffer("OpaqueFrameBuffer", Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"), { "ColorAttachment" });
 		Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer");
 	}
-}
 
-void Graphic::GraphicThread::OnStart()
-{
-
-	_stopped = false;
 
 }
 
 void Graphic::GraphicThread::OnRun()
 {
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		while (!_readyToRender)
+		{
+			_readyToRenderCondition.wait(lock);
+		}
+	}
+
+
 	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
 	auto meshTask = Graphic::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
 	auto texture2dTask = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
@@ -124,41 +148,194 @@ void Graphic::GraphicThread::OnRun()
 
 	auto shader = shaderTask.get();
 
-	auto material = new Graphic::Material(shader);
+	auto material1 = new Graphic::Material(shader);
+	auto material2 = new Graphic::Material(shader);
 
 	auto mesh = meshTask.get();
 	auto texture2d = texture2dTask.get();
 
-	material->SetTexture2D("testTexture2D", texture2d);
-	material->SetUniformBuffer("matrix", matrixBuffer);
+	material1->SetTexture2D("testTexture2D", texture2d);
+	material1->SetUniformBuffer("matrix", matrixBuffer);
+
+	material2->SetTexture2D("testTexture2D", texture2d);
+	material2->SetUniformBuffer("matrix", matrixBuffer);
+
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
+	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	}
+	VkSemaphore attachmentAvailableSemaphore = VK_NULL_HANDLE;
+	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &attachmentAvailableSemaphore) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	}
+	VkSemaphore copyAvailableSemaphore = VK_NULL_HANDLE;
+	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &copyAvailableSemaphore) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	}
 
 	while (!_stopped && !glfwWindowShouldClose(Graphic::GlobalInstance::window))
 	{
 		glfwPollEvents();
 
-		commandBuffer->WaitForFinish();
-		commandBuffer->Reset();
-		commandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-		VkClearValue clearValue{};
-		clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-		commandBuffer->BeginRenderPass(
-			Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
-			Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer"),
-			{ clearValue }
-		);
-		commandBuffer->BindShader(shader);
-		commandBuffer->BindMesh(mesh);
+		renderCommandBuffer->Reset();
+		renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		//Render
+		{
+			VkClearValue clearValue{};
+			clearValue.color = { {0.0f, 1.0f, 0.0f, 1.0f} };
+			renderCommandBuffer->BeginRenderPass(
+				Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
+				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer"),
+				{ clearValue }
+			);
+			renderCommandBuffer->BindShader(shader);
+			renderCommandBuffer->BindMesh(mesh);
 
-		material->RefreshSlotData({ "matrix", "testTexture2D" });
+			material1->RefreshSlotData({ "matrix", "testTexture2D" });
+			renderCommandBuffer->BindMaterial(material1);
+			renderCommandBuffer->Draw();
 
-		commandBuffer->BindMaterial(material);
-		commandBuffer->Draw();
+			material2->RefreshSlotData({ "matrix", "testTexture2D" });
+			renderCommandBuffer->BindMaterial(material2);
+			renderCommandBuffer->Draw();
 
-		commandBuffer->EndRenderPass();
-		commandBuffer->EndRecord();
+			renderCommandBuffer->EndRenderPass();
+		}
+		//Render queue release attachment
+		{
+			VkImageMemoryBarrier attachmentReleaseBarrier{};
+			attachmentReleaseBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
+			attachmentReleaseBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
+			attachmentReleaseBarrier.subresourceRange.baseMipLevel = 0;
+			attachmentReleaseBarrier.subresourceRange.levelCount = 1;
+			attachmentReleaseBarrier.subresourceRange.baseArrayLayer = 0;
+			attachmentReleaseBarrier.subresourceRange.layerCount = 1;
+			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			attachmentReleaseBarrier.dstAccessMask = 0;
 
-		commandBuffer->Submit({}, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, {});
+			renderCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				{},
+				{},
+				{ attachmentReleaseBarrier }
+			);
+		}
+		renderCommandBuffer->EndRecord();
+		renderCommandBuffer->Submit({}, {}, { attachmentAvailableSemaphore });
 
+		uint32_t imageIndex;
+		VkResult result = vkAcquireNextImageKHR(Graphic::GlobalInstance::device, Graphic::GlobalInstance::windowSwapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+		presentCommandBuffer->Reset();
+		presentCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		//Present queue acquire attachment
+		{
+			VkImageMemoryBarrier attachmentAcquireBarrier{};
+			attachmentAcquireBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			attachmentAcquireBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			attachmentAcquireBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			attachmentAcquireBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+			attachmentAcquireBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
+			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
+			attachmentAcquireBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
+			attachmentAcquireBarrier.subresourceRange.baseMipLevel = 0;
+			attachmentAcquireBarrier.subresourceRange.levelCount = 1;
+			attachmentAcquireBarrier.subresourceRange.baseArrayLayer = 0;
+			attachmentAcquireBarrier.subresourceRange.layerCount = 1;
+			attachmentAcquireBarrier.srcAccessMask = 0;
+			attachmentAcquireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
+
+			VkImageMemoryBarrier attachmentReleaseBarrier{};
+			attachmentReleaseBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
+			attachmentReleaseBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
+			attachmentReleaseBarrier.subresourceRange.baseMipLevel = 0;
+			attachmentReleaseBarrier.subresourceRange.levelCount = 1;
+			attachmentReleaseBarrier.subresourceRange.baseArrayLayer = 0;
+			attachmentReleaseBarrier.subresourceRange.layerCount = 1;
+			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
+			attachmentReleaseBarrier.dstAccessMask = 0;
+
+			VkImageMemoryBarrier transferDstBarrier{};
+			transferDstBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			transferDstBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+			transferDstBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			transferDstBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			transferDstBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			transferDstBarrier.image = Graphic::GlobalInstance::windowSwapchainImages[imageIndex];
+			transferDstBarrier.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+			transferDstBarrier.subresourceRange.baseMipLevel = 0;
+			transferDstBarrier.subresourceRange.levelCount = 1;
+			transferDstBarrier.subresourceRange.baseArrayLayer = 0;
+			transferDstBarrier.subresourceRange.layerCount = 1;
+			transferDstBarrier.srcAccessMask = 0;
+			transferDstBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+
+			VkImageMemoryBarrier presentSrcBarrier{};
+			presentSrcBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			presentSrcBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			presentSrcBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			presentSrcBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			presentSrcBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			presentSrcBarrier.image = Graphic::GlobalInstance::windowSwapchainImages[imageIndex];
+			presentSrcBarrier.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+			presentSrcBarrier.subresourceRange.baseMipLevel = 0;
+			presentSrcBarrier.subresourceRange.levelCount = 1;
+			presentSrcBarrier.subresourceRange.baseArrayLayer = 0;
+			presentSrcBarrier.subresourceRange.layerCount = 1;
+			presentSrcBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+			presentSrcBarrier.dstAccessMask = 0;
+
+			presentCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+				{},
+				{},
+				{ attachmentAcquireBarrier, transferDstBarrier }
+			);
+
+			VkImageSubresourceLayers imageSubresourceLayers = { VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT , 0, 0, 1};
+			VkImageCopy imageCopy = { imageSubresourceLayers , {0, 0, 0}, imageSubresourceLayers, {0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1} };
+			presentCommandBuffer->CopyImage(
+				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image,
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				Graphic::GlobalInstance::windowSwapchainImages[imageIndex],
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				{ imageCopy });
+
+			presentCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				{},
+				{},
+				{ attachmentReleaseBarrier, presentSrcBarrier }
+			);
+		}
+		presentCommandBuffer->EndRecord();
+		presentCommandBuffer->Submit({ imageAvailableSemaphore, attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, { copyAvailableSemaphore });
+
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &Graphic::GlobalInstance::windowSwapchain;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &copyAvailableSemaphore;
+
+		result = vkQueuePresentKHR(Graphic::GlobalInstance::queues["PresentQueue"]->queue, &presentInfo);
+
+		presentCommandBuffer->WaitForFinish();
 
 	}
 }
