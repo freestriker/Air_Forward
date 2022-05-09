@@ -28,7 +28,7 @@ void Graphic::MeshInstance::_LoadData()
 	{
 		std::string e = "ERROR::ASSIMP:: ";
 		e += importer.GetErrorString();
-		throw std::runtime_error(e.c_str());
+        std::cerr <<e.c_str();
 	}
 
 	// process ASSIMP's root node recursively
@@ -71,7 +71,7 @@ void Graphic::MeshInstance::_LoadData()
             vertexData.bitangent = vector;
         }
         else
-            throw std::runtime_error("Do not contains uv.");
+            std::cerr << "Do not contains uv.";
 
         _vertices.push_back(vertexData);
     }
@@ -95,7 +95,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     VkSemaphore semaphore = VK_NULL_HANDLE;
     if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create synchronization objects for a frame!");
+        std::cerr << "failed to create synchronization objects for a frame!";
     }
 
     VkBufferCreateInfo stageVertexBufferInfo{};
@@ -106,7 +106,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     VkBuffer stageVertexBuffer;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageVertexBufferInfo, nullptr, &stageVertexBuffer) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create buffer!");
+        std::cerr << "failed to create buffer!";
     }
     VkMemoryRequirements stageVertexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageVertexBuffer, &stageVertexMemRequirements);
@@ -128,7 +128,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     VkBuffer stageIndexBuffer;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &stageIndexBufferInfo, nullptr, &stageIndexBuffer) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create buffer!");
+        std::cerr << "failed to create buffer!";
     }
     VkMemoryRequirements stageIndexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageIndexBuffer, &stageIndexMemRequirements);
@@ -150,7 +150,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     vertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &vertexBufferInfo, nullptr, &_vertexBuffer) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create buffer!");
+        std::cerr << "failed to create buffer!";
     }
     VkMemoryRequirements vertexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _vertexBuffer, &vertexMemRequirements);
@@ -164,7 +164,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     indexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     if (vkCreateBuffer(Graphic::GlobalInstance::device, &indexBufferInfo, nullptr, &_indexBuffer) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create buffer!");
+        std::cerr << "failed to create buffer!";
     }
     VkMemoryRequirements indexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _indexBuffer, &indexMemRequirements);

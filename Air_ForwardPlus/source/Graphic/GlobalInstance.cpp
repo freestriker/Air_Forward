@@ -43,6 +43,7 @@ void Graphic::GlobalInstance::AddDeviceWindowParameter(VulkanDeviceCreator* crea
     creator->AddQueue("PresentQueue", VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0f);
 #ifdef _USE_GRAPHIC_DEBUG
     creator->AddDeviceLayer("VK_LAYER_KHRONOS_validation");
+    creator->AddDeviceLayer("VK_LAYER_RENDERDOC_Capture");
 #endif
 }
 
@@ -50,6 +51,7 @@ void Graphic::GlobalInstance::AddDeviceWindowParameter(VulkanDeviceCreator* crea
 void Graphic::GlobalInstance::AddInstanceDebugExtension(VulkanInstanceCreator* creator)
 {
 	creator->AddLayer("VK_LAYER_KHRONOS_validation");
+	creator->AddLayer("VK_LAYER_RENDERDOC_Capture");
 	creator->AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 }
 void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creator)
@@ -423,6 +425,7 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = nullptr;
 
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -442,9 +445,9 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         VkResult result = vkCreateDevice(device, &createInfo, nullptr, &(GlobalInstance::device));
         if (result != VK_SUCCESS) {
             std::string err = "Failed to create logical device, errcode: ";
-            err += result;
+            err += std::to_string(static_cast<int>(result));
             err += ".";
-            throw std::runtime_error(err);
+            std::cerr << err << std::endl;
         }
 
         usedCounts = std::vector<uint32_t>(queueFamilyCount, 0);

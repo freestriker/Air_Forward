@@ -29,7 +29,7 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 	VkSemaphore semaphore = VK_NULL_HANDLE;
 	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to create synchronization objects for a frame!");
+		std::cerr << "failed to create synchronization objects for a frame!";
 	}
 
 	_LoadBitmap(config, texture);
@@ -178,7 +178,7 @@ void Graphic::Texture2DInstance::_CreateBuffer(VkDeviceSize size, VkBufferUsageF
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(Graphic::GlobalInstance::device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create buffer!");
+		std::cerr << "failed to create buffer!";
 	}
 
 	VkMemoryRequirements memRequirements;
@@ -200,7 +200,7 @@ uint32_t Graphic::Texture2DInstance::_FindMemoryType(uint32_t typeFilter, VkMemo
 		}
 	}
 
-	throw std::runtime_error("failed to find suitable memory type!");
+	std::cerr << "failed to find suitable memory type!";
 }
 void Graphic::Texture2DInstance::_CreateImage(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture)
 {
@@ -220,7 +220,7 @@ void Graphic::Texture2DInstance::_CreateImage(Texture2DAssetConfig& config, Grap
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &texture.textureImage) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create image!");
+		std::cerr << "failed to create image!";
 	}
 
 	VkMemoryRequirements memRequirements;
@@ -291,7 +291,7 @@ void Graphic::Texture2DInstance::_CreateImageView(Texture2DAssetConfig& config, 
 
 	if (vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &texture.textureImageView) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to create texture image view!");
+		std::cerr << "failed to create texture image view!";
 	}
 }
 void Graphic::Texture2DInstance::_CreateTextureSampler(Texture2DAssetConfig& config, Graphic::Texture2DInstance& texture)
@@ -316,7 +316,7 @@ void Graphic::Texture2DInstance::_CreateTextureSampler(Texture2DAssetConfig& con
 
 	if (vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture.sampler) != VK_SUCCESS)
 	{
-		throw std::runtime_error("failed to create texture sampler!");
+		std::cerr << "failed to create texture sampler!";
 	}
 }
 

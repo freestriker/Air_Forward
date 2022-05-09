@@ -1,6 +1,7 @@
 #include "Graphic/Asset/UniformBuffer.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/MemoryManager.h"
+#include <iostream>
 
 Graphic::Asset::UniformBuffer::UniformBuffer(size_t size, VkMemoryPropertyFlags properties)
 	: _vkBuffer(VK_NULL_HANDLE)
@@ -14,7 +15,7 @@ Graphic::Asset::UniformBuffer::UniformBuffer(size_t size, VkMemoryPropertyFlags 
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(Graphic::GlobalInstance::device, &bufferInfo, nullptr, &_vkBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create buffer!");
+		std::cerr << "failed to create buffer!";
 	}
 
 	VkMemoryRequirements memRequirements;

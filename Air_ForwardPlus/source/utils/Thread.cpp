@@ -1,4 +1,5 @@
 #include "utils/Thread.h"
+#include <iostream>
 
 void Thread::OnStart()
 {
@@ -32,6 +33,7 @@ void Thread::Init()
 
 void Thread::Start()
 {
+	std::cerr << "Thread::OnStart()" << std::endl;
 	OnStart();
 	std::thread t(&Thread::Run, this);
 	_thread.swap(t);
