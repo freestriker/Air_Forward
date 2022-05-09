@@ -47,6 +47,7 @@
     <ClInclude Include="header\Graphic\MemoryManager.h" />
     <ClInclude Include="header\Graphic\RenderPassUtils.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\DebugUtils.h" />
     <ClInclude Include="header\utils\spirv_reflect.h" />
     <ClInclude Include="header\utils\Thread.h" />
     <ClInclude Include="header\utils\ThreadPool.h" />
@@ -81,6 +82,7 @@
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\DebugUtils.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />

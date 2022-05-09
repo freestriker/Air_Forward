@@ -104,6 +104,9 @@
     <ClInclude Include="header\Graphic\FrameBufferUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\utils\DebugUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -138,5 +141,6 @@
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
     <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
+    <ClCompile Include="source\utils\DebugUtils.cpp" />
   </ItemGroup>
 </Project>

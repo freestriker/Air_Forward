@@ -9,6 +9,7 @@
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/FrameBufferUtils.h"
+#include "utils/DebugUtils.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -73,12 +74,7 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		result = VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-	if (result != VK_SUCCESS) {
-		std::string err = "Failed to set up debug messenger, errcode ";
-		err += std::to_string(result);
-		err += ".";
-		throw std::runtime_error(err);
-	}
+    Debug::Log("Failed to set up debug messenger.", result);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -170,12 +166,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkResult swapChainResult = vkCreateSwapchainKHR(device, &createInfo, nullptr, &windowSwapchain);
-    if (swapChainResult != VK_SUCCESS) {
-        std::string err = "Failed to create swap chain, errcode: ";
-        err += swapChainResult;
-        err += ".";
-        throw std::runtime_error(err);
-    }
+    Debug::Log("Failed to create swap chain.", swapChainResult);
 
 }
 

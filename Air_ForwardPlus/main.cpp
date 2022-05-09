@@ -10,6 +10,7 @@
 #include <core/Global.h>
 #include "core/LoadThread.h"
 #include "Graphic/GraphicThread.h"
+#include "utils/DebugUtils.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION
@@ -47,15 +48,15 @@ void LoadTexture(std::string path)
 	}
 	else
 	{
-		std::cerr<< "Can not read texture " + path + ".";
+		Debug::Log("Can not read texture " + path + ".");
 	}
 	if (texture == nullptr)
 	{
-		std::cerr << "Read texture " + path + " failed.";
+		Debug::Log("Read texture " + path + "failed.");
 	}
 	else
 	{
-		std::cout << "Load Texture Success!" << std::endl;
+		Debug::Log("Load texture not success.");
 	}
 }
 int main()
@@ -66,33 +67,25 @@ int main()
 	GameObject* go0 = ObjectFactory::InstantiateGameObject();
 	go0->name = "go0";
 	global.rootGameObject->AddChild(go0);
-	std::cerr << "go0" << std::endl;
 
 	GameObject* go1 = ObjectFactory::InstantiateGameObject();
 	go1->name = "go1";
 	global.rootGameObject->AddChild(go1);
-	std::cerr << "go1" << std::endl;
 
 	GameObject* go2 = ObjectFactory::InstantiateGameObject();
 	go2->name = "go2";
 	global.rootGameObject->AddChild(go2);
-	std::cerr << "go2" << std::endl;
 
 	GameObject* go00 = ObjectFactory::InstantiateGameObject();
 	go00->name = "go00";
 	go0->AddChild(go00);
-	std::cerr << "go00" << std::endl;
 
 	GameObject* go01 = ObjectFactory::InstantiateGameObject();
 	go01->name = "go01";
 	go0->AddChild(go01);
-	std::cerr << "go01" << std::endl;
 
 	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
 	go0->AddComponent(testTransform);
-	std::cerr << "testTransform" << std::endl;
-
-	//std::this_thread::sleep_for(std::chrono::seconds(20));
 
 	Graphic::GraphicThread::instance->Init();
 	LoadThread::instance->Init();
