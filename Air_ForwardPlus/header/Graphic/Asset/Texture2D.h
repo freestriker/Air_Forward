@@ -25,7 +25,7 @@ namespace Graphic
 		Texture2DAssetConfig(const char* path)
 			: path(path)
 			, sampleCount(VK_SAMPLE_COUNT_1_BIT)
-			, format(VK_FORMAT_R8G8B8A8_SRGB)
+			, format(VK_FORMAT_B8G8R8A8_SRGB)
 			, magFilter(VK_FILTER_LINEAR)
 			, minFilter(VK_FILTER_LINEAR)
 			, addressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT)

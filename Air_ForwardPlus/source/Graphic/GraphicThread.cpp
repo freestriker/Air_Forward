@@ -75,7 +75,7 @@ void Graphic::GraphicThread::OnThreadStart()
 			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			VK_ATTACHMENT_STORE_OP_STORE,
-			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 		);
 		renderPassCreator.AddSubpassWithColorAttachment(
@@ -184,10 +184,34 @@ void Graphic::GraphicThread::OnRun()
 
 		renderCommandBuffer->Reset();
 		renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		//Render queue acquire attachment
+		{
+			VkImageMemoryBarrier attachmentAcquireBarrier{};
+			attachmentAcquireBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			attachmentAcquireBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentAcquireBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+			attachmentAcquireBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
+			attachmentAcquireBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
+			attachmentAcquireBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
+			attachmentAcquireBarrier.subresourceRange.baseMipLevel = 0;
+			attachmentAcquireBarrier.subresourceRange.levelCount = 1;
+			attachmentAcquireBarrier.subresourceRange.baseArrayLayer = 0;
+			attachmentAcquireBarrier.subresourceRange.layerCount = 1;
+			attachmentAcquireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
+			attachmentAcquireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			renderCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				{},
+				{},
+				{ attachmentAcquireBarrier }
+			);
+		}
 		//Render
 		{
 			VkClearValue clearValue{};
-			clearValue.color = { {0.0f, 1.0f, 0.0f, 1.0f} };
+			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 			renderCommandBuffer->BeginRenderPass(
 				Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
 				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer"),
@@ -210,7 +234,7 @@ void Graphic::GraphicThread::OnRun()
 		{
 			VkImageMemoryBarrier attachmentReleaseBarrier{};
 			attachmentReleaseBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
 			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
@@ -221,10 +245,10 @@ void Graphic::GraphicThread::OnRun()
 			attachmentReleaseBarrier.subresourceRange.baseArrayLayer = 0;
 			attachmentReleaseBarrier.subresourceRange.layerCount = 1;
 			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			attachmentReleaseBarrier.dstAccessMask = 0;
+			attachmentReleaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
 
 			renderCommandBuffer->AddPipelineBarrier(
-				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
 				{},
 				{},
 				{ attachmentReleaseBarrier }
@@ -251,23 +275,8 @@ void Graphic::GraphicThread::OnRun()
 			attachmentAcquireBarrier.subresourceRange.levelCount = 1;
 			attachmentAcquireBarrier.subresourceRange.baseArrayLayer = 0;
 			attachmentAcquireBarrier.subresourceRange.layerCount = 1;
-			attachmentAcquireBarrier.srcAccessMask = 0;
+			attachmentAcquireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			attachmentAcquireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
-
-			VkImageMemoryBarrier attachmentReleaseBarrier{};
-			attachmentReleaseBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
-			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
-			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
-			attachmentReleaseBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
-			attachmentReleaseBarrier.subresourceRange.baseMipLevel = 0;
-			attachmentReleaseBarrier.subresourceRange.levelCount = 1;
-			attachmentReleaseBarrier.subresourceRange.baseArrayLayer = 0;
-			attachmentReleaseBarrier.subresourceRange.layerCount = 1;
-			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
-			attachmentReleaseBarrier.dstAccessMask = 0;
 
 			VkImageMemoryBarrier transferDstBarrier{};
 			transferDstBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -283,6 +292,42 @@ void Graphic::GraphicThread::OnRun()
 			transferDstBarrier.subresourceRange.layerCount = 1;
 			transferDstBarrier.srcAccessMask = 0;
 			transferDstBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+
+			presentCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+				{},
+				{},
+				{ attachmentAcquireBarrier, transferDstBarrier }
+			);
+		}
+		//Copy attachment
+		{
+			VkImageSubresourceLayers imageSubresourceLayers = { VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT , 0, 0, 1};
+			VkImageBlit imageBlit = { imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}}, imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}} };
+			presentCommandBuffer->Blit(
+				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image,
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				Graphic::GlobalInstance::windowSwapchainImages[imageIndex],
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				{ imageBlit }
+			, VkFilter::VK_FILTER_NEAREST);
+		}
+		//Present queue release attachment
+		{
+			VkImageMemoryBarrier attachmentReleaseBarrier{};
+			attachmentReleaseBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			attachmentReleaseBarrier.oldLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
+			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image;
+			attachmentReleaseBarrier.subresourceRange.aspectMask = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->aspectFlag;
+			attachmentReleaseBarrier.subresourceRange.baseMipLevel = 0;
+			attachmentReleaseBarrier.subresourceRange.levelCount = 1;
+			attachmentReleaseBarrier.subresourceRange.baseArrayLayer = 0;
+			attachmentReleaseBarrier.subresourceRange.layerCount = 1;
+			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
+			attachmentReleaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 			VkImageMemoryBarrier presentSrcBarrier{};
 			presentSrcBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -300,30 +345,14 @@ void Graphic::GraphicThread::OnRun()
 			presentSrcBarrier.dstAccessMask = 0;
 
 			presentCommandBuffer->AddPipelineBarrier(
-				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-				{},
-				{},
-				{ attachmentAcquireBarrier, transferDstBarrier }
-			);
-
-			VkImageSubresourceLayers imageSubresourceLayers = { VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT , 0, 0, 1};
-			VkImageCopy imageCopy = { imageSubresourceLayers , {0, 0, 0}, imageSubresourceLayers, {0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1} };
-			presentCommandBuffer->CopyImage(
-				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->GetAttachment("ColorAttachment")->image,
-				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				Graphic::GlobalInstance::windowSwapchainImages[imageIndex],
-				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				{ imageCopy });
-
-			presentCommandBuffer->AddPipelineBarrier(
-				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 				{},
 				{},
 				{ attachmentReleaseBarrier, presentSrcBarrier }
 			);
 		}
 		presentCommandBuffer->EndRecord();
-		presentCommandBuffer->Submit({ imageAvailableSemaphore, attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, { copyAvailableSemaphore });
+		presentCommandBuffer->Submit({ imageAvailableSemaphore, attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { copyAvailableSemaphore });
 
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

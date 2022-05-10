@@ -60,5 +60,6 @@ namespace Graphic
 		void BindMaterial(Material* material);
 		void CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage,VkImageLayout dstImageLayout, std::vector<VkImageCopy> regions);
 		void Draw();
+		void Blit(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector< VkImageBlit> regions, VkFilter filter);
 	};
 }

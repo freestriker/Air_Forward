@@ -11,6 +11,6 @@ layout(location = 0) in vec2 inTexCoords;
 layout(location = 0) out vec4 colorAttachment;
 
 void main() {
-    //colorAttachment = texture(testTexture2D, inTexCoords);
-    colorAttachment = vec4(1, 0, 0, 1);
+    colorAttachment = texture(testTexture2D, inTexCoords);
+    //colorAttachment = vec4(1, 0, 0, 1);
 }

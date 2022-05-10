@@ -18,7 +18,7 @@ Graphic::Texture2DInstance::~Texture2DInstance()
 
 void Graphic::Texture2DInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
 {
-	Graphic::Texture2DAssetConfig config = Graphic::Texture2DAssetConfig("..\\Asset\\Texture\\Wall.png");
+	Graphic::Texture2DAssetConfig config = Graphic::Texture2DAssetConfig(path.c_str());
 	_LoadTexture2D(transferCommandBuffer, renderCommandBuffer, config, *this);
 }
 
@@ -159,7 +159,6 @@ void Graphic::Texture2DInstance::_LoadBitmap(Texture2DAssetConfig& config, Graph
 			bitmap = FreeImage_ConvertTo32Bits(t);
 			FreeImage_Unload(t);
 		}
-
 		uint32_t pitch = FreeImage_GetPitch(bitmap);
 		texture.size = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
 		texture.textureInfo.size = glm::vec4(1.0 / texture.size.width, 1.0 / texture.size.height, texture.size.width, texture.size.height);
