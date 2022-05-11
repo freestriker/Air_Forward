@@ -3,7 +3,7 @@
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/Asset/UniformBuffer.h"
+#include "Graphic/Instance/UniformBuffer.h"
 #include "Graphic/DescriptorSetUtils.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
@@ -61,11 +61,11 @@ void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
 	}
 }
 
-const Graphic::Asset::UniformBuffer* Graphic::Material::GetUniformBuffer(const char* name)
+const Graphic::Instance::UniformBuffer* Graphic::Material::GetUniformBuffer(const char* name)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
 	{
-		return static_cast<const Graphic::Asset::UniformBuffer*>(_slots[name].asset);
+		return static_cast<const Graphic::Instance::UniformBuffer*>(_slots[name].asset);
 	}
 	else
 	{
@@ -73,7 +73,7 @@ const Graphic::Asset::UniformBuffer* Graphic::Material::GetUniformBuffer(const c
 	}
 }
 
-void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Asset::UniformBuffer* buffer)
+void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::UniformBuffer* buffer)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
 	{
@@ -81,7 +81,7 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Asset::Unifo
 		_slots[name].descriptorSet->WriteBindingData(
 			{ 0},
 			{
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->Buffer(), 0, buffer->Size()}
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer(), 0, buffer->BufferSize()}
 			}
 			);
 	}
@@ -100,8 +100,8 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		{
 		case Asset::SlotType::UNIFORM_BUFFER:
 		{
-			Asset::UniformBuffer* ub = static_cast<Asset::UniformBuffer*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->Buffer(), 0, ub->Size()) });
+			Instance::UniformBuffer* ub = static_cast<Instance::UniformBuffer*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->BufferSize()) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D:

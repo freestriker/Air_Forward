@@ -98,7 +98,7 @@
     <ClInclude Include="header\Graphic\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\Asset\UniformBuffer.h">
+    <ClInclude Include="header\Graphic\Instance\UniformBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\FrameBufferUtils.h">
@@ -139,7 +139,7 @@
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
-    <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\UniformBuffer.cpp" />
     <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
     <ClCompile Include="source\utils\DebugUtils.cpp" />
   </ItemGroup>

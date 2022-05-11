@@ -14,7 +14,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include <Graphic/Asset/Texture2D.h>
-#include "Graphic/Asset/UniformBuffer.h"
+#include "Graphic/Instance/UniformBuffer.h"
 #include <glm/glm.hpp>
 #include "Graphic/Material.h"
 
@@ -143,7 +143,7 @@ void Graphic::GraphicThread::OnRun()
 	};
 	Matrix modelMatrix = { glm::mat4(1), glm::mat4(1), glm::mat4(1) };
 
-	auto matrixBuffer = new Graphic::Asset::UniformBuffer(sizeof(Matrix), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	auto matrixBuffer = new Graphic::Instance::UniformBuffer(sizeof(Matrix), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	matrixBuffer->WriteBuffer(&modelMatrix, sizeof(Matrix));
 
 	auto shader = shaderTask.get();

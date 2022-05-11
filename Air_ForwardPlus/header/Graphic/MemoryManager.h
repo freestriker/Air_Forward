@@ -55,9 +55,9 @@ namespace Graphic
 	public:
 		MemoryManager(VkDeviceSize defaultSize);
 		~MemoryManager();
-		MemoryBlock GetMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
+		MemoryBlock AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
 		MemoryBlock GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
-		void RecycleMemBlock(MemoryBlock& memoryBlock);
+		void ReleaseMemBlock(MemoryBlock& memoryBlock);
 
 	};
 }

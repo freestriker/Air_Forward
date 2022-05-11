@@ -110,7 +110,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     }
     VkMemoryRequirements stageVertexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageVertexBuffer, &stageVertexMemRequirements);
-    Graphic::MemoryBlock stageVertexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageVertexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);  
+    Graphic::MemoryBlock stageVertexBufferMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(stageVertexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);  
     vkBindBufferMemory(Graphic::GlobalInstance::device, stageVertexBuffer, stageVertexBufferMemory.Memory(), stageVertexBufferMemory.Offset());
     {
         void* transferData;
@@ -132,7 +132,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     }
     VkMemoryRequirements stageIndexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, stageIndexBuffer, &stageIndexMemRequirements);
-    Graphic::MemoryBlock stagingBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(stageIndexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    Graphic::MemoryBlock stagingBufferMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(stageIndexMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, stageIndexBuffer, stagingBufferMemory.Memory(), stagingBufferMemory.Offset());
     {
         void* transferData;
@@ -154,7 +154,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     }
     VkMemoryRequirements vertexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _vertexBuffer, &vertexMemRequirements);
-    *_vertexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(vertexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    *_vertexBufferMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(vertexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, _vertexBuffer, _vertexBufferMemory->Memory(), _vertexBufferMemory->Offset());
 
     VkBufferCreateInfo indexBufferInfo{};
@@ -168,7 +168,7 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
     }
     VkMemoryRequirements indexMemRequirements;
     vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _indexBuffer, &indexMemRequirements);
-    *_indexBufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(indexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    *_indexBufferMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(indexMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkBindBufferMemory(Graphic::GlobalInstance::device, _indexBuffer, _indexBufferMemory->Memory(), _indexBufferMemory->Offset());
 
     transferCommandBuffer->Reset();
@@ -232,9 +232,9 @@ void Graphic::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCo
 
     vkDestroySemaphore(Graphic::GlobalInstance::device, semaphore, nullptr);
     vkDestroyBuffer(Graphic::GlobalInstance::device, stageVertexBuffer, nullptr);
-    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stageVertexBufferMemory);
+    Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(stageVertexBufferMemory);
     vkDestroyBuffer(Graphic::GlobalInstance::device, stageIndexBuffer, nullptr);
-    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(stagingBufferMemory);
+    Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(stagingBufferMemory);
 
 }
 

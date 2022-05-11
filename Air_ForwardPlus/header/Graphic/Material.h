@@ -17,6 +17,9 @@ namespace Graphic
 	{
 		enum class SlotType;
 		class Shader;
+	}
+	namespace Instance
+	{
 		class UniformBuffer;
 	}
 
@@ -40,8 +43,8 @@ namespace Graphic
 		Material(Asset::Shader* shader);
 		const Texture2D* GetTexture2D(const char* name);
 		void SetTexture2D(const char* name, Texture2D* texture2d);
-		const Asset::UniformBuffer* GetUniformBuffer(const char* name);
-		void SetUniformBuffer(const char* name, Asset::UniformBuffer* texture2d);
+		const Instance::UniformBuffer* GetUniformBuffer(const char* name);
+		void SetUniformBuffer(const char* name, Instance::UniformBuffer* texture2d);
 		void RefreshSlotData(std::vector<std::string> slotNames);
 		VkPipelineLayout PipelineLayout();
 		std::vector<VkDescriptorSet> DescriptorSets();

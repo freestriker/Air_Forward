@@ -4,7 +4,7 @@ namespace Graphic
 {
 	class CommandBuffer;
 	class MemoryBlock;
-	namespace Asset
+	namespace Instance
 	{
 		class UniformBuffer
 		{
@@ -20,8 +20,9 @@ namespace Graphic
 		public:
 			UniformBuffer(size_t size, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
-			VkBuffer Buffer();
-			size_t Size();
+			VkBuffer VkBuffer();
+			const MemoryBlock& BufferMemory();
+			size_t BufferSize();
 			~UniformBuffer();
 		};
 	}

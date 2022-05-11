@@ -32,7 +32,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, newAttachment->image, &memRequirements);
 
-    newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, properties));
+    newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties));
     vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->Memory(), newAttachment->memoryBlock->Offset());
 
     VkImageViewCreateInfo viewInfo{};
@@ -124,7 +124,7 @@ Graphic::Manager::Attachment::~Attachment()
 {
     vkDestroyImageView(Graphic::GlobalInstance::device, imageView, nullptr);
     vkDestroyImage(Graphic::GlobalInstance::device, image, nullptr);
-    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(*memoryBlock);
+    Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(*memoryBlock);
     delete memoryBlock;
 }
 

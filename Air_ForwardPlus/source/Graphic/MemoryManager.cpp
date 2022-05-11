@@ -115,7 +115,7 @@ Graphic::MemoryManager::~MemoryManager()
 	}
 }
 
-Graphic::MemoryBlock Graphic::MemoryManager::GetMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
+Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	if (newSize > _defaultSize) goto EXCLUSIVE;
@@ -217,7 +217,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::GetExclusiveMemoryBlock(VkMemoryReq
 	throw std::runtime_error("failed to allocate memory.");
 }
 
-void Graphic::MemoryManager::RecycleMemBlock(MemoryBlock& memoryBlock)
+void Graphic::MemoryManager::ReleaseMemBlock(MemoryBlock& memoryBlock)
 {
 	if (memoryBlock._isExclusive)
 	{

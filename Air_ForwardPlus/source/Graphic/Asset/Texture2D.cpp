@@ -139,7 +139,7 @@ void Graphic::Texture2DInstance::_LoadTexture2D(Graphic::CommandBuffer* const tr
 	vkDestroySemaphore(Graphic::GlobalInstance::device, semaphore, nullptr);
 	vkDestroyBuffer(Graphic::GlobalInstance::device, infoStagingBuffer, nullptr);
 	vkDestroyBuffer(Graphic::GlobalInstance::device, textureStagingBuffer, nullptr);
-	Graphic::GlobalInstance::memoryManager->RecycleMemBlock(textureStagingBufferMemory);
+	Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(textureStagingBufferMemory);
 
 	_CreateImageView(config, texture);
 	_CreateTextureSampler(config, texture);
@@ -183,7 +183,7 @@ void Graphic::Texture2DInstance::_CreateBuffer(VkDeviceSize size, VkBufferUsageF
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, buffer, &memRequirements);
 
-	*bufferMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, properties);
+	*bufferMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties);
 
 	vkBindBufferMemory(Graphic::GlobalInstance::device, buffer, bufferMemory->Memory(), bufferMemory->Offset());
 }
@@ -225,7 +225,7 @@ void Graphic::Texture2DInstance::_CreateImage(Texture2DAssetConfig& config, Grap
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, texture.textureImage, &memRequirements);
 
-	*texture.imageMemory = Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	*texture.imageMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vkBindImageMemory(Graphic::GlobalInstance::device, texture.textureImage, texture.imageMemory->Memory(), texture.imageMemory->Offset());
 }
 

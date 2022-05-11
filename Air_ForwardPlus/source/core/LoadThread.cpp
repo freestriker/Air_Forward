@@ -2,13 +2,8 @@
 #include <iostream>
 #include <chrono> 
 #include <core/SubLoadThread.h>
-#include "Graphic/Asset/Texture2D.h"
 #include "Graphic/CommandBuffer.h"
 #include "core/AssetUtils.h"
-#include "Graphic/Asset/Mesh.h"
-#include "Graphic/Asset/Shader.h"
-#include "Graphic/Material.h"
-#include "Graphic/Asset/UniformBuffer.h"
 #include <glm/glm.hpp>
 
 LoadThread* const LoadThread::instance = new LoadThread();

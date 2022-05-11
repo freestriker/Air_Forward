@@ -31,7 +31,7 @@
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
-    <ClInclude Include="header\Graphic\Asset\UniformBuffer.h" />
+    <ClInclude Include="header\Graphic\Instance\UniformBuffer.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
@@ -66,7 +66,7 @@
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
-    <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\UniformBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
