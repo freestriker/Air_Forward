@@ -46,14 +46,14 @@ namespace Graphic
 			alignas(16) glm::vec4 tilingScale;
 		};
 
-		Texture2D(const Texture2D& source);
+		Texture2D(const Texture2D&) = delete;
 		Texture2D& operator=(const Texture2D&) = delete;
 		Texture2D(Texture2D&&) = delete;
 		Texture2D& operator=(Texture2D&&) = delete;
-		~Texture2D();
 
 		static std::future<Texture2D*>LoadAsync(const char* path);
 		static Texture2D* Load(const char* path);
+		static void Unload(Texture2D* texture2D);
 
 		VkExtent2D Size();
 		VkImage TextureImage();
@@ -63,9 +63,9 @@ namespace Graphic
 
 		VkBuffer TextureInfoBuffer();
 		TextureInfo GetTextureInfo();
-
 	private:
-		Texture2D(Texture2DInstance* assetInstance);
+		Texture2D();
+		~Texture2D();
 	};
 	class Texture2DInstance: public IAssetInstance
 	{

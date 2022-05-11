@@ -17,7 +17,9 @@ void Thread::OnEnd()
 {
 }
 
-Thread::Thread(): _thread(), _finishOnThreadStart(false)
+Thread::Thread()
+	: _thread()
+	, _finishOnThreadStart(false)
 {
 
 }
@@ -33,7 +35,7 @@ void Thread::Init()
 
 void Thread::Start()
 {
-	std::cerr << "Thread::OnStart()" << std::endl;
+	_finishOnThreadStart = false;
 	OnStart();
 	std::thread t(&Thread::Run, this);
 	_thread.swap(t);

@@ -5,6 +5,8 @@
 #include <future>
 #include <iostream>
 #include "LoadThread.h"
+#include "utils/DebugUtils.h"
+#include <set>
 namespace Graphic
 {
 	class CommandBuffer;
@@ -13,98 +15,108 @@ class AssetManager;
 class IAssetInstance;
 class IAsset
 {
+	friend class AssetManager;
 protected:
 	IAssetInstance* _assetInstance;
-	IAsset(IAssetInstance* assetInstance);
-	IAsset(const IAsset& source);
+	IAsset();
 	virtual ~IAsset();
+
 	template<typename TAsset, typename TAssetInstance>
 	static std::future<TAsset*> _LoadAsync(const char* path);
+
 	template<typename TAsset, typename TAssetInstance>
 	static TAsset* _Load(const char* path);
+
+	template<typename TAsset, typename TAssetInstance>
+	static void _Unload(TAsset* asset);
 private:
 	IAsset& operator=(const IAsset&) = delete;
+	IAsset(const IAsset&) = delete;
 	IAsset(IAsset&&) = delete;
 	IAsset& operator=(IAsset&&) = delete;
 };
 class IAssetInstance
 {
 	friend class IAsset;
+	friend class AssetManager;
 private:
 	virtual void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer) = 0;
 	void _Wait();
 	bool _readyToUse;
 public:
 	std::string const path;
-	AssetManager* const assetManager;
 	IAssetInstance(std::string path);
 	virtual ~IAssetInstance();
 };
 class AssetManager
 {
-public:
-	class AssetInstanceWarp
+	friend class IAssetInstance;
+	friend class IAsset;
+private:
+	class _AssetInstanceWarp
 	{
 	public:
 		uint32_t refCount;
+		std::set<IAsset*> assets;
 		IAssetInstance* assetInstance;
 	};
-	std::mutex mutex;
-private:
-	std::map<std::string, AssetInstanceWarp> _warps;
+	std::mutex _mutex;
+	std::map<std::string, _AssetInstanceWarp> _warps;
 
 public:
 	AssetManager();
 	~AssetManager();
-	void AddInstance(std::string path, IAssetInstance* assetInstance);
-	IAssetInstance* GetInstance(std::string path);
-	bool ContainsInstance(std::string path);
-	void RecycleInstance(std::string path);
+	void _AddInstance(std::string path, IAssetInstance* assetInstance);
+	IAssetInstance* _AcquireInstance(std::string path, IAsset* newAsset);
+	bool _ContainsInstance(std::string path);
+	void _ReleaseInstance(IAssetInstance* assetInstance, IAsset* newAsset);
 };
 
 template<typename TAsset, typename TAssetInstance>
 inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 {
 	TAssetInstance* assetInstance = nullptr;
+	TAsset* newAsset = new TAsset();
 	bool alreadyCreated = false;
 
 	{
 		auto manager = LoadThread::instance->assetManager.get();
 
-		std::unique_lock<std::mutex> lock(manager->mutex);
+		std::unique_lock<std::mutex> lock(manager->_mutex);
 
-		if (manager->ContainsInstance(path))
+		if (manager->_ContainsInstance(path))
 		{
-			assetInstance = dynamic_cast<TAssetInstance*>(manager->GetInstance(path));
+			assetInstance = dynamic_cast<TAssetInstance*>(manager->_AcquireInstance(path, dynamic_cast<IAsset*>(newAsset)));
 			alreadyCreated = true;
 		}
 		else
 		{
 			assetInstance = new TAssetInstance(path);
-			manager->AddInstance(path, dynamic_cast<IAssetInstance*>(assetInstance));
-			manager->GetInstance(path);
+			manager->_AddInstance(path, dynamic_cast<IAssetInstance*>(assetInstance));
+			manager->_AcquireInstance(path, dynamic_cast<IAsset*>(newAsset));
 			alreadyCreated = false;
 		}
 	}
+	dynamic_cast<IAsset*>(newAsset)->_assetInstance = dynamic_cast<IAssetInstance*>(assetInstance);
 	std::string sPath = std::string(path);
 	if (alreadyCreated)
 	{
-		return std::async([assetInstance, sPath]()
+		return std::async([assetInstance, sPath, newAsset]()
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			std::cerr << sPath << " load from asset pool." << std::endl;
-			return new TAsset(assetInstance);
+			Debug::Log("AssetManager load " + sPath + " from asset pool.");
+			return newAsset;
 		});
 	}
 	else
 	{
-		return LoadThread::instance->AddTask([assetInstance, sPath](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb)
+		return LoadThread::instance->AddTask([assetInstance, sPath, newAsset](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb)
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			std::cerr << sPath << " load from disk." << std::endl;
-			return new TAsset(assetInstance);
+			Debug::Log("AssetManager load " + sPath + " from disk.");
+			return newAsset;
 		});
 	}
 }
@@ -113,4 +125,13 @@ template<typename TAsset, typename TAssetInstance>
 inline TAsset* IAsset::_Load(const char* path)
 {
 	return _LoadAsync<TAsset, TAssetInstance>(path).get();
+}
+
+template<typename TAsset, typename TAssetInstance>
+inline void IAsset::_Unload(TAsset* asset)
+{
+	std::unique_lock<std::mutex> lock(LoadThread::instance->assetManager->_mutex);
+	LoadThread::instance->assetManager->_ReleaseInstance(asset->_assetInstance, asset);
+	Debug::Log("AssetManager unload " + asset->_assetInstance->path + " .");
+	delete asset;
 }

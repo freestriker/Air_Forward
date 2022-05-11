@@ -118,16 +118,17 @@ namespace Graphic
 			};
 
 		public:
-			Shader(const Shader& source);
-			virtual ~Shader();
 
 			static std::future<Shader*>LoadAsync(const char* path);
 			static Shader* Load(const char* path);
-
+			static void Unload(Shader* shader);
 			const std::map<std::string, SlotLayout>& SlotLayouts();
 			VkPipeline Pipeline();
 			VkPipelineLayout PipelineLayout();
 		private:
+			Shader();
+			~Shader();
+			Shader(const Shader&) = delete;
 			Shader(_ShaderInstance* assetInstance);
 			Shader& operator=(const Shader&) = delete;
 			Shader(Shader&&) = delete;

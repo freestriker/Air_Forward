@@ -2,22 +2,13 @@
 #include <Graphic/CommandBuffer.h>
 #include <core/LoadThread.h>
 
-IAsset::IAsset(IAssetInstance* assetInstance)
-	: _assetInstance(assetInstance)
+IAsset::IAsset()
+	: _assetInstance(nullptr)
 {
-}
-IAsset::IAsset(const IAsset& source)
-{
-	std::unique_lock<std::mutex> lock(source._assetInstance->assetManager->mutex);
-	_assetInstance = source._assetInstance->assetManager->GetInstance(source._assetInstance->path);
 }
 
 IAsset::~IAsset()
 {
-	std::unique_lock<std::mutex> lock(_assetInstance->assetManager->mutex);
-	_assetInstance->assetManager->RecycleInstance(_assetInstance->path);
-
-	_assetInstance = nullptr;
 }
 
 void IAssetInstance::_Wait()
@@ -30,7 +21,6 @@ void IAssetInstance::_Wait()
 
 IAssetInstance::IAssetInstance(std::string path)
 	: path(path)
-	, assetManager(LoadThread::instance->assetManager.get())
 	, _readyToUse(false)
 {
 }
@@ -42,13 +32,13 @@ IAssetInstance::~IAssetInstance()
 
 AssetManager::AssetManager()
 	: _warps()
-	, mutex()
+	, _mutex()
 {
 }
 
 AssetManager::~AssetManager()
 {
-	std::unique_lock<std::mutex> lock(mutex);
+	std::unique_lock<std::mutex> lock(_mutex);
 	for (const auto& pair : _warps)
 	{
 		delete pair.second.assetInstance;
@@ -56,23 +46,28 @@ AssetManager::~AssetManager()
 	_warps.clear();
 }
 
-void AssetManager::AddInstance(std::string path, IAssetInstance* assetInstance)
+void AssetManager::_AddInstance(std::string path, IAssetInstance* assetInstance)
 {
-	_warps.emplace(path, AssetInstanceWarp{ 0, assetInstance });
+	_warps.emplace(path, _AssetInstanceWarp{ 0, {}, assetInstance });
 }
 
-IAssetInstance* AssetManager::GetInstance(std::string path)
+IAssetInstance* AssetManager::_AcquireInstance(std::string path, IAsset* newAsset)
 {
 	_warps[path].refCount++;
+	_warps[path].assets.emplace(newAsset);
 	return _warps[path].assetInstance;
 }
 
-bool AssetManager::ContainsInstance(std::string path)
+bool AssetManager::_ContainsInstance(std::string path)
 {
 	return _warps.count(path);
 }
 
-void AssetManager::RecycleInstance(std::string path)
+void AssetManager::_ReleaseInstance(IAssetInstance* assetInstance, IAsset* newAsset)
 {
-	--_warps[path].refCount;
+	if (_warps[assetInstance->path].assets.count(newAsset))
+	{
+		--_warps[assetInstance->path].refCount;
+		_warps[assetInstance->path].assets.erase(newAsset);
+	}
 }

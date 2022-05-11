@@ -42,16 +42,17 @@ namespace Graphic
 	{
 		friend class IAsset;
 	public:
-		Mesh(const Mesh& source);
-		virtual ~Mesh();
 		static std::future<Mesh*>LoadAsync(const char* path);
+		static void Unload(Mesh* mesh);
 		static Mesh* Load(const char* path);
 
 		VkBuffer VertexBuffer();
 		VkBuffer IndexBuffer();
 		std::vector<uint32_t>& Indices();
 	private:
-		Mesh(MeshInstance* assetInstance);
+		Mesh();
+		virtual ~Mesh();
+		Mesh(const Mesh&) = delete;
 		Mesh& operator=(const Mesh&) = delete;
 		Mesh(Mesh&&) = delete;
 		Mesh& operator=(Mesh&&) = delete;

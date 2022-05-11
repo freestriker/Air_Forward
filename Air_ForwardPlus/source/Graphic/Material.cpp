@@ -143,10 +143,9 @@ std::vector<VkDescriptorSet> Graphic::Material::DescriptorSets()
 
 Graphic::Material::~Material()
 {
-	delete _shader;
+	Asset::Shader::Unload(_shader);
 	for (auto& pair : _slots)
 	{
-		delete pair.second.asset;
 		Graphic::GlobalInstance::descriptorSetManager->ReleaseDescripterSet(pair.second.descriptorSet);
 	}
 	_slots.clear();

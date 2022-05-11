@@ -319,15 +319,10 @@ void Graphic::Texture2DInstance::_CreateTextureSampler(Texture2DAssetConfig& con
 	}
 }
 
-Graphic::Texture2D::Texture2D(Texture2DInstance* assetInstance)
-	: IAsset(assetInstance)
+Graphic::Texture2D::Texture2D()
+	: IAsset()
 {
 
-}
-
-Graphic::Texture2D::Texture2D(const Texture2D& source)
-	: IAsset(source)
-{
 }
 
 Graphic::Texture2D::~Texture2D()
@@ -342,6 +337,11 @@ std::future<Graphic::Texture2D*> Graphic::Texture2D::LoadAsync(const char* path)
 Graphic::Texture2D* Graphic::Texture2D::Load(const char* path)
 {
 	return _Load<Graphic::Texture2D, Graphic::Texture2DInstance>(path);
+}
+
+void Graphic::Texture2D::Unload(Texture2D* texture2D)
+{
+	_Unload< Graphic::Texture2D, Graphic::Texture2DInstance>(texture2D);
 }
 
 VkExtent2D Graphic::Texture2D::Size()

@@ -466,12 +466,8 @@ void Graphic::Asset::Shader::_ShaderInstance::_DestroyData(_PipelineData& pipeli
 	}
 }
 
-Graphic::Asset::Shader::Shader(const Shader& source)
-	: IAsset(source)
-{
-}
-Graphic::Asset::Shader::Shader(_ShaderInstance* assetInstance)
-	: IAsset(assetInstance)
+Graphic::Asset::Shader::Shader()
+	: IAsset()
 {
 }
 
@@ -487,6 +483,11 @@ std::future<Graphic::Asset::Shader*> Graphic::Asset::Shader::LoadAsync(const cha
 Graphic::Asset::Shader* Graphic::Asset::Shader::Load(const char* path)
 {
 	return _Load<Graphic::Asset::Shader, Graphic::Asset::Shader::_ShaderInstance>(path);
+}
+
+void Graphic::Asset::Shader::Unload(Shader* shader)
+{
+	_Unload< Graphic::Asset::Shader, Graphic::Asset::Shader::_ShaderInstance>(shader);
 }
 
 const std::map<std::string, Graphic::Asset::Shader::SlotLayout>& Graphic::Asset::Shader::SlotLayouts()

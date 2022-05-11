@@ -244,12 +244,8 @@ void Graphic::MeshInstance::_LoadAssetInstance(Graphic::CommandBuffer* const tra
     this->_LoadBuffer(transferCommandBuffer, renderCommandBuffer);
 }
 
-Graphic::Mesh::Mesh(const Graphic::Mesh& source)
-	: IAsset(source)
-{
-}
-Graphic::Mesh::Mesh(Graphic::MeshInstance* assetInstance)
-	: IAsset(assetInstance)
+Graphic::Mesh::Mesh()
+	: IAsset()
 {
 }
 
@@ -260,6 +256,10 @@ Graphic::Mesh::~Mesh()
 std::future<Graphic::Mesh*> Graphic::Mesh::LoadAsync(const char* path)
 {
     return _LoadAsync<Graphic::Mesh, Graphic::MeshInstance>(path);
+}
+void Graphic::Mesh::Unload(Mesh* mesh)
+{
+    _Unload< Graphic::Mesh, Graphic::MeshInstance>(mesh);
 }
 
 Graphic::Mesh* Graphic::Mesh::Load(const char* path)
