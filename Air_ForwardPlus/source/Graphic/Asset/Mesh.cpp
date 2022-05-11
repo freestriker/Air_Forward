@@ -97,7 +97,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     _vertexBuffer = new Instance::Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     Instance::Buffer stageIndexBuffer = Instance::Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    stageVertexBuffer.WriteBuffer(_indices.data(), indexBufferSize);
+    stageIndexBuffer.WriteBuffer(_indices.data(), indexBufferSize);
     _indexBuffer = new Instance::Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 
@@ -113,8 +113,8 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     releaseVertexBarrier.pNext = nullptr;
     releaseVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
     releaseVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    releaseVertexBarrier.offset = 0;
-    releaseVertexBarrier.size = vertexBufferSize;
+    releaseVertexBarrier.offset = _vertexBuffer->Offset();
+    releaseVertexBarrier.size = _vertexBuffer->Size();
     releaseVertexBarrier.buffer = _vertexBuffer->VkBuffer();
     releaseVertexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
     releaseVertexBarrier.dstAccessMask = 0;
@@ -124,8 +124,8 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     releaseIndexBarrier.pNext = nullptr;
     releaseIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
     releaseIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    releaseIndexBarrier.offset = 0;
-    releaseIndexBarrier.size = indexBufferSize;
+    releaseIndexBarrier.offset = _indexBuffer->Offset();
+    releaseIndexBarrier.size = _indexBuffer->Size();
     releaseIndexBarrier.buffer = _indexBuffer->VkBuffer();
     releaseIndexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
     releaseIndexBarrier.dstAccessMask = 0;
@@ -142,8 +142,8 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     acquireVertexBarrier.dstAccessMask = 0;
     acquireVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
     acquireVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    acquireVertexBarrier.offset = 0;
-    acquireVertexBarrier.size = vertexBufferSize;
+    acquireVertexBarrier.offset = _vertexBuffer->Offset();
+    acquireVertexBarrier.size = _vertexBuffer->Size();
     acquireVertexBarrier.buffer = _vertexBuffer->VkBuffer();
 
     VkBufferMemoryBarrier acquireIndexBarrier = {};
@@ -153,13 +153,13 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     acquireIndexBarrier.dstAccessMask = 0;
     acquireIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
     acquireIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    acquireIndexBarrier.offset = 0;
-    acquireIndexBarrier.size = indexBufferSize;
+    acquireIndexBarrier.offset = _indexBuffer->Offset();
+    acquireIndexBarrier.size = _indexBuffer->Size();
     acquireIndexBarrier.buffer = _indexBuffer->VkBuffer();
 
     graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, { acquireVertexBarrier, acquireIndexBarrier }, {});
     graphicCommandBuffer->EndRecord();
-    graphicCommandBuffer->Submit({ semaphore.VkSemphore()}, {VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, {});
+    graphicCommandBuffer->Submit({ semaphore.VkSemphore()}, {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }, {});
 
     graphicCommandBuffer->WaitForFinish();
     transferCommandBuffer->Reset();

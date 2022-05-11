@@ -35,21 +35,6 @@ void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 	vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock->VkMemory());
 }
 
-VkBuffer Graphic::Instance::Buffer::VkBuffer()
-{
-	return _vkBuffer;
-}
-
-const Graphic::MemoryBlock& Graphic::Instance::Buffer::Memory()
-{
-	return *_memoryBlock;
-}
-
-size_t Graphic::Instance::Buffer::Size()
-{
-	return _size;
-}
-
 Graphic::Instance::Buffer::~Buffer()
 {
 	vkDestroyBuffer(Graphic::GlobalInstance::device, _vkBuffer, nullptr);

@@ -21,10 +21,30 @@ namespace Graphic
 		public:
 			Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
-			VkBuffer VkBuffer();
-			const MemoryBlock& Memory();
-			size_t Size();
+			inline VkBuffer VkBuffer();
+			inline MemoryBlock& Memory();
+			inline size_t Size();
+			inline size_t Offset();
 			~Buffer();
 		};
 	}
+}
+
+inline VkBuffer Graphic::Instance::Buffer::VkBuffer()
+{
+	return _vkBuffer;
+}
+
+inline Graphic::MemoryBlock& Graphic::Instance::Buffer::Memory()
+{
+	return *_memoryBlock;
+}
+
+inline size_t Graphic::Instance::Buffer::Size()
+{
+	return _size;
+}
+inline size_t Graphic::Instance::Buffer::Offset()
+{
+	return 0;
 }
