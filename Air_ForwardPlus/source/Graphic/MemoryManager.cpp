@@ -2,7 +2,7 @@
 #include <Graphic/GlobalInstance.h>
 
 Graphic::MemoryManager::MemoryChunkUsage::MemoryChunkUsage(VkDeviceSize start, VkDeviceSize size)
-	: start(start)
+	: offset(start)
 	, size(size)
 {
 
@@ -38,25 +38,27 @@ Graphic::MemoryManager::MemoryChunk::~MemoryChunk()
 }
 
 Graphic::MemoryBlock::MemoryBlock()
-	: MemoryBlock(-1, VK_NULL_HANDLE, -1, -1, nullptr)
+	: MemoryBlock(-1, VK_NULL_HANDLE, -1, -1, nullptr, 0)
 {
 }
-Graphic::MemoryBlock::MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
+Graphic::MemoryBlock::MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property)
 	: _memoryTypeIndex(memoryTypeIndex)
 	, _vkMemory(memory)
-	, _start(start)
+	, _offset(start)
 	, _size(size)
 	, _mutex(mutex)
 	, _isExclusive(false)
+	, _properties(property)
 {
 }
-Graphic::MemoryBlock::MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex)
+Graphic::MemoryBlock::MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property)
 	: _memoryTypeIndex(memoryTypeIndex)
 	, _vkMemory(memory)
-	, _start(start)
+	, _offset(start)
 	, _size(size)
 	, _mutex(mutex)
 	, _isExclusive(isExclusive)
+	, _properties(property)
 {
 }
 
@@ -71,7 +73,7 @@ std::mutex* Graphic::MemoryBlock::Mutex()
 
 VkDeviceSize Graphic::MemoryBlock::Offset()
 {
-	return _start;
+	return _offset;
 }
 
 VkDeviceSize Graphic::MemoryBlock::Size()
@@ -79,9 +81,14 @@ VkDeviceSize Graphic::MemoryBlock::Size()
 	return _size;
 }
 
-VkDeviceMemory Graphic::MemoryBlock::Memory()
+VkDeviceMemory Graphic::MemoryBlock::VkMemory()
 {
 	return _vkMemory;
+}
+
+VkMemoryPropertyFlags Graphic::MemoryBlock::Properties()
+{
+	return _properties;
 }
 
 Graphic::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
@@ -133,10 +140,10 @@ Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirem
 				{
 					if (usagePair.second.size < requirement.size) continue;
 
-					VkDeviceSize newStart = (usagePair.second.start + requirement.alignment - 1) & ~(requirement.alignment - 1);
+					VkDeviceSize newStart = (usagePair.second.offset + requirement.alignment - 1) & ~(requirement.alignment - 1);
 					VkDeviceSize newEnd = newStart + newSize;
 
-					VkDeviceSize oldStart = usagePair.second.start;
+					VkDeviceSize oldStart = usagePair.second.offset;
 					VkDeviceSize oldSize = usagePair.second.size;
 					VkDeviceSize oldEnd = oldStart + oldSize;
 
@@ -152,7 +159,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirem
 						}
 						if (oldEnd > newEnd) chunkPair.second->unallocated.emplace(newEnd, MemoryChunkUsage(newEnd, oldEnd - newEnd));
 						chunkPair.second->allocated.emplace(newStart, MemoryChunkUsage(newStart, newSize));
-						return MemoryBlock(i, chunkPair.second->memory, newStart, newSize, chunkPair.second->mutex);
+						return MemoryBlock(i, chunkPair.second->memory, newStart, newSize, chunkPair.second->mutex, properties);
 					}
 				}
 			}
@@ -163,7 +170,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirem
 			newChunk->allocated.emplace(0, MemoryChunkUsage(0, newSize));
 
 			_chunkSets[i].emplace(newChunk->memory, std::shared_ptr<MemoryChunk>(newChunk));
-			return MemoryBlock(i, newChunk->memory, 0, newSize, newChunk->mutex);
+			return MemoryBlock(i, newChunk->memory, 0, newSize, newChunk->mutex, properties);
 		}
 	}
 
@@ -184,7 +191,7 @@ EXCLUSIVE:
 			}
 			std::mutex* newMutex = new std::mutex();
 
-			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex);
+			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex, properties);
 		}
 	}
 
@@ -210,7 +217,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::GetExclusiveMemoryBlock(VkMemoryReq
 			}
 			std::mutex* newMutex = new std::mutex();
 
-			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex);
+			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex, properties);
 		}
 	}
 
@@ -232,9 +239,9 @@ void Graphic::MemoryManager::ReleaseMemBlock(MemoryBlock& memoryBlock)
 
 		{
 			std::unique_lock<std::mutex> chunkLock(*chunk->mutex);
-			chunk->allocated.erase(memoryBlock._start);
+			chunk->allocated.erase(memoryBlock._offset);
 
-			VkDeviceSize recycleStart = memoryBlock._start;
+			VkDeviceSize recycleStart = memoryBlock._offset;
 			VkDeviceSize recycleSize = memoryBlock._size;
 			VkDeviceSize recycleEnd = recycleStart + recycleSize;
 
@@ -242,9 +249,9 @@ void Graphic::MemoryManager::ReleaseMemBlock(MemoryBlock& memoryBlock)
 			for (auto& usagePair : chunk->unallocated)
 			{
 				MemoryChunkUsage usage = usagePair.second;
-				if (usage.start < recycleStart)
+				if (usage.offset < recycleStart)
 				{
-					if (usage.start + usage.size == recycleStart)
+					if (usage.offset + usage.size == recycleStart)
 					{
 						merged = true;
 						if (chunk->unallocated.count(recycleEnd))

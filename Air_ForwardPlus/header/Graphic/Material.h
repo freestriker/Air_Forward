@@ -12,15 +12,15 @@ namespace Graphic
 		typedef DescriptorSet* DescriptorSetHandle;
 	}
 	class CommandBuffer;
-	class Texture2D;
 	namespace Asset
 	{
 		enum class SlotType;
 		class Shader;
+		class Texture2D;
 	}
 	namespace Instance
 	{
-		class UniformBuffer;
+		class Buffer;
 	}
 
 
@@ -41,10 +41,10 @@ namespace Graphic
 		std::map<std::string, _Slot> _slots;
 	public:
 		Material(Asset::Shader* shader);
-		const Texture2D* GetTexture2D(const char* name);
-		void SetTexture2D(const char* name, Texture2D* texture2d);
-		const Instance::UniformBuffer* GetUniformBuffer(const char* name);
-		void SetUniformBuffer(const char* name, Instance::UniformBuffer* texture2d);
+		const Asset::Texture2D* GetTexture2D(const char* name);
+		void SetTexture2D(const char* name, Asset::Texture2D* texture2d);
+		const Instance::Buffer* GetUniformBuffer(const char* name);
+		void SetUniformBuffer(const char* name, Instance::Buffer* texture2d);
 		void RefreshSlotData(std::vector<std::string> slotNames);
 		VkPipelineLayout PipelineLayout();
 		std::vector<VkDescriptorSet> DescriptorSets();

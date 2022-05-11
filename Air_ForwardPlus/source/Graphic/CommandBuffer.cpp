@@ -69,7 +69,7 @@ void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMas
 
 }
 
-void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions)
+void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy> regions)
 {
     vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
 }

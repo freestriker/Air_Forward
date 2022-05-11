@@ -14,7 +14,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include <Graphic/Asset/Texture2D.h>
-#include "Graphic/Instance/UniformBuffer.h"
+#include "Graphic/Instance/Buffer.h"
 #include <glm/glm.hpp>
 #include "Graphic/Material.h"
 
@@ -60,6 +60,7 @@ void Graphic::GraphicThread::OnThreadStart()
 			features.geometryShader = VK_TRUE;
 		});
 	vulkanDeviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, 1.0);
+	vulkanDeviceCreator.AddQueue("TransferDstQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("PresentQueue", VkQueueFlagBits::VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0);
@@ -133,7 +134,7 @@ void Graphic::GraphicThread::OnRun()
 
 	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
 	auto meshTask = Graphic::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
-	auto texture2dTask = Graphic::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
+	auto texture2dTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
 
 	struct Matrix
 	{
@@ -143,7 +144,7 @@ void Graphic::GraphicThread::OnRun()
 	};
 	Matrix modelMatrix = { glm::mat4(1), glm::mat4(1), glm::mat4(1) };
 
-	auto matrixBuffer = new Graphic::Instance::UniformBuffer(sizeof(Matrix), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	auto matrixBuffer = new Graphic::Instance::Buffer(sizeof(Matrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	matrixBuffer->WriteBuffer(&modelMatrix, sizeof(Matrix));
 
 	auto shader = shaderTask.get();

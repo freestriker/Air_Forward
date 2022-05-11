@@ -33,7 +33,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, newAttachment->image, &memRequirements);
 
     newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties));
-    vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->Memory(), newAttachment->memoryBlock->Offset());
+    vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->VkMemory(), newAttachment->memoryBlock->Offset());
 
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

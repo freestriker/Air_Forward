@@ -3,7 +3,7 @@
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/Instance/UniformBuffer.h"
+#include "Graphic/Instance/Buffer.h"
 #include "Graphic/DescriptorSetUtils.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
@@ -22,11 +22,11 @@ Graphic::Material::Material(Asset::Shader* shader)
 	}
 }
 
-const Graphic::Texture2D* Graphic::Material::GetTexture2D(const char* name)
+const Graphic::Asset::Texture2D* Graphic::Material::GetTexture2D(const char* name)
 {
 	if (_slots.count(name) && (_slots[name].slotType == Asset::SlotType::TEXTURE2D || _slots[name].slotType == Asset::SlotType::TEXTURE2D_WITH_INFO))
 	{
-		return static_cast<const Graphic::Texture2D*>(_slots[name].asset);
+		return static_cast<const Graphic::Asset::Texture2D*>(_slots[name].asset);
 	}
 	else
 	{
@@ -34,14 +34,14 @@ const Graphic::Texture2D* Graphic::Material::GetTexture2D(const char* name)
 	}
 }
 
-void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
+void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture2d)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D)
 	{
 		_slots[name].asset = texture2d;
 		_slots[name].descriptorSet->WriteBindingData(
 			{ 0 },
-			{ {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->TextureSampler(), texture2d->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL} }
+			{ {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL} }
 		);
 	}
 	else if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D_WITH_INFO)
@@ -50,8 +50,8 @@ void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
 		_slots[name].descriptorSet->WriteBindingData(
 			{ 0, 1 },
 			{ 
-				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->TextureSampler(), texture2d->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, texture2d->TextureInfoBuffer(), 0, sizeof(Texture2D::TextureInfo)}
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, texture2d->TextureInfoBuffer().VkBuffer(), 0, texture2d->TextureInfoBuffer().Size()}
 			}
 		);
 	}
@@ -61,11 +61,11 @@ void Graphic::Material::SetTexture2D(const char* name, Texture2D* texture2d)
 	}
 }
 
-const Graphic::Instance::UniformBuffer* Graphic::Material::GetUniformBuffer(const char* name)
+const Graphic::Instance::Buffer* Graphic::Material::GetUniformBuffer(const char* name)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
 	{
-		return static_cast<const Graphic::Instance::UniformBuffer*>(_slots[name].asset);
+		return static_cast<const Graphic::Instance::Buffer*>(_slots[name].asset);
 	}
 	else
 	{
@@ -73,7 +73,7 @@ const Graphic::Instance::UniformBuffer* Graphic::Material::GetUniformBuffer(cons
 	}
 }
 
-void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::UniformBuffer* buffer)
+void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::Buffer* buffer)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
 	{
@@ -81,7 +81,7 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::Un
 		_slots[name].descriptorSet->WriteBindingData(
 			{ 0},
 			{
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer(), 0, buffer->BufferSize()}
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer(), 0, buffer->Size()}
 			}
 			);
 	}
@@ -100,22 +100,22 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		{
 		case Asset::SlotType::UNIFORM_BUFFER:
 		{
-			Instance::UniformBuffer* ub = static_cast<Instance::UniformBuffer*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->BufferSize()) });
+			Instance::Buffer* ub = static_cast<Instance::Buffer*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->Size()) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D:
 		{
-			Graphic::Texture2D* t = static_cast<Texture2D*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->TextureSampler(), t->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
+			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
+			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D_WITH_INFO:
 		{
-			Graphic::Texture2D* t = static_cast<Texture2D*>(slot.asset);
+			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
 			slot.descriptorSet->WriteBindingData({ 0, 1 }, {
-				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->TextureSampler(), t->TextureImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer(), 0, sizeof(Graphic::Texture2D::TextureInfo))
+				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer(), 0, t->TextureInfoBuffer().Size())
 				});
 
 			break;

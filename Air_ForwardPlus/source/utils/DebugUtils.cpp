@@ -1,7 +1,7 @@
 #include "utils/DebugUtils.h"
 #include <iostream>
 
-void Debug::Log(std::string info, VkResult logCondition)
+void Debug::Message(std::string info, VkResult logCondition)
 {
 	if (logCondition != VkResult::VK_SUCCESS)
 	{
@@ -11,7 +11,7 @@ void Debug::Log(std::string info, VkResult logCondition)
 	}
 }
 
-void Debug::Log(std::string info, bool logCondition)
+void Debug::Message(std::string info, bool logCondition)
 {
 	if (logCondition)
 	{
@@ -20,7 +20,7 @@ void Debug::Log(std::string info, bool logCondition)
 	}
 }
 
-void Debug::Log(std::string info)
+void Debug::Message(std::string info)
 {
 	std::cerr << "Message: " + info << std::endl;
 }

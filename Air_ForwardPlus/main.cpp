@@ -18,47 +18,6 @@ RTTR_REGISTRATION
     using namespace rttr;
     registration::method("f", &f);
 }
-void LoadModel(std::string path)
-{
-    Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-        return;
-    }
-    std::string directory = path.substr(0, path.find_last_of('/'));
-    std::cout << directory << std::endl;
-
-}
-void LoadTexture(std::string path)
-{
-	FreeImage_Initialise(TRUE);
-
-	const char* filePath = path.c_str();
-	FIBITMAP* texture = nullptr;
-	FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filePath);
-	if (fif == FREE_IMAGE_FORMAT::FIF_UNKNOWN)
-		fif = FreeImage_GetFIFFromFilename(filePath);
-
-	if ((fif != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif))
-	{
-		texture = FreeImage_Load(fif, filePath);
-	}
-	else
-	{
-		Debug::Log("Can not read texture " + path + ".");
-	}
-	if (texture == nullptr)
-	{
-		Debug::Log("Read texture " + path + "failed.");
-	}
-	else
-	{
-		Debug::Log("Load texture not success.");
-	}
-}
 int main()
 {
 

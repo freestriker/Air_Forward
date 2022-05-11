@@ -98,13 +98,16 @@
     <ClInclude Include="header\Graphic\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\Instance\UniformBuffer.h">
+    <ClInclude Include="header\Graphic\Instance\Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\FrameBufferUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\utils\DebugUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\Semaphore.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -139,8 +142,9 @@
     <ClCompile Include="source\Graphic\Asset\shader.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
-    <ClCompile Include="source\Graphic\Instance\UniformBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
     <ClCompile Include="source\utils\DebugUtils.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
   </ItemGroup>
 </Project>

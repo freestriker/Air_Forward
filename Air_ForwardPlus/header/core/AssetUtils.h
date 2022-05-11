@@ -105,7 +105,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 		return std::async([assetInstance, sPath, newAsset]()
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			Debug::Log("AssetManager load " + sPath + " from asset pool.");
+			Debug::Message("AssetManager load " + sPath + " from asset pool.");
 			return newAsset;
 		});
 	}
@@ -116,7 +116,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			Debug::Log("AssetManager load " + sPath + " from disk.");
+			Debug::Message("AssetManager load " + sPath + " from disk.");
 			return newAsset;
 		});
 	}
@@ -135,5 +135,5 @@ inline void IAsset::_Unload(TAsset* asset)
 	std::string unloaded = asset->_assetInstance->path;
 	LoadThread::instance->assetManager->_ReleaseInstance(asset->_assetInstance, asset);
 	delete asset;
-	Debug::Log("AssetManager unload " + unloaded + " .");
+	Debug::Message("AssetManager unload " + unloaded + " .");
 }

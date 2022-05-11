@@ -11,19 +11,21 @@ namespace Graphic
 	private:
 		bool _isExclusive;
 		uint32_t _memoryTypeIndex;
+		VkMemoryPropertyFlags _properties;
 		VkDeviceMemory _vkMemory;
-		VkDeviceSize _start;
+		VkDeviceSize _offset;
 		VkDeviceSize _size;
 		std::mutex* _mutex;
-		MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex);
-		MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex);
+		MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property);
+		MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property);
 	public:
 		MemoryBlock();
 		~MemoryBlock();
 		std::mutex* Mutex();
 		VkDeviceSize Offset();
 		VkDeviceSize Size();
-		VkDeviceMemory Memory();
+		VkDeviceMemory VkMemory();
+		VkMemoryPropertyFlags Properties();
 	};
 	class MemoryManager
 	{
@@ -31,7 +33,7 @@ namespace Graphic
 		class MemoryChunkUsage
 		{
 		public:
-			VkDeviceSize start;
+			VkDeviceSize offset;
 			VkDeviceSize size;
 			MemoryChunkUsage(VkDeviceSize start, VkDeviceSize size);
 			MemoryChunkUsage();

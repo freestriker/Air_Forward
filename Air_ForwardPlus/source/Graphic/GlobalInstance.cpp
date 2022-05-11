@@ -74,7 +74,7 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		result = VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-    Debug::Log("Failed to set up debug messenger.", result);
+    Debug::Message("Failed to set up debug messenger.", result);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -171,7 +171,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkResult swapChainResult = vkCreateSwapchainKHR(device, &createInfo, nullptr, &windowSwapchain);
-    Debug::Log("Failed to create swap chain.", swapChainResult);
+    Debug::Message("Failed to create swap chain.", swapChainResult);
 
 }
 
