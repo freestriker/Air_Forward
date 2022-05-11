@@ -65,7 +65,7 @@
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
-    <ClCompile Include="source\Graphic\Asset\shader.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />

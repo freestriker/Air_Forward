@@ -133,7 +133,7 @@ void Graphic::GraphicThread::OnRun()
 
 
 	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
-	auto meshTask = Graphic::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
+	auto meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
 	auto texture2dTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
 
 	struct Matrix

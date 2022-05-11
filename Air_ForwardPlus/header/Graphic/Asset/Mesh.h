@@ -9,53 +9,63 @@ namespace Graphic
 {
 	class CommandBuffer;
 	class MemoryBlock;
-	struct VertexData
+	namespace Instance
 	{
-        glm::vec3 position;
-		glm::vec2 texCoords;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-        glm::vec3 bitangent;
-	};
-
-	class MeshInstance : public IAssetInstance
+		class Buffer;
+	}
+	namespace Asset
 	{
-		friend class Mesh;
+		struct VertexData
+		{
+			glm::vec3 position;
+			glm::vec2 texCoords;
+			glm::vec3 normal;
+			glm::vec3 tangent;
+			glm::vec3 bitangent;
+		};
 
-	private:
-		std::vector<VertexData> _vertices;
-		std::vector<uint32_t> _indices;
-		VkBuffer _vertexBuffer;
-		VkBuffer _indexBuffer;
-		std::unique_ptr<MemoryBlock> _vertexBufferMemory;
-		std::unique_ptr<MemoryBlock> _indexBufferMemory;
-	public:
-		MeshInstance(std::string path);
-		virtual ~MeshInstance();
-	private:
-		void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-		void _LoadData();
-		void _LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
-	};
 
-	class Mesh : IAsset
-	{
-		friend class IAsset;
-	public:
-		static std::future<Mesh*>LoadAsync(const char* path);
-		static void Unload(Mesh* mesh);
-		static Mesh* Load(const char* path);
+		class Mesh : IAsset
+		{
+			friend class IAsset;
+		private:
+			class MeshInstance : public IAssetInstance
+			{
+				friend class IAssetInstance;
+				friend class Mesh;
 
-		VkBuffer VertexBuffer();
-		VkBuffer IndexBuffer();
-		std::vector<uint32_t>& Indices();
-	private:
-		Mesh();
-		virtual ~Mesh();
-		Mesh(const Mesh&) = delete;
-		Mesh& operator=(const Mesh&) = delete;
-		Mesh(Mesh&&) = delete;
-		Mesh& operator=(Mesh&&) = delete;
-	};
+			private:
+				std::vector<VertexData> _vertices;
+				std::vector<uint32_t> _indices;
+				Instance::Buffer* _vertexBuffer;
+				Instance::Buffer* _indexBuffer;
+			public:
+				MeshInstance(std::string path);
+				virtual ~MeshInstance();
+			private:
+				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadByteData();
+				void _LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer);
+			};
+
+		public:
+			static std::future<Mesh*>LoadAsync(const char* path);
+			static void Unload(Mesh* mesh);
+			static Mesh* Load(const char* path);
+
+			Instance::Buffer& VertexBuffer();
+			Instance::Buffer& IndexBuffer();
+			std::vector<VertexData>& Vertices();
+			std::vector<uint32_t>& Indices();
+		private:
+			Mesh();
+			virtual ~Mesh();
+			Mesh(const Mesh&) = delete;
+			Mesh& operator=(const Mesh&) = delete;
+			Mesh(Mesh&&) = delete;
+			Mesh& operator=(Mesh&&) = delete;
+		};
+
+	}
 
 }

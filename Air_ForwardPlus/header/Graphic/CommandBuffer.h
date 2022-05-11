@@ -18,8 +18,8 @@ namespace Graphic
 	namespace Asset
 	{
 		class Shader;
+		class Mesh;
 	}
-	class Mesh;
 	class CommandBuffer
 	{
 		friend class CommandPool;
@@ -56,7 +56,7 @@ namespace Graphic
 		void BeginRenderPass(Render::RenderPassHandle renderPass, Manager::FrameBufferHandle frameBuffer, std::vector< VkClearValue> clearValues);
 		void EndRenderPass();
 		void BindShader(Asset::Shader* shader);
-		void BindMesh(Mesh* mesh);
+		void BindMesh(Asset::Mesh* mesh);
 		void BindMaterial(Material* material);
 		void CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage,VkImageLayout dstImageLayout, std::vector<VkImageCopy> regions);
 		void Draw();

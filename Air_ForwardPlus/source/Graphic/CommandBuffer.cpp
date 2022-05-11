@@ -8,6 +8,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Material.h"
+#include "Graphic/Instance/Buffer.h"
 Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level)
     : name(name)
     , _parentCommandPool(commandPool)
@@ -136,13 +137,13 @@ void Graphic::CommandBuffer::BindShader(Asset::Shader* shader)
     vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->Pipeline());
 }
 
-void Graphic::CommandBuffer::BindMesh(Mesh* mesh)
+void Graphic::CommandBuffer::BindMesh(Asset::Mesh* mesh)
 {
-    VkBuffer vertexBuffers[] = { mesh->VertexBuffer()};
+    VkBuffer vertexBuffers[] = { mesh->VertexBuffer().VkBuffer()};
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
     _commandData.indexCount = static_cast<uint32_t>(mesh->Indices().size());
-    vkCmdBindIndexBuffer(_vkCommandBuffer, mesh->IndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(_vkCommandBuffer, mesh->IndexBuffer().VkBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 void Graphic::CommandBuffer::BindMaterial(Material* material)

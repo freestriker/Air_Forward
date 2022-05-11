@@ -118,7 +118,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulateShaderStages(_PipelineDat
 void Graphic::Asset::Shader::_ShaderInstance::_PopulateVertexInputState(_PipelineData& pipelineData)
 {
 	pipelineData.vertexInputBindingDescription.binding = 0;
-	pipelineData.vertexInputBindingDescription.stride = sizeof(Graphic::VertexData);
+	pipelineData.vertexInputBindingDescription.stride = sizeof(Graphic::Asset::VertexData);
 	pipelineData.vertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	_ShaderModuleWarp vertexShaderWarp;
@@ -154,35 +154,35 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulateVertexInputState(_Pipelin
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
-			attr_desc.offset = offsetof(Graphic::VertexData, Graphic::VertexData::position);
+			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::position);
 		}
 		else if (strcmp(refl_var.name, "vertexTexCoords") == 0)
 		{
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
-			attr_desc.offset = offsetof(Graphic::VertexData, Graphic::VertexData::texCoords);
+			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::texCoords);
 		}
 		else if (strcmp(refl_var.name, "vertexNormal") == 0)
 		{
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
-			attr_desc.offset = offsetof(Graphic::VertexData, Graphic::VertexData::normal);
+			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::normal);
 		}
 		else if (strcmp(refl_var.name, "vertexTangent") == 0)
 		{
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
-			attr_desc.offset = offsetof(Graphic::VertexData, Graphic::VertexData::tangent);
+			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::tangent);
 		}
 		else if (strcmp(refl_var.name, "vertexTangent") == 0)
 		{
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
-			attr_desc.offset = offsetof(Graphic::VertexData, Graphic::VertexData::bitangent);
+			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::bitangent);
 		}
 
 		pipelineData.vertexInputAttributeDescriptions[i_var] = attr_desc;
