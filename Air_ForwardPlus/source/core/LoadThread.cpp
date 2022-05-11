@@ -34,8 +34,8 @@ void LoadThread::OnRun()
 	}
 	while (!_stopped)
 	{
-		std::cerr << "LoadThread::OnRun()" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
+		assetManager->Collect();
 	}
 }
 void LoadThread::OnEnd()

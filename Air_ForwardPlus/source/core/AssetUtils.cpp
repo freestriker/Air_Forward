@@ -41,9 +41,40 @@ AssetManager::~AssetManager()
 	std::unique_lock<std::mutex> lock(_mutex);
 	for (const auto& pair : _warps)
 	{
+		for (const auto& asset : pair.second.assets)
+		{
+			delete asset;
+		}
 		delete pair.second.assetInstance;
 	}
 	_warps.clear();
+}
+
+void AssetManager::Collect()
+{
+	std::unique_lock<std::mutex> lock(_mutex);
+	std::vector<std::string> collecteds;
+	for (auto it = _warps.cbegin(); it != _warps.cend(); )
+	{
+		if (it->second.refCount == 0)
+		{
+			collecteds.push_back(it->second.assetInstance->path);
+			for (const auto& asset : it->second.assets)
+			{
+				delete asset;
+			}
+			delete it->second.assetInstance;
+			it = _warps.erase(it++);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	for (const auto& collected : collecteds)
+	{
+		Debug::Log("AssetManager collect " + collected + " .");
+	}
 }
 
 void AssetManager::_AddInstance(std::string path, IAssetInstance* assetInstance)

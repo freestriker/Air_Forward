@@ -66,6 +66,7 @@ private:
 public:
 	AssetManager();
 	~AssetManager();
+	void Collect();
 	void _AddInstance(std::string path, IAssetInstance* assetInstance);
 	IAssetInstance* _AcquireInstance(std::string path, IAsset* newAsset);
 	bool _ContainsInstance(std::string path);
@@ -131,7 +132,8 @@ template<typename TAsset, typename TAssetInstance>
 inline void IAsset::_Unload(TAsset* asset)
 {
 	std::unique_lock<std::mutex> lock(LoadThread::instance->assetManager->_mutex);
+	std::string unloaded = asset->_assetInstance->path;
 	LoadThread::instance->assetManager->_ReleaseInstance(asset->_assetInstance, asset);
-	Debug::Log("AssetManager unload " + asset->_assetInstance->path + " .");
 	delete asset;
+	Debug::Log("AssetManager unload " + unloaded + " .");
 }
