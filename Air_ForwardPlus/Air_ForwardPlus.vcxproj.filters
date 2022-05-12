@@ -139,12 +139,12 @@
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
-    <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
     <ClCompile Include="source\utils\DebugUtils.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
   </ItemGroup>
 </Project>

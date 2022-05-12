@@ -9,13 +9,20 @@
 
 Graphic::Asset::Shader::_ShaderInstance::_ShaderInstance(std::string path)
 	: IAssetInstance(path)
-	, vkPipelineLayout(VK_NULL_HANDLE)
-	, vkPipeline(VK_NULL_HANDLE)
+	, _vkPipelineLayout(VK_NULL_HANDLE)
+	, _vkPipeline(VK_NULL_HANDLE)
 {
 }
 
 Graphic::Asset::Shader::_ShaderInstance::~_ShaderInstance()
 {
+	vkDestroyPipeline(Graphic::GlobalInstance::device, _vkPipeline, nullptr);
+	vkDestroyPipelineLayout(Graphic::GlobalInstance::device, _vkPipelineLayout, nullptr);
+
+	for (const auto& slotLayoutPair : _slotLayouts)
+	{
+		vkDestroyDescriptorSetLayout(Graphic::GlobalInstance::device, slotLayoutPair.second.descriptorSetLayout, nullptr);
+	}
 }
 
 void Graphic::Asset::Shader::_ShaderInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
@@ -46,12 +53,12 @@ void Graphic::Asset::Shader::_ShaderInstance::_ParseShaderData(_PipelineData& pi
 	}
 	std::string text = std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 	nlohmann::json j = nlohmann::json::parse(text);
-	this->shaderSettings = j.get< Graphic::Asset::Shader::ShaderSetting>();
+	this->_shaderSettings = j.get< Graphic::Asset::Shader::ShaderSetting>();
 }
 
 void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs(_PipelineData& pipelineData)
 {
-	for (const auto& spirvPath : shaderSettings.shaderPaths)
+	for (const auto& spirvPath : _shaderSettings.shaderPaths)
 	{
 		std::ifstream file(spirvPath, std::ios::ate | std::ios::binary);
 
@@ -225,7 +232,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 	result = spvReflectEnumerateOutputVariables(&fragmentShaderWarp.reflectModule, &ioutputCount, output_vars.data());
 	if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to find output variable.";
 
-	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->GetRenderPass(shaderSettings.renderPass.c_str())->colorAttachmentMap[shaderSettings.subpass];
+	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->colorAttachmentMap[_shaderSettings.subpass];
 	for (size_t i_var = 0; i_var < output_vars.size(); ++i_var)
 	{
 		const SpvReflectInterfaceVariable& refl_var = *(output_vars[i_var]);
@@ -263,7 +270,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 	pipelineData.rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	pipelineData.rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	pipelineData.rasterizer.lineWidth = 1.0f;
-	pipelineData.rasterizer.cullMode = shaderSettings.cullMode;
+	pipelineData.rasterizer.cullMode = _shaderSettings.cullMode;
 	pipelineData.rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	pipelineData.rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -272,20 +279,20 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 	pipelineData.multisampling.rasterizationSamples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
 
 	pipelineData.depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	pipelineData.depthStencil.depthTestEnable = shaderSettings.depthTestEnable;
-	pipelineData.depthStencil.depthWriteEnable = shaderSettings.depthWriteEnable;
-	pipelineData.depthStencil.depthCompareOp = shaderSettings.depthCompareOp;
+	pipelineData.depthStencil.depthTestEnable = _shaderSettings.depthTestEnable;
+	pipelineData.depthStencil.depthWriteEnable = _shaderSettings.depthWriteEnable;
+	pipelineData.depthStencil.depthCompareOp = _shaderSettings.depthCompareOp;
 	pipelineData.depthStencil.depthBoundsTestEnable = VK_FALSE;
 	pipelineData.depthStencil.stencilTestEnable = VK_FALSE;
 
-	pipelineData.colorBlendAttachment.blendEnable = shaderSettings.blendEnable;
-	pipelineData.colorBlendAttachment.srcColorBlendFactor = shaderSettings.srcColorBlendFactor;
-	pipelineData.colorBlendAttachment.dstColorBlendFactor = shaderSettings.dstColorBlendFactor;
-	pipelineData.colorBlendAttachment.colorBlendOp = shaderSettings.colorBlendOp;
-	pipelineData.colorBlendAttachment.srcAlphaBlendFactor = shaderSettings.srcAlphaBlendFactor;
-	pipelineData.colorBlendAttachment.dstAlphaBlendFactor = shaderSettings.dstAlphaBlendFactor;
-	pipelineData.colorBlendAttachment.alphaBlendOp = shaderSettings.alphaBlendOp;
-	pipelineData.colorBlendAttachment.colorWriteMask = shaderSettings.colorWriteMask;
+	pipelineData.colorBlendAttachment.blendEnable = _shaderSettings.blendEnable;
+	pipelineData.colorBlendAttachment.srcColorBlendFactor = _shaderSettings.srcColorBlendFactor;
+	pipelineData.colorBlendAttachment.dstColorBlendFactor = _shaderSettings.dstColorBlendFactor;
+	pipelineData.colorBlendAttachment.colorBlendOp = _shaderSettings.colorBlendOp;
+	pipelineData.colorBlendAttachment.srcAlphaBlendFactor = _shaderSettings.srcAlphaBlendFactor;
+	pipelineData.colorBlendAttachment.dstAlphaBlendFactor = _shaderSettings.dstAlphaBlendFactor;
+	pipelineData.colorBlendAttachment.alphaBlendOp = _shaderSettings.alphaBlendOp;
+	pipelineData.colorBlendAttachment.colorWriteMask = _shaderSettings.colorWriteMask;
 
 	pipelineData.colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	pipelineData.colorBlending.logicOpEnable = VK_FALSE;
@@ -410,15 +417,15 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 				slotLayout.slotType = SlotType::TEXTURE2D_WITH_INFO;
 			}
 		}
-		slotLayouts.emplace(slotLayout.slotName, slotLayout);
+		_slotLayouts.emplace(slotLayout.slotName, slotLayout);
 
 	}
 }
 
 void Graphic::Asset::Shader::_ShaderInstance::_PopulateDescriptorLayouts(_PipelineData& pipelineData)
 {
-	pipelineData.descriptorSetLayouts.resize(slotLayouts.size());
-	for (auto& slotLayoutPair : slotLayouts)
+	pipelineData.descriptorSetLayouts.resize(_slotLayouts.size());
+	for (auto& slotLayoutPair : _slotLayouts)
 	{
 		pipelineData.descriptorSetLayouts[slotLayoutPair.second.set] = slotLayoutPair.second.descriptorSetLayout;
 	}
@@ -431,7 +438,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(pipelineData.descriptorSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = pipelineData.descriptorSetLayouts.data();
 
-	if (vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &_vkPipelineLayout) != VK_SUCCESS) {
 		std::cerr << "failed to create pipeline layout!";
 	}
 
@@ -446,12 +453,12 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineInfo.pMultisampleState = &pipelineData.multisampling;
 	pipelineInfo.pDepthStencilState = &pipelineData.depthStencil;
 	pipelineInfo.pColorBlendState = &pipelineData.colorBlending;
-	pipelineInfo.layout = vkPipelineLayout;
-	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(shaderSettings.renderPass.c_str())->vkRenderPass;
-	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(shaderSettings.renderPass.c_str())->subPassMap.find(shaderSettings.subpass)->second;
+	pipelineInfo.layout = _vkPipelineLayout;
+	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->vkRenderPass;
+	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->subPassMap.find(_shaderSettings.subpass)->second;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline) != VK_SUCCESS) {
 		std::cerr << "failed to create graphics pipeline!";
 	}
 
@@ -492,17 +499,22 @@ void Graphic::Asset::Shader::Unload(Shader* shader)
 
 const std::map<std::string, Graphic::Asset::Shader::SlotLayout>& Graphic::Asset::Shader::SlotLayouts()
 {
-	return dynamic_cast<Graphic::Asset::Shader::_ShaderInstance*>(_assetInstance)->slotLayouts;
+	return dynamic_cast<Graphic::Asset::Shader::_ShaderInstance*>(_assetInstance)->_slotLayouts;
 }
 
-VkPipeline Graphic::Asset::Shader::Pipeline()
+VkPipeline Graphic::Asset::Shader::VkPipeline()
 {
-	return dynamic_cast<_ShaderInstance*>(_assetInstance)->vkPipeline;
+	return dynamic_cast<_ShaderInstance*>(_assetInstance)->_vkPipeline;
 }
 
-VkPipelineLayout Graphic::Asset::Shader::PipelineLayout()
+VkPipelineLayout Graphic::Asset::Shader::VkPipelineLayout()
 {
-	return dynamic_cast<_ShaderInstance*>(_assetInstance)->vkPipelineLayout;
+	return dynamic_cast<_ShaderInstance*>(_assetInstance)->_vkPipelineLayout;
+}
+
+const Graphic::Asset::Shader::ShaderSetting& Graphic::Asset::Shader::Settings()
+{
+	return dynamic_cast<_ShaderInstance*>(_assetInstance)->_shaderSettings;
 }
 
 Graphic::Asset::Shader::ShaderSetting::ShaderSetting()

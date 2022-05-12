@@ -93,15 +93,13 @@ namespace Graphic
 			{
 				friend class Shader;
 				friend class IAsset;
-			public:
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
 
-				ShaderSetting shaderSettings;
-				std::map<std::string, SlotLayout> slotLayouts;
-				VkPipeline vkPipeline;
-				VkPipelineLayout vkPipelineLayout;
-			private:
+				ShaderSetting _shaderSettings;
+				std::map<std::string, SlotLayout> _slotLayouts;
+				VkPipeline _vkPipeline;
+				VkPipelineLayout _vkPipelineLayout;
 				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
 				
 				void _ParseShaderData(_PipelineData& pipelineData);
@@ -123,8 +121,9 @@ namespace Graphic
 			static Shader* Load(const char* path);
 			static void Unload(Shader* shader);
 			const std::map<std::string, SlotLayout>& SlotLayouts();
-			VkPipeline Pipeline();
-			VkPipelineLayout PipelineLayout();
+			VkPipeline VkPipeline();
+			VkPipelineLayout VkPipelineLayout();
+			const ShaderSetting& Settings();
 		private:
 			Shader();
 			~Shader();
