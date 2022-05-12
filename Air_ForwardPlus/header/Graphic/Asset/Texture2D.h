@@ -49,25 +49,28 @@ namespace Graphic
 				{
 
 				}
+				Texture2DSetting()
+				{
+
+				}
 			};
 		private:
 			class Texture2DInstance : public IAssetInstance
 			{
 				friend class Texture2D;
 				friend class IAsset;
-			public:
 				Texture2DInstance(std::string path);
 				virtual ~Texture2DInstance();
-				VkExtent2D size;
-				VkImage vkImage;
-				VkFormat textureFormat;
-				std::unique_ptr<MemoryBlock> imageMemory;
-				Instance::Buffer* infoBuffer;
-				VkImageView textureImageView;
-				VkSampler sampler;
-				Texture2D::TextureInfo textureInfo;
-				std::vector<unsigned char> byteData;
-			private:
+				VkExtent2D _extent;
+				VkImage _vkImage;
+				VkFormat _vkFormat;
+				MemoryBlock* _imageMemory;
+				Instance::Buffer* _textureInfoBuffer;
+				VkImageView _vkImageView;
+				VkSampler _vkSampler;
+				Texture2D::TextureInfo _textureInfo;
+				std::vector<unsigned char> _byteData;
+				Texture2DSetting _settings;
 				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
 				static void _LoadBitmap(Texture2DSetting& config, Texture2DInstance& texture);
 
@@ -91,6 +94,7 @@ namespace Graphic
 			VkFormat VkFormat();
 			VkImageView VkImageView();
 			VkSampler VkSampler();
+			const Texture2DSetting& Settings();
 
 			Instance::Buffer& TextureInfoBuffer();
 		private:
