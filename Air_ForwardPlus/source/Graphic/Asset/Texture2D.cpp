@@ -9,14 +9,11 @@
 #include "utils/Log.h"
 #include "Graphic/Instance/Semaphore.h"
 #include "Graphic/Instance/Memory.h"
+#include "Graphic/Instance/Image.h"
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
-	, _imageMemory(nullptr)
 	, _textureInfoBuffer(nullptr)
-	, _extent()
-	, _vkImage(VK_NULL_HANDLE)
-	, _vkFormat()
-	, _vkImageView(VK_NULL_HANDLE)
+	, _image(nullptr)
 	, _vkSampler(VK_NULL_HANDLE)
 	, _textureInfo()
 	, _byteData()
@@ -29,12 +26,8 @@ Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance::~Texture2DInsta
 	delete _textureInfoBuffer;
 
 	vkDestroySampler(Graphic::GlobalInstance::device, _vkSampler, nullptr);
-	vkDestroyImageView(Graphic::GlobalInstance::device, _vkImageView, nullptr);
-	vkDestroyImage(Graphic::GlobalInstance::device, _vkImage, nullptr);
 
-	Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(*_imageMemory);
-
-	delete _imageMemory;
+	delete _image;
 }
 
 void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
@@ -44,12 +37,48 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 
 	Instance::Semaphore semaphore = Instance::Semaphore();
 
-	_LoadBitmap(config, *this);
+	//Load bitmap
+	{
+		auto p = _settings.path.c_str();
+		auto fileType = FreeImage_GetFileType(p);
+		if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(p);
+		if ((fileType != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fileType))
+		{
+			FIBITMAP* bitmap = FreeImage_Load(fileType, p);
+			uint32_t pixelDepth = FreeImage_GetBPP(bitmap);
+			if (pixelDepth != 32)
+			{
+				FIBITMAP* t = bitmap;
+				bitmap = FreeImage_ConvertTo32Bits(t);
+				FreeImage_Unload(t);
+			}
+			uint32_t pitch = FreeImage_GetPitch(bitmap);
+			_extent = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
+			_textureInfo.size = glm::vec4(1.0 / _extent.width, 1.0 / _extent.height, _extent.width, _extent.height);
+			_textureInfo.tilingScale = glm::vec4(0, 0, 1, 1);
+			_byteData.resize(static_cast<size_t>(_extent.width) * _extent.height * 4);
+			FreeImage_ConvertToRawBits(_byteData.data(), bitmap, pitch, pixelDepth, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, 0L);
+			FreeImage_Unload(bitmap);
+		}
+	}
+	//Create image
+	{
+		_image = new Instance::Image(
+			_extent,
+			_settings.format,
+			VkImageTiling::VK_IMAGE_TILING_OPTIMAL,
+			static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT),
+			1,
+			_settings.sampleCount,
+			VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VkImageViewType::VK_IMAGE_VIEW_TYPE_2D,
+			VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT
+		);
+	}
 
+	//Create buffer
 	Instance::Buffer textureStagingBuffer = Instance::Buffer(static_cast<uint64_t>(_extent.width) * _extent.height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	textureStagingBuffer.WriteBuffer(_byteData.data(), textureStagingBuffer.Size());
-
-	_CreateImage(config, *this);
 
 	_textureInfoBuffer = new Instance::Buffer(sizeof(_textureInfo), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	Instance::Buffer infoStagingBuffer = Instance::Buffer(sizeof(_textureInfo), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -65,12 +94,8 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		imageTransferBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		imageTransferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		imageTransferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageTransferBarrier.image = _vkImage;
-		imageTransferBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageTransferBarrier.subresourceRange.baseMipLevel = 0;
-		imageTransferBarrier.subresourceRange.levelCount = 1;
-		imageTransferBarrier.subresourceRange.baseArrayLayer = 0;
-		imageTransferBarrier.subresourceRange.layerCount = 1;
+		imageTransferBarrier.image = _image->VkImage_();
+		imageTransferBarrier.subresourceRange = _image->VkImageSubresourceRange_();
 		imageTransferBarrier.srcAccessMask = 0;
 		imageTransferBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
@@ -84,18 +109,11 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = 1;
+		region.imageSubresource = _image->VkImageSubresourceLayers_();
 		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = {
-			_extent.width,
-			_extent.height,
-			1
-		};
+		region.imageExtent = _image->VkExtent3D_();
 
-		transferCommandBuffer->CopyBufferToImage(textureStagingBuffer.VkBuffer(), _vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { region });
+		transferCommandBuffer->CopyBufferToImage(textureStagingBuffer.VkBuffer(), _image->VkImage_(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { region });
 	}
 	//Copy buffer to buffer
 	{
@@ -109,14 +127,10 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		releaseImageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		releaseImageBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
 		releaseImageBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		releaseImageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		releaseImageBarrier.subresourceRange.baseMipLevel = 0;
-		releaseImageBarrier.subresourceRange.levelCount = 1;
-		releaseImageBarrier.subresourceRange.baseArrayLayer = 0;
-		releaseImageBarrier.subresourceRange.layerCount = 1;
+		releaseImageBarrier.subresourceRange = _image->VkImageSubresourceRange_();
 		releaseImageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		releaseImageBarrier.dstAccessMask = 0;
-		releaseImageBarrier.image = _vkImage;
+		releaseImageBarrier.image = _image->VkImage_();
 
 		VkBufferMemoryBarrier releaseBufferBarrier = {};
 		releaseBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -147,14 +161,10 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		acquireImageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		acquireImageBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
 		acquireImageBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		acquireImageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		acquireImageBarrier.subresourceRange.baseMipLevel = 0;
-		acquireImageBarrier.subresourceRange.levelCount = 1;
-		acquireImageBarrier.subresourceRange.baseArrayLayer = 0;
-		acquireImageBarrier.subresourceRange.layerCount = 1;
+		acquireImageBarrier.subresourceRange = _image->VkImageSubresourceRange_();
 		acquireImageBarrier.srcAccessMask = 0;
 		acquireImageBarrier.dstAccessMask = 0;
-		acquireImageBarrier.image = _vkImage;
+		acquireImageBarrier.image = _image->VkImage_();
 		VkBufferMemoryBarrier acquireBufferBarrier = {};
 		acquireBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 		acquireBufferBarrier.pNext = nullptr;
@@ -180,77 +190,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 	renderCommandBuffer->Reset();
 	transferCommandBuffer->Reset();
 
-	_CreateImageView(config, *this);
 	_CreateTextureSampler(config, *this);
-}
-
-
-void Graphic::Asset::Texture2D::Texture2DInstance::_LoadBitmap(Texture2DSetting& config, Texture2DInstance& texture)
-{
-	auto p = config.path.c_str();
-	auto fileType = FreeImage_GetFileType(p);
-	if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(p);
-	if ((fileType != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fileType))
-	{
-		FIBITMAP* bitmap = FreeImage_Load(fileType, p);
-		uint32_t pixelDepth = FreeImage_GetBPP(bitmap);
-		if (pixelDepth != 32)
-		{
-			FIBITMAP* t = bitmap;
-			bitmap = FreeImage_ConvertTo32Bits(t);
-			FreeImage_Unload(t);
-		}
-		uint32_t pitch = FreeImage_GetPitch(bitmap);
-		texture._extent = VkExtent2D{ FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
-		texture._textureInfo.size = glm::vec4(1.0 / texture._extent.width, 1.0 / texture._extent.height, texture._extent.width, texture._extent.height);
-		texture._textureInfo.tilingScale = glm::vec4(0, 0, 1, 1);
-		texture._byteData.resize(static_cast<size_t>(texture._extent.width) * texture._extent.height * 4);
-		FreeImage_ConvertToRawBits(texture._byteData.data(), bitmap, pitch, pixelDepth, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, 0L);
-		FreeImage_Unload(bitmap);
-	}
-}
-
-void Graphic::Asset::Texture2D::Texture2DInstance::_CreateImage(Texture2DSetting& config, Texture2DInstance& texture)
-{
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = texture._extent.width;
-	imageInfo.extent.height = texture._extent.height;
-	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
-	imageInfo.format = config.format;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageInfo.samples = config.sampleCount;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	Log::Exception("Failed to create image.", vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &texture._vkImage));
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, texture._vkImage, &memRequirements);
-
-	texture._imageMemory = new Instance::Memory();
-	*texture._imageMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	vkBindImageMemory(Graphic::GlobalInstance::device, texture._vkImage, texture._imageMemory->VkMemory(), texture._imageMemory->Offset());
-}
-
-void Graphic::Asset::Texture2D::Texture2DInstance::_CreateImageView(Texture2DSetting& config, Texture2DInstance& texture)
-{
-	VkImageViewCreateInfo viewInfo{};
-	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewInfo.image = texture._vkImage;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewInfo.format = config.format;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
-	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
-
-	Log::Exception("Failed to create image view.", vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &texture._vkImageView));
 }
 
 void Graphic::Asset::Texture2D::Texture2DInstance::_CreateTextureSampler(Texture2DSetting& config, Texture2DInstance& texture)
@@ -270,7 +210,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_CreateTextureSampler(Texture
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = static_cast<float>(0);
+	samplerInfo.maxLod = 0.0f;
 	samplerInfo.mipLodBias = 0.0f;
 
 	Log::Exception("Failed to create sampler.", vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture._vkSampler));
@@ -306,19 +246,9 @@ VkExtent2D Graphic::Asset::Texture2D::Extent()
 	return dynamic_cast<Texture2DInstance*>(_assetInstance)->_extent;
 }
 
-VkImage Graphic::Asset::Texture2D::VkImage()
+Graphic::Instance::Image& Graphic::Asset::Texture2D::Image()
 {
-	return dynamic_cast<Texture2DInstance*>(_assetInstance)->_vkImage;
-}
-
-VkFormat Graphic::Asset::Texture2D::VkFormat()
-{
-	return dynamic_cast<Texture2DInstance*>(_assetInstance)->_vkFormat;
-}
-
-VkImageView Graphic::Asset::Texture2D::VkImageView()
-{
-	return dynamic_cast<Texture2DInstance*>(_assetInstance)->_vkImageView;
+	return *dynamic_cast<Texture2DInstance*>(_assetInstance)->_image;
 }
 
 VkSampler Graphic::Asset::Texture2D::VkSampler()

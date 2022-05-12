@@ -13,6 +13,7 @@ namespace Graphic
 	{
 		class Buffer;
 		class Memory;
+		class Image;
 	}
 	namespace Asset
 	{
@@ -61,20 +62,15 @@ namespace Graphic
 				Texture2DInstance(std::string path);
 				virtual ~Texture2DInstance();
 				VkExtent2D _extent;
-				VkImage _vkImage;
-				VkFormat _vkFormat;
-				Instance::Memory* _imageMemory;
 				Instance::Buffer* _textureInfoBuffer;
-				VkImageView _vkImageView;
+				Instance::Image* _image;
 				VkSampler _vkSampler;
 				Texture2D::TextureInfo _textureInfo;
 				std::vector<unsigned char> _byteData;
 				Texture2DSetting _settings;
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-				static void _LoadBitmap(Texture2DSetting& config, Texture2DInstance& texture);
 
-				static void _CreateImage(Texture2DSetting& config, Texture2DInstance& texture);
-				static void _CreateImageView(Texture2DSetting& config, Texture2DInstance& texture);
+				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+
 				static void _CreateTextureSampler(Texture2DSetting& config, Texture2DInstance& texture);
 			};
 
@@ -89,9 +85,7 @@ namespace Graphic
 			static void Unload(Texture2D* texture2D);
 
 			VkExtent2D Extent();
-			VkImage VkImage();
-			VkFormat VkFormat();
-			VkImageView VkImageView();
+			Instance::Image& Image();
 			VkSampler VkSampler();
 			const Texture2DSetting& Settings();
 

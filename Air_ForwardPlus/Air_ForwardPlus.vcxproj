@@ -32,6 +32,7 @@
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
     <ClInclude Include="header\Graphic\Instance\DescriptorSet.h" />
+    <ClInclude Include="header\Graphic\Instance\Image.h" />
     <ClInclude Include="header\Graphic\Instance\Memory.h" />
     <ClInclude Include="header\Graphic\Instance\Semaphore.h" />
     <ClInclude Include="header\Graphic\Instance\Buffer.h" />
@@ -70,6 +71,7 @@
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Image.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
