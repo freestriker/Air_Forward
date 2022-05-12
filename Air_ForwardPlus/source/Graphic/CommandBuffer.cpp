@@ -118,7 +118,7 @@ void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle r
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass->vkRenderPass;
-    renderPassInfo.framebuffer = frameBuffer->VulkanFrameBuffer();
+    renderPassInfo.framebuffer = frameBuffer->VkFramebuffer_();
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = Graphic::GlobalSetting::windowExtent;
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
