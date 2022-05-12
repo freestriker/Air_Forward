@@ -18,18 +18,16 @@ Graphic::Asset::Mesh::MeshInstance::MeshInstance(std::string path)
 
 Graphic::Asset::Mesh::MeshInstance::~MeshInstance()
 {
+    delete _vertexBuffer;
+    delete _indexBuffer;
 }
 
 void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-	{
-		std::string e = "ERROR::ASSIMP:: ";
-		e += importer.GetErrorString();
-        std::cerr <<e.c_str();
-	}
+
+    Debug::Exception(importer.GetErrorString(), !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode);
 
 	// process ASSIMP's root node recursively
     aiMesh* mesh = scene->mMeshes[scene->mRootNode->mMeshes[0]];
@@ -71,7 +69,9 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
             vertexData.bitangent = vector;
         }
         else
-            std::cerr << "Do not contains uv.";
+        {
+            Debug::Exception("Mesh do not contains uv.");
+        }
 
         _vertices.push_back(vertexData);
     }
@@ -83,6 +83,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             _indices.push_back(face.mIndices[j]);
     }
+    importer.FreeScene();
 }
 
 void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)

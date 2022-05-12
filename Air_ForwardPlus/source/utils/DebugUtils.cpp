@@ -47,4 +47,5 @@ void Debug::Exception(std::string info, bool logCondition)
 void Debug::Exception(std::string info)
 {
 	std::cerr << "Exception: " + info << std::endl;
+	getchar();
 }
