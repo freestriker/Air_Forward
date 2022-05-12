@@ -71,7 +71,7 @@
     <ClInclude Include="header\Graphic\CommandPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\DescriptorSetUtils.h">
+    <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\core\AssetUtils.h">
@@ -113,6 +113,9 @@
     <ClInclude Include="header\Graphic\Instance\Memory.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\DescriptorSet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -135,7 +138,7 @@
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
-    <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
+    <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\core\AssetUtils.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
@@ -150,5 +153,6 @@
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
+    <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
   </ItemGroup>
 </Project>

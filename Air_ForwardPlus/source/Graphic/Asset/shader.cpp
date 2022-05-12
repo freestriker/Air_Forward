@@ -61,7 +61,6 @@ void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs(_PipelineData& pipelin
 	{
 		std::ifstream file(spirvPath, std::ios::ate | std::ios::binary);
 
-		if (!file.is_open()) std::cerr << "failed to open file!";
 		Log::Exception("Failed to open spv file: " + spirvPath + " .", !file.is_open());
 
 		size_t fileSize = (size_t)file.tellg();

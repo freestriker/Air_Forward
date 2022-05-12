@@ -1,10 +1,10 @@
 #include "Graphic/Material.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Texture2D.h"
-#include "Graphic/DescriptorSetUtils.h"
+#include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Instance/Buffer.h"
-#include "Graphic/DescriptorSetUtils.h"
+#include "Graphic/Instance/DescriptorSet.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
 	: _shader(shader)
@@ -39,7 +39,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D)
 	{
 		_slots[name].asset = texture2d;
-		_slots[name].descriptorSet->WriteBindingData(
+		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0 },
 			{ {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL} }
 		);
@@ -47,7 +47,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 	else if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D_WITH_INFO)
 	{
 		_slots[name].asset = texture2d;
-		_slots[name].descriptorSet->WriteBindingData(
+		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0, 1 },
 			{ 
 				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
@@ -78,7 +78,7 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::Bu
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
 	{
 		_slots[name].asset = buffer;
-		_slots[name].descriptorSet->WriteBindingData(
+		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0},
 			{
 				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer(), 0, buffer->Size()}
@@ -101,21 +101,21 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		case Asset::SlotType::UNIFORM_BUFFER:
 		{
 			Instance::Buffer* ub = static_cast<Instance::Buffer*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->Size()) });
+			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->Size()) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D:
 		{
 			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0 }, { Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
+			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D_WITH_INFO:
 		{
 			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
-			slot.descriptorSet->WriteBindingData({ 0, 1 }, {
-				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-				Graphic::Manager::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer(), 0, t->TextureInfoBuffer().Size())
+			slot.descriptorSet->UpdateBindingData({ 0, 1 }, {
+				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->VkImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer(), 0, t->TextureInfoBuffer().Size())
 				});
 
 			break;
@@ -136,7 +136,7 @@ std::vector<VkDescriptorSet> Graphic::Material::DescriptorSets()
 
 	for (const auto& slotPair : _slots)
 	{
-		sets[slotPair.second.set] = slotPair.second.descriptorSet->Set();
+		sets[slotPair.second.set] = slotPair.second.descriptorSet->VkDescriptorSet_();
 	}
 	return sets;
 }

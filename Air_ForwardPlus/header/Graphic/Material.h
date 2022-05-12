@@ -8,8 +8,7 @@ namespace Graphic
 {
 	namespace Manager
 	{
-		class DescriptorSet;
-		typedef DescriptorSet* DescriptorSetHandle;
+		class DescriptorSetManager;
 	}
 	class CommandBuffer;
 	namespace Asset
@@ -21,6 +20,8 @@ namespace Graphic
 	namespace Instance
 	{
 		class Buffer;
+		class DescriptorSet;
+		typedef DescriptorSet* DescriptorSetHandle;
 	}
 
 
@@ -32,7 +33,7 @@ namespace Graphic
 			std::string name;
 			void* asset;
 			Asset::SlotType slotType;
-			Manager::DescriptorSetHandle descriptorSet;
+			Instance::DescriptorSetHandle descriptorSet;
 			uint32_t set;
 		};
 

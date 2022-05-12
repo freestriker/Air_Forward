@@ -5,7 +5,7 @@
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/GlobalSetting.h"
-#include "Graphic/DescriptorSetUtils.h"
+#include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/FrameBufferUtils.h"
 #include "Graphic/CommandPool.h"

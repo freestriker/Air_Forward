@@ -31,6 +31,7 @@
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
+    <ClInclude Include="header\Graphic\Instance\DescriptorSet.h" />
     <ClInclude Include="header\Graphic\Instance\Memory.h" />
     <ClInclude Include="header\Graphic\Instance\Semaphore.h" />
     <ClInclude Include="header\Graphic\Instance\Buffer.h" />
@@ -39,7 +40,7 @@
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
-    <ClInclude Include="header\Graphic\DescriptorSetUtils.h" />
+    <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h" />
     <ClInclude Include="header\Graphic\FrameBufferUtils.h" />
     <ClInclude Include="header\Graphic\GlobalInstance.h" />
     <ClInclude Include="header\Graphic\GlobalSetting.h" />
@@ -68,6 +69,7 @@
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
+    <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
@@ -76,7 +78,7 @@
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
-    <ClCompile Include="source\Graphic\DescriptorSetUtils.cpp" />
+    <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
     <ClCompile Include="source\Graphic\GlobalInstance.cpp" />
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
