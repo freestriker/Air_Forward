@@ -48,9 +48,8 @@ void Graphic::Asset::Shader::_ShaderInstance::_LoadAssetInstance(Graphic::Comman
 void Graphic::Asset::Shader::_ShaderInstance::_ParseShaderData(_PipelineData& pipelineData)
 {
 	std::ifstream input_file(path);
-	if (!input_file.is_open()) {
-		std::cerr << "Failed to open shader file";
-	}
+	Debug::Exception("Failed to open shader file.", !input_file.is_open());
+
 	std::string text = std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 	nlohmann::json j = nlohmann::json::parse(text);
 	this->_shaderSettings = j.get< Graphic::Asset::Shader::ShaderSetting>();
@@ -63,6 +62,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_LoadSpirvs(_PipelineData& pipelin
 		std::ifstream file(spirvPath, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open()) std::cerr << "failed to open file!";
+		Debug::Exception("Failed to open spv file: " + spirvPath + " .", !file.is_open());
 
 		size_t fileSize = (size_t)file.tellg();
 		std::vector<char> buffer(fileSize);
@@ -82,8 +82,9 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules(_PipelineData
 	{
 		SpvReflectShaderModule reflectModule = {};
 		SpvReflectResult result = spvReflectCreateShaderModule(spirvPair.second.size(), reinterpret_cast<const uint32_t*>(spirvPair.second.data()), &reflectModule);
-		if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to load shader reflect.";
-			
+
+		Debug::Exception("Failed to load shader reflect.", result);
+
 		if (stageSet.count(static_cast<VkShaderStageFlagBits>(reflectModule.shader_stage)))
 		{
 			spvReflectDestroyShaderModule(&reflectModule);
@@ -96,10 +97,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules(_PipelineData
 			createInfo.pCode = reinterpret_cast<const uint32_t*>(spirvPair.second.data());
 
 			VkShaderModule shaderModule;
-			if (vkCreateShaderModule(Graphic::GlobalInstance::device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-			{
-				std::cerr << "failed to create shader module!";
-			}
+			Debug::Exception("Failed to create shader module.", vkCreateShaderModule(Graphic::GlobalInstance::device, &createInfo, nullptr, &shaderModule));
 
 			pipelineData.shaderModuleWarps.emplace_back(_ShaderModuleWarp{ static_cast<VkShaderStageFlagBits>(reflectModule.shader_stage), shaderModule , reflectModule });
 		}
@@ -139,15 +137,14 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulateVertexInputState(_Pipelin
 			break;
 		}
 	}
-	if(!containsVertexShader) std::cerr << "Failed to find vertex shader.";
+	Debug::Exception("Failed to find vertex shader.", !containsVertexShader);
 
 	uint32_t inputCount = 0;
 	SpvReflectResult result = spvReflectEnumerateInputVariables(&vertexShaderWarp.reflectModule, &inputCount, NULL);
-	assert(result == SPV_REFLECT_RESULT_SUCCESS);
-	if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to find input variable.";
+	Debug::Exception("Failed to enumerate input variables.", result);
 	std::vector<SpvReflectInterfaceVariable*> input_vars(inputCount);
 	result = spvReflectEnumerateInputVariables(&vertexShaderWarp.reflectModule, &inputCount, input_vars.data());
-	if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to find input variable.";
+	Debug::Exception("Failed to enumerate input variables.", result);
 
 	pipelineData.vertexInputAttributeDescriptions.resize(inputCount);
 	for (size_t i_var = 0; i_var < input_vars.size(); ++i_var) {
@@ -222,15 +219,14 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 			break;
 		}
 	}
-	if (!containsFragmentShader) std::cerr << "Failed to find vertex shader.";
+	Debug::Exception("Failed to find fragment shader.", !containsFragmentShader);
 
 	uint32_t ioutputCount = 0;
 	SpvReflectResult result = spvReflectEnumerateOutputVariables(&fragmentShaderWarp.reflectModule, &ioutputCount, NULL);
-	assert(result == SPV_REFLECT_RESULT_SUCCESS);
-	if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to find output variable.";
+	Debug::Exception("Failed to enumerate output variables.", result);
 	std::vector<SpvReflectInterfaceVariable*> output_vars(ioutputCount);
 	result = spvReflectEnumerateOutputVariables(&fragmentShaderWarp.reflectModule, &ioutputCount, output_vars.data());
-	if (result != SPV_REFLECT_RESULT_SUCCESS) std::cerr << "Failed to find output variable.";
+	Debug::Exception("Failed to enumerate output variables.", result);
 
 	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->colorAttachmentMap[_shaderSettings.subpass];
 	for (size_t i_var = 0; i_var < output_vars.size(); ++i_var)
@@ -239,7 +235,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 		// ignore built-in variables
 		if (refl_var.decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) continue;
 
-		if (colorAttachments[refl_var.name] != refl_var.location) std::cerr << "Failed to find right output attachment.";
+		Debug::Exception("Failed to find right output attachment.", colorAttachments[refl_var.name] != refl_var.location);
 	}
 }
 
@@ -367,7 +363,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 						}
 						else
 						{
-							std::cerr << "failed to parse this type.";
+							Debug::Exception("Failed to parse this type.");
 						}
 
 						slotLayoutMap.emplace(refl_set.set, newSlotLayout);
@@ -397,9 +393,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout) != VK_SUCCESS) {
-			std::cerr << "failed to create descriptor set layout!";
-		}
+		Debug::Exception("Failed to create descriptor set layout.", vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout));
 
 		{
 			
@@ -438,9 +432,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(pipelineData.descriptorSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = pipelineData.descriptorSetLayouts.data();
 
-	if (vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &_vkPipelineLayout) != VK_SUCCESS) {
-		std::cerr << "failed to create pipeline layout!";
-	}
+	Debug::Exception("Failed to create pipeline layout.", vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &_vkPipelineLayout));
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -458,9 +450,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->subPassMap.find(_shaderSettings.subpass)->second;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline) != VK_SUCCESS) {
-		std::cerr << "failed to create graphics pipeline!";
-	}
+	Debug::Exception("Failed to create pipeline.", vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline));
 
 }
 
@@ -528,6 +518,9 @@ Graphic::Asset::Shader::ShaderSetting::ShaderSetting()
 	, alphaBlendOp(VkBlendOp::VK_BLEND_OP_ADD)
 	, colorWriteMask(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT)
 	, shaderPaths()
+	, depthCompareOp(VkCompareOp::VK_COMPARE_OP_NEVER)
+	, depthTestEnable(VK_FALSE)
+	, depthWriteEnable(VK_FALSE)
 
 {
 }
