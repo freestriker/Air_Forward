@@ -6,7 +6,10 @@
 
 namespace Graphic
 {
-	class MemoryBlock;
+	namespace Instance
+	{
+		class Memory;
+	}
 	namespace Render
 	{
 		class RenderPass;
@@ -21,7 +24,7 @@ namespace Graphic
 			std::string name;
 			VkImage image;
 			VkImageView imageView;
-			MemoryBlock* memoryBlock;
+			Instance::Memory* memoryBlock;
 			VkExtent2D size;
 			VkImageAspectFlagBits aspectFlag;
 		private:

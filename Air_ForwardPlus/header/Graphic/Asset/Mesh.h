@@ -8,7 +8,6 @@
 namespace Graphic
 {
 	class CommandBuffer;
-	class MemoryBlock;
 	namespace Instance
 	{
 		class Buffer;

@@ -10,7 +10,7 @@
 #include <core/Global.h>
 #include "core/LoadThread.h"
 #include "Graphic/GraphicThread.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION

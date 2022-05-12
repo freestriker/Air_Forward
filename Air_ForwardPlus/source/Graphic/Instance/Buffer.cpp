@@ -1,12 +1,13 @@
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/MemoryManager.h"
+#include "Graphic/Manager/MemoryManager.h"
 #include <iostream>
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
+#include "Graphic/Instance/Memory.h"
 
 Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 	: _vkBuffer(VK_NULL_HANDLE)
-	, _memoryBlock(new MemoryBlock())
+	, _memoryBlock(new Instance::Memory())
 	, _size(size)
 	, _usage(usage)
 {
@@ -16,7 +17,7 @@ Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemor
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	Debug::Exception("Failed to create buffer.", vkCreateBuffer(Graphic::GlobalInstance::device, &bufferInfo, nullptr, &_vkBuffer));
+	Log::Exception("Failed to create buffer.", vkCreateBuffer(Graphic::GlobalInstance::device, &bufferInfo, nullptr, &_vkBuffer));
 
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _vkBuffer, &memRequirements);
@@ -29,7 +30,7 @@ Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemor
 void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 {
 	void* transferData;
-	std::unique_lock<std::mutex> lock(*_memoryBlock->Mutex());
+	std::unique_lock<std::mutex> lock(_memoryBlock->Mutex());
 	vkMapMemory(Graphic::GlobalInstance::device, _memoryBlock->VkMemory(), _memoryBlock->Offset(), _memoryBlock->Size(), 0, &transferData);
 	memcpy(transferData, data, dataSize);
 	vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock->VkMemory());

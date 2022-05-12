@@ -73,7 +73,7 @@ void AssetManager::Collect()
 	}
 	for (const auto& collected : collecteds)
 	{
-		Debug::Message("AssetManager collect " + collected + " .");
+		Log::Message("AssetManager collect " + collected + " .");
 	}
 }
 

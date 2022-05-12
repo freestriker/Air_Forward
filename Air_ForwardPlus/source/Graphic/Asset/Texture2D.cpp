@@ -4,10 +4,11 @@
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/CommandBuffer.h"
 #include <iostream>
-#include "Graphic/MemoryManager.h"
+#include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Instance/Buffer.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 #include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Instance/Memory.h"
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
 	, _imageMemory(nullptr)
@@ -226,14 +227,12 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_CreateImage(Texture2DSetting
 	imageInfo.samples = config.sampleCount;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &texture._vkImage) != VK_SUCCESS) {
-		std::cerr << "failed to create image!";
-	}
+	Log::Exception("Failed to create image.", vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &texture._vkImage));
 
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, texture._vkImage, &memRequirements);
 
-	texture._imageMemory = new MemoryBlock();
+	texture._imageMemory = new Instance::Memory();
 	*texture._imageMemory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vkBindImageMemory(Graphic::GlobalInstance::device, texture._vkImage, texture._imageMemory->VkMemory(), texture._imageMemory->Offset());
 }
@@ -251,10 +250,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_CreateImageView(Texture2DSet
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	if (vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &texture._vkImageView) != VK_SUCCESS)
-	{
-		std::cerr << "failed to create texture image view!";
-	}
+	Log::Exception("Failed to create image view.", vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &texture._vkImageView));
 }
 
 void Graphic::Asset::Texture2D::Texture2DInstance::_CreateTextureSampler(Texture2DSetting& config, Texture2DInstance& texture)
@@ -277,10 +273,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_CreateTextureSampler(Texture
 	samplerInfo.maxLod = static_cast<float>(0);
 	samplerInfo.mipLodBias = 0.0f;
 
-	if (vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture._vkSampler) != VK_SUCCESS)
-	{
-		std::cerr << "failed to create texture sampler!";
-	}
+	Log::Exception("Failed to create sampler.", vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture._vkSampler));
 }
 
 Graphic::Asset::Texture2D::Texture2D()

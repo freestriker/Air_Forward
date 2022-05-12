@@ -1,7 +1,7 @@
 #include "Graphic/Creator/VulkanInstanceCreator.h"
 #include <stdexcept>
 #include "Graphic/GlobalInstance.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 Graphic::VulkanInstanceCreator::VulkanInstanceCreator()
 	: applicationName("Vulkan Application")
 	, applicationVersion(VK_MAKE_VERSION(1, 0, 0))
@@ -42,7 +42,7 @@ void Graphic::VulkanInstanceCreator::AddExtension(char const* extensionName)
 			return;
 		}
 	}
-	Debug::Message("Do not exist extension named " + std::string(extensionName) + ".");
+	Log::Message("Do not exist extension named " + std::string(extensionName) + ".");
 }
 
 #ifdef _USE_GRAPHIC_DEBUG
@@ -56,6 +56,6 @@ void Graphic::VulkanInstanceCreator::AddLayer(char const* layerName)
 			return;
 		}
 	}
-	Debug::Message("Do not exist layer named " + std::string(layerName) + ".");
+	Log::Message("Do not exist layer named " + std::string(layerName) + ".");
 }
 #endif

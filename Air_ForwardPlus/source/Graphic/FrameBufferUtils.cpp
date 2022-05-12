@@ -1,7 +1,8 @@
 #include "Graphic/FrameBufferUtils.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/MemoryManager.h"
+#include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/RenderPassUtils.h"
+#include "Graphic/Instance/Memory.h"
 
 void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExtent2D size, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags)
 {
@@ -32,7 +33,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, newAttachment->image, &memRequirements);
 
-    newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties));
+    newAttachment->memoryBlock = new Instance::Memory(Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties));
     vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->VkMemory(), newAttachment->memoryBlock->Offset());
 
     VkImageViewCreateInfo viewInfo{};

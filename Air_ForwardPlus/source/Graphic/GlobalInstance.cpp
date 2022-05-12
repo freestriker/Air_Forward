@@ -5,11 +5,11 @@
 #include "Graphic/Creator/VulkanDeviceCreator.h"
 #include <algorithm>
 #include <Graphic/GlobalSetting.h>
-#include "Graphic/MemoryManager.h"
+#include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/FrameBufferUtils.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -26,7 +26,7 @@ std::vector<VkImageView> Graphic::GlobalInstance::windowSwapchainImageViews({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::windowImageAvailableSemaphores({});
 std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores({});
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
-Graphic::MemoryManager* Graphic::GlobalInstance::memoryManager = nullptr;
+Graphic::Manager::MemoryManager* Graphic::GlobalInstance::memoryManager = nullptr;
 Graphic::Render::RenderPassManager* const Graphic::GlobalInstance::renderPassManager = new Graphic::Render::RenderPassManager();
 Graphic::Manager::DescriptorSetManager* const Graphic::GlobalInstance::descriptorSetManager = new Graphic::Manager::DescriptorSetManager();
 Graphic::Manager::FrameBufferManager* const Graphic::GlobalInstance::frameBufferManager = new Graphic::Manager::FrameBufferManager();
@@ -74,7 +74,7 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		result = VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-    Debug::Message("Failed to set up debug messenger.", result);
+    Log::Message("Failed to set up debug messenger.", result);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -171,7 +171,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkResult swapChainResult = vkCreateSwapchainKHR(device, &createInfo, nullptr, &windowSwapchain);
-    Debug::Message("Failed to create swap chain.", swapChainResult);
+    Log::Message("Failed to create swap chain.", swapChainResult);
 
 }
 
@@ -235,7 +235,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchainImages()
 void Graphic::GlobalInstance::CreateMemoryManager()
 {
     VkDeviceSize const k = 1024;
-    memoryManager = new Graphic::MemoryManager(32 * k * k);
+    memoryManager = new Graphic::Manager::MemoryManager(32 * k * k);
 }
 
 void Graphic::GlobalInstance::CreateVulkanInstance(VulkanInstanceCreator* creator)

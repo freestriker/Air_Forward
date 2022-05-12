@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vulkan/vulkan_core.h>
-class Debug
+class Log
 {
 public:
 	static void Message(std::string info, VkResult logCondition);

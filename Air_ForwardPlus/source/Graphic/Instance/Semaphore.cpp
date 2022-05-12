@@ -1,5 +1,5 @@
 #include "Graphic/Instance/Semaphore.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 #include <Graphic/GlobalInstance.h>
 VkSemaphore Graphic::Instance::Semaphore::VkSemphore()
 {
@@ -11,7 +11,7 @@ Graphic::Instance::Semaphore::Semaphore()
 {
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	Debug::Exception("Failed to create semaphore.", vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &_vkSemaphore));
+	Log::Exception("Failed to create semaphore.", vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &_vkSemaphore));
 }
 
 Graphic::Instance::Semaphore::~Semaphore()

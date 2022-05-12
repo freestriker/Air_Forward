@@ -5,7 +5,7 @@
 #include <future>
 #include <iostream>
 #include "LoadThread.h"
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 #include <set>
 namespace Graphic
 {
@@ -105,7 +105,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 		return std::async([assetInstance, sPath, newAsset]()
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			Debug::Message("AssetManager load " + sPath + " from asset pool.");
+			Log::Message("AssetManager load " + sPath + " from asset pool.");
 			return newAsset;
 		});
 	}
@@ -116,7 +116,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
-			Debug::Message("AssetManager load " + sPath + " from disk.");
+			Log::Message("AssetManager load " + sPath + " from disk.");
 			return newAsset;
 		});
 	}
@@ -135,5 +135,5 @@ inline void IAsset::_Unload(TAsset* asset)
 	std::string unloaded = asset->_assetInstance->path;
 	LoadThread::instance->assetManager->_ReleaseInstance(asset->_assetInstance, asset);
 	delete asset;
-	Debug::Message("AssetManager unload " + unloaded + " .");
+	Log::Message("AssetManager unload " + unloaded + " .");
 }

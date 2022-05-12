@@ -5,7 +5,7 @@
 #include <assimp/postprocess.h>
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/CommandBuffer.h"
-#include <Graphic/MemoryManager.h>
+#include <Graphic/Manager/MemoryManager.h>
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/Semaphore.h"
 
@@ -27,7 +27,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
-    Debug::Exception(importer.GetErrorString(), !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode);
+    Log::Exception(importer.GetErrorString(), !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode);
 
 	// process ASSIMP's root node recursively
     aiMesh* mesh = scene->mMeshes[scene->mRootNode->mMeshes[0]];
@@ -70,7 +70,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
         }
         else
         {
-            Debug::Exception("Mesh do not contains uv.");
+            Log::Exception("Mesh do not contains uv.");
         }
 
         _vertices.push_back(vertexData);

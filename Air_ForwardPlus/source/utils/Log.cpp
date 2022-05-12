@@ -1,7 +1,7 @@
-#include "utils/DebugUtils.h"
+#include "utils/Log.h"
 #include <iostream>
 
-void Debug::Message(std::string info, VkResult logCondition)
+void Log::Message(std::string info, VkResult logCondition)
 {
 	if (logCondition != VkResult::VK_SUCCESS)
 	{
@@ -11,7 +11,7 @@ void Debug::Message(std::string info, VkResult logCondition)
 	}
 }
 
-void Debug::Message(std::string info, bool logCondition)
+void Log::Message(std::string info, bool logCondition)
 {
 	if (logCondition)
 	{
@@ -20,12 +20,12 @@ void Debug::Message(std::string info, bool logCondition)
 	}
 }
 
-void Debug::Message(std::string info)
+void Log::Message(std::string info)
 {
 	std::cerr << "Message: " + info << std::endl;
 }
 
-void Debug::Exception(std::string info, VkResult logCondition)
+void Log::Exception(std::string info, VkResult logCondition)
 {
 	if (logCondition != VkResult::VK_SUCCESS)
 	{
@@ -35,7 +35,7 @@ void Debug::Exception(std::string info, VkResult logCondition)
 	}
 }
 
-void Debug::Exception(std::string info, bool logCondition)
+void Log::Exception(std::string info, bool logCondition)
 {
 	if (logCondition)
 	{
@@ -44,7 +44,7 @@ void Debug::Exception(std::string info, bool logCondition)
 	}
 }
 
-void Debug::Exception(std::string info)
+void Log::Exception(std::string info)
 {
 	std::cerr << "Exception: " + info << std::endl;
 	getchar();

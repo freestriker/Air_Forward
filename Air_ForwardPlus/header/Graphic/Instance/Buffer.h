@@ -3,14 +3,14 @@
 namespace Graphic
 {
 	class CommandBuffer;
-	class MemoryBlock;
 	namespace Instance
 	{
+		class Memory;
 		class Buffer
 		{
 		private:
 			VkBuffer _vkBuffer;
-			MemoryBlock* _memoryBlock;
+			Memory* _memoryBlock;
 			size_t _size;
 			VkBufferUsageFlags _usage;
 
@@ -22,7 +22,7 @@ namespace Graphic
 			Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
 			inline VkBuffer VkBuffer();
-			inline MemoryBlock& Memory();
+			inline Memory& Memory();
 			inline size_t Size();
 			inline size_t Offset();
 			~Buffer();
@@ -35,7 +35,7 @@ inline VkBuffer Graphic::Instance::Buffer::VkBuffer()
 	return _vkBuffer;
 }
 
-inline Graphic::MemoryBlock& Graphic::Instance::Buffer::Memory()
+inline Graphic::Instance::Memory& Graphic::Instance::Buffer::Memory()
 {
 	return *_memoryBlock;
 }

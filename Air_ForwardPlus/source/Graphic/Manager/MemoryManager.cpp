@@ -1,97 +1,43 @@
-#include "Graphic/MemoryManager.h"
+#include "Graphic/Manager/MemoryManager.h"
 #include <Graphic/GlobalInstance.h>
+#include "utils/Log.h"
+#include "Graphic/Instance/Memory.h"
 
-Graphic::MemoryManager::MemoryChunkUsage::MemoryChunkUsage(VkDeviceSize start, VkDeviceSize size)
+Graphic::Manager::MemoryManager::MemoryChunkUsage::MemoryChunkUsage(VkDeviceSize start, VkDeviceSize size)
 	: offset(start)
 	, size(size)
 {
 
 }
 
-Graphic::MemoryManager::MemoryChunkUsage::MemoryChunkUsage()
+Graphic::Manager::MemoryManager::MemoryChunkUsage::MemoryChunkUsage()
 	: MemoryChunkUsage(-1, -1)
 {
 }
 
 
-Graphic::MemoryManager::MemoryChunk::MemoryChunk(uint32_t typeIndex, VkDeviceSize size)
+Graphic::Manager::MemoryManager::MemoryChunk::MemoryChunk(uint32_t typeIndex, VkDeviceSize size)
 	: size(size)
 	, mutex(new std::mutex())
 	, allocated({})
-	, unallocated({ {0, Graphic::MemoryManager::MemoryChunkUsage(0, size)} })
+	, unallocated({ {0, Graphic::Manager::MemoryManager::MemoryChunkUsage(0, size)} })
 {
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = size;
 	allocInfo.memoryTypeIndex = typeIndex;
 
-	if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &memory) != VK_SUCCESS) 
-	{
-		throw std::runtime_error("failed to allocate buffer memory!");
-	}
+	Log::Exception("Failed to allocate memory chunk.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &memory));
 }
 
-Graphic::MemoryManager::MemoryChunk::~MemoryChunk()
+Graphic::Manager::MemoryManager::MemoryChunk::~MemoryChunk()
 {
 	vkFreeMemory(Graphic::GlobalInstance::device, memory, nullptr);
 	delete mutex;
 }
 
-Graphic::MemoryBlock::MemoryBlock()
-	: MemoryBlock(-1, VK_NULL_HANDLE, -1, -1, nullptr, 0)
-{
-}
-Graphic::MemoryBlock::MemoryBlock(uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property)
-	: _memoryTypeIndex(memoryTypeIndex)
-	, _vkMemory(memory)
-	, _offset(start)
-	, _size(size)
-	, _mutex(mutex)
-	, _isExclusive(false)
-	, _properties(property)
-{
-}
-Graphic::MemoryBlock::MemoryBlock(bool isExclusive, uint32_t memoryTypeIndex, VkDeviceMemory memory, VkDeviceSize start, VkDeviceSize size, std::mutex* mutex, VkMemoryPropertyFlags property)
-	: _memoryTypeIndex(memoryTypeIndex)
-	, _vkMemory(memory)
-	, _offset(start)
-	, _size(size)
-	, _mutex(mutex)
-	, _isExclusive(isExclusive)
-	, _properties(property)
-{
-}
 
-Graphic::MemoryBlock::~MemoryBlock()
-{
-}
-
-std::mutex* Graphic::MemoryBlock::Mutex()
-{
-	return _mutex;
-}
-
-VkDeviceSize Graphic::MemoryBlock::Offset()
-{
-	return _offset;
-}
-
-VkDeviceSize Graphic::MemoryBlock::Size()
-{
-	return _size;
-}
-
-VkDeviceMemory Graphic::MemoryBlock::VkMemory()
-{
-	return _vkMemory;
-}
-
-VkMemoryPropertyFlags Graphic::MemoryBlock::Properties()
-{
-	return _properties;
-}
-
-Graphic::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
+Graphic::Manager::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
 	: _defaultSize(defaultSize)
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
@@ -113,7 +59,7 @@ Graphic::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
 
 }
 
-Graphic::MemoryManager::~MemoryManager()
+Graphic::Manager::MemoryManager::~MemoryManager()
 {
 	_chunkSets.clear();
 	for (size_t i = 0; i < _chunkSetMutexs.size(); i++)
@@ -122,7 +68,7 @@ Graphic::MemoryManager::~MemoryManager()
 	}
 }
 
-Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
+Graphic::Instance::Memory Graphic::Manager::MemoryManager::AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	if (newSize > _defaultSize) goto EXCLUSIVE;
@@ -159,7 +105,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirem
 						}
 						if (oldEnd > newEnd) chunkPair.second->unallocated.emplace(newEnd, MemoryChunkUsage(newEnd, oldEnd - newEnd));
 						chunkPair.second->allocated.emplace(newStart, MemoryChunkUsage(newStart, newSize));
-						return MemoryBlock(i, chunkPair.second->memory, newStart, newSize, chunkPair.second->mutex, properties);
+						return Instance::Memory(i, chunkPair.second->memory, newStart, newSize, chunkPair.second->mutex, properties);
 					}
 				}
 			}
@@ -170,7 +116,7 @@ Graphic::MemoryBlock Graphic::MemoryManager::AcquireMemoryBlock(VkMemoryRequirem
 			newChunk->allocated.emplace(0, MemoryChunkUsage(0, newSize));
 
 			_chunkSets[i].emplace(newChunk->memory, std::shared_ptr<MemoryChunk>(newChunk));
-			return MemoryBlock(i, newChunk->memory, 0, newSize, newChunk->mutex, properties);
+			return Instance::Memory(i, newChunk->memory, 0, newSize, newChunk->mutex, properties);
 		}
 	}
 
@@ -185,20 +131,17 @@ EXCLUSIVE:
 			allocInfo.memoryTypeIndex = i;
 
 			VkDeviceMemory newMemory = VK_NULL_HANDLE;
-			if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to allocate buffer memory!");
-			}
+			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory));
 			std::mutex* newMutex = new std::mutex();
 
-			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex, properties);
+			return Instance::Memory(true, i, newMemory, 0, newSize, newMutex, properties);
 		}
 	}
 
-	throw std::runtime_error("failed to allocate memory.");
+	Log::Exception("Failed to allocate memory.");
 }
 
-Graphic::MemoryBlock Graphic::MemoryManager::GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
+Graphic::Instance::Memory Graphic::Manager::MemoryManager::GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	for (uint32_t i = 0; i < _propertys.size(); i++)
@@ -211,20 +154,17 @@ Graphic::MemoryBlock Graphic::MemoryManager::GetExclusiveMemoryBlock(VkMemoryReq
 			allocInfo.memoryTypeIndex = i;
 
 			VkDeviceMemory newMemory = VK_NULL_HANDLE;
-			if (vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to allocate buffer memory!");
-			}
+			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory));
 			std::mutex* newMutex = new std::mutex();
 
-			return MemoryBlock(true, i, newMemory, 0, newSize, newMutex, properties);
+			return Instance::Memory(true, i, newMemory, 0, newSize, newMutex, properties);
 		}
 	}
 
-	throw std::runtime_error("failed to allocate memory.");
+	Log::Exception("Failed to allocate exculsive memory.");
 }
 
-void Graphic::MemoryManager::ReleaseMemBlock(MemoryBlock& memoryBlock)
+void Graphic::Manager::MemoryManager::ReleaseMemBlock(Instance::Memory& memoryBlock)
 {
 	if (memoryBlock._isExclusive)
 	{
@@ -278,6 +218,6 @@ void Graphic::MemoryManager::ReleaseMemBlock(MemoryBlock& memoryBlock)
 				return;
 			}
 		}
-		throw std::runtime_error("failed to recycle memory.");
+		Log::Exception("Failed to release memory.");
 	}
 }

@@ -9,11 +9,10 @@
 namespace Graphic
 {
 	class CommandBuffer;
-	class MemoryManager;
-	class MemoryBlock;
 	namespace Instance
 	{
 		class Buffer;
+		class Memory;
 	}
 	namespace Asset
 	{
@@ -64,7 +63,7 @@ namespace Graphic
 				VkExtent2D _extent;
 				VkImage _vkImage;
 				VkFormat _vkFormat;
-				MemoryBlock* _imageMemory;
+				Instance::Memory* _imageMemory;
 				Instance::Buffer* _textureInfoBuffer;
 				VkImageView _vkImageView;
 				VkSampler _vkSampler;
