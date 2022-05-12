@@ -31,7 +31,8 @@
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
-    <ClInclude Include="header\Graphic\Asset\UniformBuffer.h" />
+    <ClInclude Include="header\Graphic\Instance\Semaphore.h" />
+    <ClInclude Include="header\Graphic\Instance\Buffer.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
     <ClInclude Include="header\Graphic\CommandPool.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
@@ -47,6 +48,7 @@
     <ClInclude Include="header\Graphic\MemoryManager.h" />
     <ClInclude Include="header\Graphic\RenderPassUtils.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\DebugUtils.h" />
     <ClInclude Include="header\utils\spirv_reflect.h" />
     <ClInclude Include="header\utils\Thread.h" />
     <ClInclude Include="header\utils\ThreadPool.h" />
@@ -63,9 +65,10 @@
     <ClCompile Include="source\core\Objecct.cpp" />
     <ClCompile Include="source\core\ObjectFactory.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
-    <ClCompile Include="source\Graphic\Asset\shader.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
-    <ClCompile Include="source\Graphic\Asset\UniformBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
     <ClCompile Include="source\Graphic\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
@@ -81,6 +84,7 @@
     <ClCompile Include="source\Graphic\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\DebugUtils.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
@@ -202,7 +206,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>

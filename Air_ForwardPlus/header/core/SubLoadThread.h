@@ -26,7 +26,7 @@ private:
 	std::unique_ptr<Graphic::CommandPool> _graphiccCommandPool;
 	LoadThread* const _loadThread;
 	Graphic::CommandBuffer* const _transferCommandBuffer;
-	Graphic::CommandBuffer* const _graphicCommandBuffer;
+	Graphic::CommandBuffer* const _transferDstCommandBuffer;
 	void OnStart()override;
 	void OnRun()override;
 	void OnEnd()override;

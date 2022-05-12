@@ -63,7 +63,7 @@ auto LoadThread::AddTask(F&& f, Args && ...args) -> std::future<typename std::in
 
 		// don't allow enqueueing after stopping the pool
 		if (_stopped)
-			throw std::runtime_error("enqueue on stopped ThreadPool");
+			std::cerr << "enqueue on stopped ThreadPool";
 
 		_tasks.emplace([task](Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer) { (*task)(transferCommandBuffer, graphicCommandBuffer); });
 	}

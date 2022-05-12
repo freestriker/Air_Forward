@@ -8,6 +8,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     Attachment* newAttachment = new Attachment();
     newAttachment->name = name;
     newAttachment->size = size;
+    newAttachment->aspectFlag =static_cast<VkImageAspectFlagBits>(aspectFlags);
 
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -19,7 +20,7 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     imageInfo.arrayLayers = 1;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = usage;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -31,8 +32,8 @@ void Graphic::Manager::FrameBufferManager::AddAttachment(std::string name, VkExt
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, newAttachment->image, &memRequirements);
 
-    newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->GetMemoryBlock(memRequirements, properties));
-    vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->Memory(), newAttachment->memoryBlock->Offset());
+    newAttachment->memoryBlock = new MemoryBlock(Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, properties));
+    vkBindImageMemory(Graphic::GlobalInstance::device, newAttachment->image, newAttachment->memoryBlock->VkMemory(), newAttachment->memoryBlock->Offset());
 
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -57,11 +58,12 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
 {
     std::vector<Attachment*> usedAttachments = std::vector<Attachment*>(attachmentNames.size());
     std::vector<VkImageView> usedImageViews = std::vector<VkImageView>(attachmentNames.size());
-
+    std::map<std::string, Attachment*> usedAttachmentsMap = std::map<std::string, Attachment*>();
     for (size_t i = 0; i < attachmentNames.size(); i++)
     {
         usedAttachments[i] = _attachments[attachmentNames[i]];
         usedImageViews[i] = _attachments[attachmentNames[i]]->imageView;
+        usedAttachmentsMap[attachmentNames[i]] = _attachments[attachmentNames[i]];
     }
 
     for (const auto& pair1 : renderPass->colorAttachmentMap)
@@ -85,12 +87,13 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
     if (vkCreateFramebuffer(Graphic::GlobalInstance::device, &framebufferInfo, nullptr, &newVkFrameBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create framebuffer!");
     }
-    FrameBuffer newFrameBuffer = FrameBuffer();
-    newFrameBuffer._frameBuffer = newVkFrameBuffer;
+    FrameBuffer* newFrameBuffer = new FrameBuffer();
+    newFrameBuffer->_frameBuffer = newVkFrameBuffer;
+    newFrameBuffer->_attachments = std::move(usedAttachmentsMap);
     _frameBuffers.emplace(name, newFrameBuffer);
 }
 
-const Graphic::Manager::FrameBuffer Graphic::Manager::FrameBufferManager::GetFrameBuffer(std::string name)
+Graphic::Manager::FrameBufferHandle Graphic::Manager::FrameBufferManager::GetFrameBuffer(std::string name)
 {
     return _frameBuffers[name];
 }
@@ -105,7 +108,7 @@ Graphic::Manager::FrameBufferManager::~FrameBufferManager()
 {
     for (const auto& pair : _frameBuffers)
     {
-        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second._frameBuffer, nullptr);
+        vkDestroyFramebuffer(Graphic::GlobalInstance::device, pair.second->_frameBuffer, nullptr);
     }
     for (const auto& pair : _attachments)
     {
@@ -121,11 +124,16 @@ Graphic::Manager::Attachment::~Attachment()
 {
     vkDestroyImageView(Graphic::GlobalInstance::device, imageView, nullptr);
     vkDestroyImage(Graphic::GlobalInstance::device, image, nullptr);
-    Graphic::GlobalInstance::memoryManager->RecycleMemBlock(*memoryBlock);
+    Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(*memoryBlock);
     delete memoryBlock;
 }
 
 VkFramebuffer Graphic::Manager::FrameBuffer::VulkanFrameBuffer()
 {
    return _frameBuffer;
+}
+
+const Graphic::Manager::AttachmentHandle Graphic::Manager::FrameBuffer::GetAttachment(std::string name)
+{
+    return _attachments[name];
 }

@@ -10,53 +10,13 @@
 #include <core/Global.h>
 #include "core/LoadThread.h"
 #include "Graphic/GraphicThread.h"
+#include "utils/DebugUtils.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
 RTTR_REGISTRATION
 {
     using namespace rttr;
     registration::method("f", &f);
-}
-void LoadModel(std::string path)
-{
-    Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-        return;
-    }
-    std::string directory = path.substr(0, path.find_last_of('/'));
-    std::cout << directory << std::endl;
-
-}
-void LoadTexture(std::string path)
-{
-	FreeImage_Initialise(TRUE);
-
-	const char* filePath = path.c_str();
-	FIBITMAP* texture = nullptr;
-	FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filePath);
-	if (fif == FREE_IMAGE_FORMAT::FIF_UNKNOWN)
-		fif = FreeImage_GetFIFFromFilename(filePath);
-
-	if ((fif != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif))
-	{
-		texture = FreeImage_Load(fif, filePath);
-	}
-	else
-	{
-		throw "Can not read texture " + path + ".";
-	}
-	if (texture == nullptr)
-	{
-		throw "Read texture " + path + " failed.";
-	}
-	else
-	{
-		std::cout << "Load Texture Success!" << std::endl;
-	}
 }
 int main()
 {
@@ -90,12 +50,14 @@ int main()
 	LoadThread::instance->Init();
 
 	Graphic::GraphicThread::instance->Start();
+	Graphic::GraphicThread::instance->WaitForStartFinish();
+
 	LoadThread::instance->Start();
 
+	Graphic::GraphicThread::instance->StartRender();
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
 	LoadThread::instance->End();
 	Graphic::GraphicThread::instance->End();
 }
-// outputs: "Hello World"

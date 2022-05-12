@@ -9,6 +9,7 @@
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/DescriptorSetUtils.h"
 #include "Graphic/FrameBufferUtils.h"
+#include "utils/DebugUtils.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);
 GLFWwindow* Graphic::GlobalInstance::window(nullptr);
@@ -43,6 +44,7 @@ void Graphic::GlobalInstance::AddDeviceWindowParameter(VulkanDeviceCreator* crea
     creator->AddQueue("PresentQueue", VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0f);
 #ifdef _USE_GRAPHIC_DEBUG
     creator->AddDeviceLayer("VK_LAYER_KHRONOS_validation");
+    creator->AddDeviceLayer("VK_LAYER_RENDERDOC_Capture");
 #endif
 }
 
@@ -50,6 +52,7 @@ void Graphic::GlobalInstance::AddDeviceWindowParameter(VulkanDeviceCreator* crea
 void Graphic::GlobalInstance::AddInstanceDebugExtension(VulkanInstanceCreator* creator)
 {
 	creator->AddLayer("VK_LAYER_KHRONOS_validation");
+	creator->AddLayer("VK_LAYER_RENDERDOC_Capture");
 	creator->AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 }
 void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creator)
@@ -71,12 +74,7 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		result = VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-	if (result != VK_SUCCESS) {
-		std::string err = "Failed to set up debug messenger, errcode ";
-		err += std::to_string(result);
-		err += ".";
-		throw std::runtime_error(err);
-	}
+    Debug::Message("Failed to set up debug messenger.", result);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -125,7 +123,12 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
 {
     VkSurfaceCapabilitiesKHR capabilities{};
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities);
-
+    {
+        uint32_t formatCount = 0;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
+        std::vector<VkSurfaceFormatKHR> formats = std::vector<VkSurfaceFormatKHR>(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, formats.data());
+    }
     uint32_t imageCount = capabilities.minImageCount + 1;
     if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
         imageCount = capabilities.maxImageCount;
@@ -168,12 +171,7 @@ void Graphic::GlobalInstance::CreateWindowSwapchain()
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkResult swapChainResult = vkCreateSwapchainKHR(device, &createInfo, nullptr, &windowSwapchain);
-    if (swapChainResult != VK_SUCCESS) {
-        std::string err = "Failed to create swap chain, errcode: ";
-        err += swapChainResult;
-        err += ".";
-        throw std::runtime_error(err);
-    }
+    Debug::Message("Failed to create swap chain.", swapChainResult);
 
 }
 
@@ -185,52 +183,52 @@ void Graphic::GlobalInstance::CreateWindowSwapchainImages()
     windowSwapchainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(device, windowSwapchain, &imageCount, windowSwapchainImages.data());
 
-    windowSwapchainImageViews.resize(imageCount);
-    for (size_t i = 0; i < imageCount; i++)
-    {
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = windowSwapchainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = GlobalSetting::windowImageFormat;
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
+    //windowSwapchainImageViews.resize(imageCount);
+    //for (size_t i = 0; i < imageCount; i++)
+    //{
+    //    VkImageViewCreateInfo createInfo{};
+    //    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    //    createInfo.image = windowSwapchainImages[i];
+    //    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    //    createInfo.format = GlobalSetting::windowImageFormat;
+    //    createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //    createInfo.subresourceRange.baseMipLevel = 0;
+    //    createInfo.subresourceRange.levelCount = 1;
+    //    createInfo.subresourceRange.baseArrayLayer = 0;
+    //    createInfo.subresourceRange.layerCount = 1;
 
-        VkResult imageViewResult = vkCreateImageView(device, &createInfo, nullptr, &windowSwapchainImageViews[i]);
-        if (imageViewResult != VK_SUCCESS)
-        {
-            std::string err = "Failed to create image view, errcode: ";
-            err += imageViewResult;
-            err += ".";
-            throw std::runtime_error(err);
-        }
-    }
+    //    VkResult imageViewResult = vkCreateImageView(device, &createInfo, nullptr, &windowSwapchainImageViews[i]);
+    //    if (imageViewResult != VK_SUCCESS)
+    //    {
+    //        std::string err = "Failed to create image view, errcode: ";
+    //        err += imageViewResult;
+    //        err += ".";
+    //        throw std::runtime_error(err);
+    //    }
+    //}
 
-    windowImageAvailableSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
-    renderImageFinishedSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
-    frameInFlightFences.resize(GlobalSetting::maxFrameInFlightCount);
+    //windowImageAvailableSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
+    //renderImageFinishedSemaphores.resize(GlobalSetting::maxFrameInFlightCount);
+    //frameInFlightFences.resize(GlobalSetting::maxFrameInFlightCount);
 
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    //VkSemaphoreCreateInfo semaphoreInfo{};
+    //semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    //VkFenceCreateInfo fenceInfo{};
+    //fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    //fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < GlobalSetting::maxFrameInFlightCount; i++) {
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &windowImageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderImageFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &frameInFlightFences[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
-        }
-    }
+    //for (size_t i = 0; i < GlobalSetting::maxFrameInFlightCount; i++) {
+    //    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &windowImageAvailableSemaphores[i]) != VK_SUCCESS ||
+    //        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderImageFinishedSemaphores[i]) != VK_SUCCESS ||
+    //        vkCreateFence(device, &fenceInfo, nullptr, &frameInFlightFences[i]) != VK_SUCCESS) {
+    //        throw std::runtime_error("failed to create synchronization objects for a frame!");
+    //    }
+    //}
 
 }
 
@@ -423,6 +421,7 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = nullptr;
 
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -442,9 +441,9 @@ void Graphic::GlobalInstance::CreateVulkanDevice(VulkanDeviceCreator* creator)
         VkResult result = vkCreateDevice(device, &createInfo, nullptr, &(GlobalInstance::device));
         if (result != VK_SUCCESS) {
             std::string err = "Failed to create logical device, errcode: ";
-            err += result;
+            err += std::to_string(static_cast<int>(result));
             err += ".";
-            throw std::runtime_error(err);
+            std::cerr << err << std::endl;
         }
 
         usedCounts = std::vector<uint32_t>(queueFamilyCount, 0);

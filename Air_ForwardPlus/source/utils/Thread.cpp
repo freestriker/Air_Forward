@@ -1,6 +1,11 @@
 #include "utils/Thread.h"
+#include <iostream>
 
 void Thread::OnStart()
+{
+}
+
+void Thread::OnThreadStart()
 {
 }
 
@@ -12,7 +17,9 @@ void Thread::OnEnd()
 {
 }
 
-Thread::Thread(): _thread()
+Thread::Thread()
+	: _thread()
+	, _finishOnThreadStart(false)
 {
 
 }
@@ -28,6 +35,7 @@ void Thread::Init()
 
 void Thread::Start()
 {
+	_finishOnThreadStart = false;
 	OnStart();
 	std::thread t(&Thread::Run, this);
 	_thread.swap(t);
@@ -42,7 +50,17 @@ void Thread::End()
 	}
 }
 
+void Thread::WaitForStartFinish()
+{
+	while (!_finishOnThreadStart)
+	{
+		std::this_thread::yield();
+	}
+}
+
 void Thread::Run()
 {
+	OnThreadStart();
+	_finishOnThreadStart = true;
 	OnRun();
 }

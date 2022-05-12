@@ -2,9 +2,17 @@
 #include <Graphic/CommandPool.h>
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
+#include "Graphic/FrameBufferUtils.h"
+#include "Graphic/RenderPassUtils.h"
+#include "Graphic/GlobalSetting.h"
+#include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/Mesh.h"
+#include "Graphic/Material.h"
+#include "Graphic/Instance/Buffer.h"
 Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level)
     : name(name)
     , _parentCommandPool(commandPool)
+    , _commandData()
 {
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -13,7 +21,7 @@ Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* co
     {
         throw std::runtime_error("failed to create synchronization objects for a frame!");
     }
-    vkResetFences(GlobalInstance::device, 1, &_vkFence);
+    //vkResetFences(GlobalInstance::device, 1, &_vkFence);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -62,7 +70,7 @@ void Graphic::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMas
 
 }
 
-void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy>& regions)
+void Graphic::CommandBuffer::CopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkBufferImageCopy> regions)
 {
     vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
 }
@@ -103,4 +111,58 @@ void Graphic::CommandBuffer::WaitForFinish()
 {
     vkWaitForFences(Graphic::GlobalInstance::device, 1, &_vkFence, VK_TRUE, UINT64_MAX);
 
+}
+
+void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle renderPass, Graphic::Manager::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
+{
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = renderPass->vkRenderPass;
+    renderPassInfo.framebuffer = frameBuffer->VulkanFrameBuffer();
+    renderPassInfo.renderArea.offset = { 0, 0 };
+    renderPassInfo.renderArea.extent = Graphic::GlobalSetting::windowExtent;
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(_vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void Graphic::CommandBuffer::EndRenderPass()
+{
+    vkCmdEndRenderPass(_vkCommandBuffer);
+}
+
+void Graphic::CommandBuffer::BindShader(Asset::Shader* shader)
+{
+    vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->VkPipeline());
+}
+
+void Graphic::CommandBuffer::BindMesh(Asset::Mesh* mesh)
+{
+    VkBuffer vertexBuffers[] = { mesh->VertexBuffer().VkBuffer()};
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(_vkCommandBuffer, 0, 1, vertexBuffers, offsets);
+    _commandData.indexCount = static_cast<uint32_t>(mesh->Indices().size());
+    vkCmdBindIndexBuffer(_vkCommandBuffer, mesh->IndexBuffer().VkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+}
+
+void Graphic::CommandBuffer::BindMaterial(Material* material)
+{
+    auto sets = material->DescriptorSets();
+    vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->PipelineLayout(), 0, static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
+}
+
+void Graphic::CommandBuffer::CopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkImageCopy> regions)
+{
+    vkCmdCopyImage(_vkCommandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data());
+}
+
+void Graphic::CommandBuffer::Draw()
+{
+    vkCmdDrawIndexed(_vkCommandBuffer, _commandData.indexCount, 1, 0, 0, 0);
+}
+
+void Graphic::CommandBuffer::Blit(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkImageBlit> regions, VkFilter filter)
+{
+    vkCmdBlitImage(_vkCommandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data(), filter);
 }
