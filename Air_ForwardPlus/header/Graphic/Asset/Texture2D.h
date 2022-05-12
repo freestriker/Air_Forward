@@ -14,6 +14,7 @@ namespace Graphic
 		class Buffer;
 		class Memory;
 		class Image;
+		class ImageSampler;
 	}
 	namespace Asset
 	{
@@ -50,6 +51,14 @@ namespace Graphic
 
 				}
 				Texture2DSetting()
+					: path()
+					, sampleCount(VK_SAMPLE_COUNT_1_BIT)
+					, format(VK_FORMAT_B8G8R8A8_SRGB)
+					, magFilter(VK_FILTER_LINEAR)
+					, minFilter(VK_FILTER_LINEAR)
+					, addressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT)
+					, anisotropy(0.0f)
+					, borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
 				{
 
 				}
@@ -64,14 +73,12 @@ namespace Graphic
 				VkExtent2D _extent;
 				Instance::Buffer* _textureInfoBuffer;
 				Instance::Image* _image;
-				VkSampler _vkSampler;
+				Instance::ImageSampler* _imageSampler;
 				Texture2D::TextureInfo _textureInfo;
 				std::vector<unsigned char> _byteData;
 				Texture2DSetting _settings;
 
 				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
-
-				static void _CreateTextureSampler(Texture2DSetting& config, Texture2DInstance& texture);
 			};
 
 		public:
@@ -86,7 +93,7 @@ namespace Graphic
 
 			VkExtent2D Extent();
 			Instance::Image& Image();
-			VkSampler VkSampler();
+			Instance::ImageSampler& ImageSampler();
 			const Texture2DSetting& Settings();
 
 			Instance::Buffer& TextureInfoBuffer();

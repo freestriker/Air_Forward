@@ -10,11 +10,13 @@
 #include "Graphic/Instance/Semaphore.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
+#include "Graphic/Instance/ImageSampler.h"
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
+	, _extent()
 	, _textureInfoBuffer(nullptr)
 	, _image(nullptr)
-	, _vkSampler(VK_NULL_HANDLE)
+	, _imageSampler(nullptr)
 	, _textureInfo()
 	, _byteData()
 	, _settings()
@@ -25,7 +27,7 @@ Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance::~Texture2DInsta
 {
 	delete _textureInfoBuffer;
 
-	vkDestroySampler(Graphic::GlobalInstance::device, _vkSampler, nullptr);
+	delete _imageSampler;
 
 	delete _image;
 }
@@ -73,6 +75,10 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 			VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			VkImageViewType::VK_IMAGE_VIEW_TYPE_2D,
 			VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT
+		);
+
+		_imageSampler = new Instance::ImageSampler(
+			config.magFilter, VK_SAMPLER_MIPMAP_MODE_LINEAR, config.addressMode, config.anisotropy, config.borderColor
 		);
 	}
 
@@ -190,30 +196,6 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 	renderCommandBuffer->Reset();
 	transferCommandBuffer->Reset();
 
-	_CreateTextureSampler(config, *this);
-}
-
-void Graphic::Asset::Texture2D::Texture2DInstance::_CreateTextureSampler(Texture2DSetting& config, Texture2DInstance& texture)
-{
-	VkSamplerCreateInfo samplerInfo{};
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = config.magFilter;
-	samplerInfo.minFilter = config.minFilter;
-	samplerInfo.addressModeU = config.addressMode;
-	samplerInfo.addressModeV = config.addressMode;
-	samplerInfo.addressModeW = config.addressMode;
-	samplerInfo.anisotropyEnable = config.anisotropy < 1.0f ? VK_FALSE : VK_TRUE;
-	samplerInfo.maxAnisotropy = config.anisotropy < 1.0f ? 1.0f : config.anisotropy;
-	samplerInfo.borderColor = config.borderColor;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 0.0f;
-	samplerInfo.mipLodBias = 0.0f;
-
-	Log::Exception("Failed to create sampler.", vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &texture._vkSampler));
 }
 
 Graphic::Asset::Texture2D::Texture2D()
@@ -251,9 +233,9 @@ Graphic::Instance::Image& Graphic::Asset::Texture2D::Image()
 	return *dynamic_cast<Texture2DInstance*>(_assetInstance)->_image;
 }
 
-VkSampler Graphic::Asset::Texture2D::VkSampler()
+Graphic::Instance::ImageSampler& Graphic::Asset::Texture2D::ImageSampler()
 {
-	return dynamic_cast<Texture2DInstance*>(_assetInstance)->_vkSampler;
+	return *dynamic_cast<Texture2DInstance*>(_assetInstance)->_imageSampler;
 }
 
 const Graphic::Asset::Texture2D::Texture2DSetting& Graphic::Asset::Texture2D::Settings()

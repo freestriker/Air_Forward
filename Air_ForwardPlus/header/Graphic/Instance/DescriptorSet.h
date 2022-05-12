@@ -37,6 +37,10 @@ namespace Graphic
 			VkDescriptorPool _sourceVkDescriptorChunk;
 			DescriptorSet(Asset::SlotType slotType, VkDescriptorSet set, VkDescriptorPool sourceDescriptorChunk);
 			~DescriptorSet();
+			DescriptorSet(const DescriptorSet&) = delete;
+			DescriptorSet& operator=(const DescriptorSet&) = delete;
+			DescriptorSet(DescriptorSet&&) = delete;
+			DescriptorSet& operator=(DescriptorSet&&) = delete;
 		};
 		typedef DescriptorSet* DescriptorSetHandle;
 	}

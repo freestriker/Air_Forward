@@ -119,6 +119,9 @@
     <ClInclude Include="header\Graphic\Instance\Image.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\ImageSampler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -158,5 +161,6 @@
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
     <ClCompile Include="source\Graphic\Instance\Image.cpp" />
+    <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
   </ItemGroup>
 </Project>

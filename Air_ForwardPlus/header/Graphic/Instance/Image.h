@@ -41,6 +41,11 @@ namespace Graphic
 			VkImage _vkImage;
 			VkImageView _vkImageView;
 			Memory* _memory;
+
+			Image(const Image&) = delete;
+			Image& operator=(const Image&) = delete;
+			Image(Image&&) = delete;
+			Image& operator=(Image&&) = delete;
 		};
 
 	}

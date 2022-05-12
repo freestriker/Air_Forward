@@ -6,6 +6,7 @@
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/DescriptorSet.h"
 #include "Graphic/Instance/Image.h"
+#include "Graphic/Instance/ImageSampler.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
 	: _shader(shader)
@@ -42,7 +43,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 		_slots[name].asset = texture2d;
 		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0 },
-			{ {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}}
+			{ {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->ImageSampler().VkSampler_(), texture2d->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}}
 		);
 	}
 	else if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE2D_WITH_INFO)
@@ -51,7 +52,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0, 1 },
 			{ 
-				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->VkSampler(), texture2d->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->ImageSampler().VkSampler_(), texture2d->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
 				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, texture2d->TextureInfoBuffer().VkBuffer(), 0, texture2d->TextureInfoBuffer().Size()}
 			}
 		);
@@ -108,14 +109,14 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		case Asset::SlotType::TEXTURE2D:
 		{
 			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
-			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
+			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->ImageSampler().VkSampler_(), t->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D_WITH_INFO:
 		{
 			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
 			slot.descriptorSet->UpdateBindingData({ 0, 1 }, {
-				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->VkSampler(), t->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->ImageSampler().VkSampler_(), t->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer(), 0, t->TextureInfoBuffer().Size())
 				});
 
