@@ -53,7 +53,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 			{ 0, 1 },
 			{ 
 				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture2d->ImageSampler().VkSampler_(), texture2d->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, texture2d->TextureInfoBuffer().VkBuffer(), 0, texture2d->TextureInfoBuffer().Size()}
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, texture2d->TextureInfoBuffer().VkBuffer_(), 0, texture2d->TextureInfoBuffer().Size()}
 			}
 		);
 	}
@@ -83,7 +83,7 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::Bu
 		_slots[name].descriptorSet->UpdateBindingData(
 			{ 0},
 			{
-				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer(), 0, buffer->Size()}
+				{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buffer->VkBuffer_(), 0, buffer->Size()}
 			}
 			);
 	}
@@ -103,7 +103,7 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 		case Asset::SlotType::UNIFORM_BUFFER:
 		{
 			Instance::Buffer* ub = static_cast<Instance::Buffer*>(slot.asset);
-			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer(), 0, ub->Size()) });
+			slot.descriptorSet->UpdateBindingData({ 0 }, { Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ub->VkBuffer_(), 0, ub->Size()) });
 			break;
 		}
 		case Asset::SlotType::TEXTURE2D:
@@ -117,7 +117,7 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 			Graphic::Asset::Texture2D* t = static_cast<Asset::Texture2D*>(slot.asset);
 			slot.descriptorSet->UpdateBindingData({ 0, 1 }, {
 				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, t->ImageSampler().VkSampler_(), t->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer(), 0, t->TextureInfoBuffer().Size())
+				Graphic::Instance::DescriptorSet::DescriptorSetWriteData(VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, t->TextureInfoBuffer().VkBuffer_(), 0, t->TextureInfoBuffer().Size())
 				});
 
 			break;

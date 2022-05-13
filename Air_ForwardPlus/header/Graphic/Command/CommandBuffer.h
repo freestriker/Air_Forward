@@ -1,0 +1,69 @@
+#pragma once
+#include <vulkan/vulkan_core.h>
+#include <string>
+#include <vector>
+namespace Graphic
+{
+	class Material;
+	namespace Instance
+	{
+		class FrameBuffer;
+		typedef FrameBuffer* FrameBufferHandle;
+		class RenderPass;
+		typedef RenderPass* RenderPassHandle;
+		class Buffer;
+		class Image;
+		class Semaphore;
+	}
+	namespace Asset
+	{
+		class Shader;
+		class Mesh;
+	}
+	namespace Command
+	{
+		class CommandPool;
+		class CommandBuffer
+		{
+			friend class CommandPool;
+		private:
+			struct _CommandData
+			{
+				uint32_t indexCount;
+			};
+			CommandPool* const _parentCommandPool;
+			VkCommandBuffer _vkCommandBuffer;
+			VkFence _vkFence;
+
+			_CommandData _commandData;
+		public:
+			std::string const _name;
+
+		private:
+			CommandBuffer(std::string name, CommandPool* commandPool, VkCommandBufferLevel level);
+			~CommandBuffer();
+
+			CommandBuffer(const CommandBuffer&) = delete;
+			CommandBuffer& operator=(const CommandBuffer&) = delete;
+			CommandBuffer(CommandBuffer&&) = delete;
+			CommandBuffer& operator=(CommandBuffer&&) = delete;
+		public:
+			void Reset();
+			void BeginRecord(VkCommandBufferUsageFlags flag);
+			void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier> memoryBarriers, std::vector <VkBufferMemoryBarrier> bufferMemoryBarriers, std::vector < VkImageMemoryBarrier> imageMemoryBarriers);
+			void CopyBufferToImage(Instance::Buffer* srcBuffer, Instance::Image* dstImage, VkImageLayout dstImageLayout);
+			void CopyBuffer(Instance::Buffer* srcBuffer, Instance::Buffer* dstBuffer);
+			void EndRecord();
+			void Submit(std::vector<Instance::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Instance::Semaphore*> signalSemaphores);
+			void WaitForFinish();
+			void BeginRenderPass(Instance::RenderPassHandle renderPass, Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues);
+			void EndRenderPass();
+			void BindShader(Asset::Shader* shader);
+			void BindMesh(Asset::Mesh* mesh);
+			void BindMaterial(Material* material);
+			void CopyImage(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout);
+			void Draw();
+			void Blit(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector< VkImageBlit> regions, VkFilter filter);
+		};
+	}
+}

@@ -1,5 +1,5 @@
 #include "core/AssetUtils.h"
-#include <Graphic/CommandBuffer.h>
+#include <Graphic/Command/CommandBuffer.h>
 #include <core/LoadThread.h>
 
 IAsset::IAsset()

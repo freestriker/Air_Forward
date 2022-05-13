@@ -11,8 +11,10 @@
 
 namespace Graphic
 {
-	class CommandBuffer;
-	class MemoryBlock;
+	namespace Command
+	{
+		class CommandBuffer;
+	}
 	namespace Asset
 	{
 		enum class SlotType
@@ -100,7 +102,7 @@ namespace Graphic
 				std::map<std::string, SlotLayout> _slotLayouts;
 				VkPipeline _vkPipeline;
 				VkPipelineLayout _vkPipelineLayout;
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)override;
 				
 				void _ParseShaderData(_PipelineData& pipelineData);
 				void _LoadSpirvs(_PipelineData& pipelineData);

@@ -4,18 +4,21 @@
 #include <condition_variable>
 namespace Graphic
 {
-	class CommandPool;
-	class CommandBuffer;
+	namespace Command
+	{
+		class CommandPool;
+		class CommandBuffer;
+	}
 	class GraphicThread final : public Thread
 	{
 	public:
 		static GraphicThread* const instance;
 	private:
 		bool _stopped;
-		CommandPool* renderCommandPool;
-		CommandBuffer* renderCommandBuffer;
-		CommandPool* presentCommandPool;
-		CommandBuffer* presentCommandBuffer;
+		Command::CommandPool* renderCommandPool;
+		Command::CommandBuffer* renderCommandBuffer;
+		Command::CommandPool* presentCommandPool;
+		Command::CommandBuffer* presentCommandBuffer;
 
 		std::mutex _mutex;
 		std::condition_variable _readyToRenderCondition;

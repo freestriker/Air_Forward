@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono> 
 #include <core/SubLoadThread.h>
-#include "Graphic/CommandBuffer.h"
+#include "Graphic/Command/CommandBuffer.h"
 #include "core/AssetUtils.h"
 #include <glm/glm.hpp>
 

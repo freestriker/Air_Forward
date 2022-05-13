@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
+#include "Graphic/Instance/Memory.h"
 namespace Graphic
 {
 	class CommandBuffer;
@@ -10,7 +11,7 @@ namespace Graphic
 		{
 		private:
 			VkBuffer _vkBuffer;
-			Memory* _memoryBlock;
+			Memory _memoryBlock;
 			size_t _size;
 			VkBufferUsageFlags _usage;
 
@@ -21,7 +22,7 @@ namespace Graphic
 		public:
 			Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
-			inline VkBuffer VkBuffer();
+			inline VkBuffer VkBuffer_();
 			inline Memory& Memory();
 			inline size_t Size();
 			inline size_t Offset();
@@ -30,14 +31,14 @@ namespace Graphic
 	}
 }
 
-inline VkBuffer Graphic::Instance::Buffer::VkBuffer()
+inline VkBuffer Graphic::Instance::Buffer::VkBuffer_()
 {
 	return _vkBuffer;
 }
 
 inline Graphic::Instance::Memory& Graphic::Instance::Buffer::Memory()
 {
-	return *_memoryBlock;
+	return _memoryBlock;
 }
 
 inline size_t Graphic::Instance::Buffer::Size()

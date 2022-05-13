@@ -1,7 +1,7 @@
 #include "Graphic/Instance/Semaphore.h"
 #include "utils/Log.h"
 #include <Graphic/GlobalInstance.h>
-VkSemaphore Graphic::Instance::Semaphore::VkSemphore()
+VkSemaphore Graphic::Instance::Semaphore::VkSemphore_()
 {
 	return _vkSemaphore;
 }

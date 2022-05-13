@@ -65,10 +65,10 @@
     <ClInclude Include="header\core\SubLoadThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\CommandBuffer.h">
+    <ClInclude Include="header\Graphic\Command\CommandBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\CommandPool.h">
+    <ClInclude Include="header\Graphic\Command\CommandPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h">
@@ -148,8 +148,8 @@
     <ClCompile Include="source\Graphic\GlobalSetting.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
-    <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
-    <ClCompile Include="source\Graphic\CommandPool.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\core\AssetUtils.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />

@@ -41,8 +41,8 @@ namespace Graphic
 		public:
 			MemoryManager(VkDeviceSize defaultSize);
 			~MemoryManager();
-			Instance::Memory AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
-			Instance::Memory GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
+			Instance::Memory AcquireMemory(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
+			Instance::Memory AcquireExclusiveMemory(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties);
 			void ReleaseMemBlock(Instance::Memory& memoryBlock);
 
 		};

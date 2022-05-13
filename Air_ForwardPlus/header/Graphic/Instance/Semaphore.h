@@ -13,7 +13,7 @@ namespace Graphic
 			Semaphore(Semaphore&&) = delete;
 			Semaphore& operator=(Semaphore&&) = delete;
 		public:
-			VkSemaphore VkSemphore();
+			VkSemaphore VkSemphore_();
 			Semaphore();
 			~Semaphore();
 		};

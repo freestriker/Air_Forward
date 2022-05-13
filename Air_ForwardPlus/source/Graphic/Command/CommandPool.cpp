@@ -1,9 +1,9 @@
-#include "Graphic/CommandPool.h"
+#include "Graphic/Command/CommandPool.h"
 #include "Graphic/GlobalInstance.h"
-#include <stdexcept>
-#include "Graphic/CommandBuffer.h"
+#include "Graphic/Command/CommandBuffer.h"
+#include "utils/Log.h"
 
-Graphic::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, const char* queueName)
+Graphic::Command::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, std::string queueName)
     : _commandBuffers()
     , _queueName(queueName)
 {
@@ -12,14 +12,10 @@ Graphic::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, const char* que
     poolInfo.flags = flag;
     poolInfo.queueFamilyIndex = Graphic::GlobalInstance::queues[std::string(queueName)]->queueFamilyIndex;
 
-
-    if (vkCreateCommandPool(Graphic::GlobalInstance::device, &poolInfo, nullptr, &_vkCommandPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create graphics command pool!");
-    }
+    Log::Exception("Failed to create command pool.", vkCreateCommandPool(Graphic::GlobalInstance::device, &poolInfo, nullptr, &_vkCommandPool));
 }
 
-Graphic::CommandPool::~CommandPool()
+Graphic::Command::CommandPool::~CommandPool()
 {
     if (_vkCommandPool != VK_NULL_HANDLE)
     {
@@ -33,19 +29,25 @@ Graphic::CommandPool::~CommandPool()
     }
 }
 
-Graphic::CommandBuffer* const Graphic::CommandPool::CreateCommandBuffer(const char* name, VkCommandBufferLevel level)
+VkCommandPool Graphic::Command::CommandPool::VkCommandPool_()
 {
-    auto p = new Graphic::CommandBuffer(name, this, level);
+    return _vkCommandPool;
+}
+
+
+Graphic::Command::CommandBuffer* Graphic::Command::CommandPool::CreateCommandBuffer(std::string name, VkCommandBufferLevel level)
+{
+    auto p = new Graphic::Command::CommandBuffer(name, this, level);
     _commandBuffers.emplace(std::string(name), p);
     return p;
 }
 
-Graphic::CommandBuffer* const Graphic::CommandPool::GetCommandBuffer(const char* name)
+Graphic::Command::CommandBuffer* Graphic::Command::CommandPool::GetCommandBuffer(std::string name)
 {
     return _commandBuffers[name];
 }
 
-void Graphic::CommandPool::DestoryCommandBuffer(const char* name)
+void Graphic::Command::CommandPool::DestoryCommandBuffer(std::string name)
 {
     delete _commandBuffers[name];
     _commandBuffers.erase(name);

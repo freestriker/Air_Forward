@@ -8,7 +8,10 @@
 #include "core/AssetUtils.h"
 namespace Graphic
 {
-	class CommandBuffer;
+	namespace Command
+	{
+		class CommandBuffer;
+	}
 	namespace Instance
 	{
 		class Buffer;
@@ -78,7 +81,7 @@ namespace Graphic
 				std::vector<unsigned char> _byteData;
 				Texture2DSetting _settings;
 
-				void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)override;
 			};
 
 		public:

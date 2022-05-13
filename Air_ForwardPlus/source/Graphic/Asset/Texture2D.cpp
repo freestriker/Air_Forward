@@ -2,7 +2,7 @@
 #include "core/LoadThread.h"
 #include "FreeImage/FreeImage.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/CommandBuffer.h"
+#include "Graphic/Command/CommandBuffer.h"
 #include <iostream>
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Instance/Buffer.h"
@@ -32,7 +32,7 @@ Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance::~Texture2DInsta
 	delete _image;
 }
 
-void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
+void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)
 {
 	_settings = Graphic::Asset::Texture2D::Texture2DSetting(path.c_str());;
 	Graphic::Asset::Texture2D::Texture2DSetting& config = _settings;
@@ -111,19 +111,12 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 			{},
 			{ imageTransferBarrier }
 		);
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
-		region.imageSubresource = _image->VkImageSubresourceLayers_();
-		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = _image->VkExtent3D_();
 
-		transferCommandBuffer->CopyBufferToImage(textureStagingBuffer.VkBuffer(), _image->VkImage_(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, { region });
+		transferCommandBuffer->CopyBufferToImage(&textureStagingBuffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	}
 	//Copy buffer to buffer
 	{
-		transferCommandBuffer->CopyBuffer(infoStagingBuffer.VkBuffer(), _textureInfoBuffer->VkBuffer(), infoStagingBuffer.Size());
+		transferCommandBuffer->CopyBuffer(&infoStagingBuffer, _textureInfoBuffer);
 	}
 	//Release buffer and image
 	{
@@ -147,7 +140,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		releaseBufferBarrier.size = _textureInfoBuffer->Size();
 		releaseBufferBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		releaseBufferBarrier.dstAccessMask = 0;
-		releaseBufferBarrier.buffer = _textureInfoBuffer->VkBuffer();
+		releaseBufferBarrier.buffer = _textureInfoBuffer->VkBuffer_();
 		transferCommandBuffer->AddPipelineBarrier(
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 			{},
@@ -156,7 +149,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		);
 	}
 	transferCommandBuffer->EndRecord();
-	transferCommandBuffer->Submit({}, {}, { semaphore.VkSemphore() });
+	transferCommandBuffer->Submit({}, {}, { &semaphore });
 
 	renderCommandBuffer->Reset();
 	renderCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -180,7 +173,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		acquireBufferBarrier.size = _textureInfoBuffer->Size();
 		acquireBufferBarrier.srcAccessMask = 0;
 		acquireBufferBarrier.dstAccessMask = 0;
-		acquireBufferBarrier.buffer = _textureInfoBuffer->VkBuffer();
+		acquireBufferBarrier.buffer = _textureInfoBuffer->VkBuffer_();
 		renderCommandBuffer->AddPipelineBarrier(
 			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 			{},
@@ -189,7 +182,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		);
 	}
 	renderCommandBuffer->EndRecord();
-	renderCommandBuffer->Submit({ semaphore.VkSemphore() }, { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, {});
+	renderCommandBuffer->Submit({ &semaphore }, { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, {});
 
 	renderCommandBuffer->WaitForFinish();
 

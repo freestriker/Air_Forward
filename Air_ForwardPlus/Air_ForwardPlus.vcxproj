@@ -39,8 +39,8 @@
     <ClInclude Include="header\Graphic\Instance\RenderPass.h" />
     <ClInclude Include="header\Graphic\Instance\Semaphore.h" />
     <ClInclude Include="header\Graphic\Instance\Buffer.h" />
-    <ClInclude Include="header\Graphic\CommandBuffer.h" />
-    <ClInclude Include="header\Graphic\CommandPool.h" />
+    <ClInclude Include="header\Graphic\Command\CommandBuffer.h" />
+    <ClInclude Include="header\Graphic\Command\CommandPool.h" />
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
@@ -81,8 +81,8 @@
     <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
-    <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
-    <ClCompile Include="source\Graphic\CommandPool.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandPool.cpp" />
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />

@@ -9,8 +9,8 @@
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Manager/FrameBufferManager.h"
-#include "Graphic/CommandPool.h"
-#include "Graphic/CommandBuffer.h"
+#include "Graphic/Command/CommandPool.h"
+#include "Graphic/Command/CommandBuffer.h"
 #include <vulkan/vulkan_core.h>
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
@@ -20,6 +20,7 @@
 #include "Graphic/Material.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/FrameBuffer.h"
+#include "Graphic/Instance/Semaphore.h"
 
 Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
 
@@ -68,9 +69,9 @@ void Graphic::GraphicThread::OnThreadStart()
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("PresentQueue", VkQueueFlagBits::VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0);
 	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
-	this->renderCommandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
+	this->renderCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
 	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	this->presentCommandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
+	this->presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	
 	Graphic::GlobalInstance::frameBufferManager->AddColorAttachment(
@@ -165,21 +166,9 @@ void Graphic::GraphicThread::OnRun()
 
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
-	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create synchronization objects for a frame!");
-	}
-	VkSemaphore attachmentAvailableSemaphore = VK_NULL_HANDLE;
-	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &attachmentAvailableSemaphore) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create synchronization objects for a frame!");
-	}
-	VkSemaphore copyAvailableSemaphore = VK_NULL_HANDLE;
-	if (vkCreateSemaphore(Graphic::GlobalInstance::device, &semaphoreInfo, nullptr, &copyAvailableSemaphore) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create synchronization objects for a frame!");
-	}
+	Instance::Semaphore imageAvailableSemaphore = Instance::Semaphore();
+	Instance::Semaphore attachmentAvailableSemaphore = Instance::Semaphore();
+	Instance::Semaphore copyAvailableSemaphore = Instance::Semaphore();
 
 	while (!_stopped && !glfwWindowShouldClose(Graphic::GlobalInstance::window))
 	{
@@ -250,10 +239,10 @@ void Graphic::GraphicThread::OnRun()
 			);
 		}
 		renderCommandBuffer->EndRecord();
-		renderCommandBuffer->Submit({}, {}, { attachmentAvailableSemaphore });
+		renderCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
 
 		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(Graphic::GlobalInstance::device, Graphic::GlobalInstance::windowSwapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(Graphic::GlobalInstance::device, Graphic::GlobalInstance::windowSwapchain, UINT64_MAX, imageAvailableSemaphore.VkSemphore_(), VK_NULL_HANDLE, &imageIndex);
 		presentCommandBuffer->Reset();
 		presentCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 		//Present queue acquire attachment
@@ -339,15 +328,16 @@ void Graphic::GraphicThread::OnRun()
 			);
 		}
 		presentCommandBuffer->EndRecord();
-		presentCommandBuffer->Submit({ imageAvailableSemaphore, attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { copyAvailableSemaphore });
+		presentCommandBuffer->Submit({ &imageAvailableSemaphore, &attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
 
+		auto vkSemphmore = copyAvailableSemaphore.VkSemphore_();
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &Graphic::GlobalInstance::windowSwapchain;
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &copyAvailableSemaphore;
+		presentInfo.pWaitSemaphores = &vkSemphmore;
 
 		result = vkQueuePresentKHR(Graphic::GlobalInstance::queues["PresentQueue"]->queue, &presentInfo);
 

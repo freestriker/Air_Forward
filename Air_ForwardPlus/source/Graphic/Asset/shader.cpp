@@ -26,7 +26,7 @@ Graphic::Asset::Shader::_ShaderInstance::~_ShaderInstance()
 	}
 }
 
-void Graphic::Asset::Shader::_ShaderInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
+void Graphic::Asset::Shader::_ShaderInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)
 {
 	_PipelineData pipelineData = _PipelineData();
 

@@ -38,7 +38,7 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, _vkImage, &memRequirements);
 
 	_memory = new Instance::Memory();
-	*_memory = Graphic::GlobalInstance::memoryManager->AcquireMemoryBlock(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	*_memory = Graphic::GlobalInstance::memoryManager->AcquireMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vkBindImageMemory(Graphic::GlobalInstance::device, _vkImage, _memory->VkMemory(), _memory->Offset());
 
 	VkImageViewCreateInfo viewInfo{};

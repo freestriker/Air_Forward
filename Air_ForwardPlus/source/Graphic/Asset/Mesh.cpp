@@ -4,7 +4,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/CommandBuffer.h"
+#include "Graphic/Command/CommandBuffer.h"
 #include <Graphic/Manager/MemoryManager.h>
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/Semaphore.h"
@@ -86,7 +86,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
     importer.FreeScene();
 }
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const graphicCommandBuffer)
+void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const graphicCommandBuffer)
 {
     VkDeviceSize vertexBufferSize = sizeof(VertexData) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(uint32_t) * _indices.size();
@@ -106,8 +106,8 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     graphicCommandBuffer->Reset();
 
     transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    transferCommandBuffer->CopyBuffer(stageVertexBuffer.VkBuffer(), _vertexBuffer->VkBuffer(), vertexBufferSize);
-    transferCommandBuffer->CopyBuffer(stageIndexBuffer.VkBuffer(), _indexBuffer->VkBuffer(), indexBufferSize);
+    transferCommandBuffer->CopyBuffer(&stageVertexBuffer, _vertexBuffer);
+    transferCommandBuffer->CopyBuffer(&stageIndexBuffer, _indexBuffer);
 
     VkBufferMemoryBarrier releaseVertexBarrier = {};
     releaseVertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -116,7 +116,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     releaseVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
     releaseVertexBarrier.offset = _vertexBuffer->Offset();
     releaseVertexBarrier.size = _vertexBuffer->Size();
-    releaseVertexBarrier.buffer = _vertexBuffer->VkBuffer();
+    releaseVertexBarrier.buffer = _vertexBuffer->VkBuffer_();
     releaseVertexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
     releaseVertexBarrier.dstAccessMask = 0;
 
@@ -127,13 +127,13 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     releaseIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
     releaseIndexBarrier.offset = _indexBuffer->Offset();
     releaseIndexBarrier.size = _indexBuffer->Size();
-    releaseIndexBarrier.buffer = _indexBuffer->VkBuffer();
+    releaseIndexBarrier.buffer = _indexBuffer->VkBuffer_();
     releaseIndexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
     releaseIndexBarrier.dstAccessMask = 0;
 
     transferCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, { releaseVertexBarrier, releaseIndexBarrier }, {});
     transferCommandBuffer->EndRecord();
-    transferCommandBuffer->Submit({}, {}, { semaphore.VkSemphore()});
+    transferCommandBuffer->Submit({}, {}, { &semaphore});
 
     graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     VkBufferMemoryBarrier acquireVertexBarrier = {};
@@ -145,7 +145,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     acquireVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
     acquireVertexBarrier.offset = _vertexBuffer->Offset();
     acquireVertexBarrier.size = _vertexBuffer->Size();
-    acquireVertexBarrier.buffer = _vertexBuffer->VkBuffer();
+    acquireVertexBarrier.buffer = _vertexBuffer->VkBuffer_();
 
     VkBufferMemoryBarrier acquireIndexBarrier = {};
     acquireIndexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -156,18 +156,18 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::CommandBuffer* con
     acquireIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
     acquireIndexBarrier.offset = _indexBuffer->Offset();
     acquireIndexBarrier.size = _indexBuffer->Size();
-    acquireIndexBarrier.buffer = _indexBuffer->VkBuffer();
+    acquireIndexBarrier.buffer = _indexBuffer->VkBuffer_();
 
     graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, { acquireVertexBarrier, acquireIndexBarrier }, {});
     graphicCommandBuffer->EndRecord();
-    graphicCommandBuffer->Submit({ semaphore.VkSemphore()}, {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }, {});
+    graphicCommandBuffer->Submit({ &semaphore}, {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }, {});
 
     graphicCommandBuffer->WaitForFinish();
     transferCommandBuffer->Reset();
     graphicCommandBuffer->Reset();
 }
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer)
+void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)
 {
     this->_LoadByteData();
     this->_LoadBuffer(transferCommandBuffer, renderCommandBuffer);

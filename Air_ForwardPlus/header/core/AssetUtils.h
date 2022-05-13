@@ -9,7 +9,10 @@
 #include <set>
 namespace Graphic
 {
-	class CommandBuffer;
+	namespace Command
+	{
+		class CommandBuffer;
+	}
 }
 class AssetManager;
 class IAssetInstance;
@@ -40,7 +43,7 @@ class IAssetInstance
 	friend class IAsset;
 	friend class AssetManager;
 private:
-	virtual void _LoadAssetInstance(Graphic::CommandBuffer* const transferCommandBuffer, Graphic::CommandBuffer* const renderCommandBuffer) = 0;
+	virtual void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer) = 0;
 	void _Wait();
 	bool _readyToUse;
 public:
@@ -111,7 +114,7 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 	}
 	else
 	{
-		return LoadThread::instance->AddTask([assetInstance, sPath, newAsset](Graphic::CommandBuffer* const tcb, Graphic::CommandBuffer* const gcb)
+		return LoadThread::instance->AddTask([assetInstance, sPath, newAsset](Graphic::Command::CommandBuffer* const tcb, Graphic::Command::CommandBuffer* const gcb)
 		{
 			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;

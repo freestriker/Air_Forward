@@ -68,7 +68,7 @@ Graphic::Manager::MemoryManager::~MemoryManager()
 	}
 }
 
-Graphic::Instance::Memory Graphic::Manager::MemoryManager::AcquireMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
+Graphic::Instance::Memory Graphic::Manager::MemoryManager::AcquireMemory(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	if (newSize > _defaultSize) goto EXCLUSIVE;
@@ -141,7 +141,7 @@ EXCLUSIVE:
 	Log::Exception("Failed to allocate memory.");
 }
 
-Graphic::Instance::Memory Graphic::Manager::MemoryManager::GetExclusiveMemoryBlock(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
+Graphic::Instance::Memory Graphic::Manager::MemoryManager::AcquireExclusiveMemory(VkMemoryRequirements& requirement, VkMemoryPropertyFlags properties)
 {
 	VkDeviceSize newSize = (requirement.size + requirement.alignment - 1) & ~(requirement.alignment - 1);
 	for (uint32_t i = 0; i < _propertys.size(); i++)
