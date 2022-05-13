@@ -5,7 +5,8 @@
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Asset/Mesh.h"
-#include "Graphic/RenderPassUtils.h"
+#include "Graphic/Instance/RenderPass.h"
+#include "Graphic/Manager/RenderPassManager.h"
 
 Graphic::Asset::Shader::_ShaderInstance::_ShaderInstance(std::string path)
 	: IAssetInstance(path)
@@ -227,11 +228,10 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 	result = spvReflectEnumerateOutputVariables(&fragmentShaderWarp.reflectModule, &ioutputCount, output_vars.data());
 	Log::Exception("Failed to enumerate output variables.", result);
 
-	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->colorAttachmentMap[_shaderSettings.subpass];
+	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->ColorAttachmentMap(_shaderSettings.subpass);
 	for (size_t i_var = 0; i_var < output_vars.size(); ++i_var)
 	{
 		const SpvReflectInterfaceVariable& refl_var = *(output_vars[i_var]);
-		// ignore built-in variables
 		if (refl_var.decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) continue;
 
 		Log::Exception("Failed to find right output attachment.", colorAttachments[refl_var.name] != refl_var.location);
@@ -445,8 +445,8 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineInfo.pDepthStencilState = &pipelineData.depthStencil;
 	pipelineInfo.pColorBlendState = &pipelineData.colorBlending;
 	pipelineInfo.layout = _vkPipelineLayout;
-	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->vkRenderPass;
-	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->GetRenderPass(_shaderSettings.renderPass.c_str())->subPassMap.find(_shaderSettings.subpass)->second;
+	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->VkRenderPass_();
+	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->SubPassIndex(_shaderSettings.subpass);
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
 	Log::Exception("Failed to create pipeline.", vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline));

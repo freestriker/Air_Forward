@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <Graphic/GlobalSetting.h>
 #include "Graphic/Manager/MemoryManager.h"
-#include "Graphic/RenderPassUtils.h"
+#include "Graphic/Manager/RenderPassManager.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Manager/FrameBufferManager.h"
 #include "utils/Log.h"
@@ -27,7 +27,7 @@ std::vector<VkSemaphore> Graphic::GlobalInstance::windowImageAvailableSemaphores
 std::vector<VkSemaphore> Graphic::GlobalInstance::renderImageFinishedSemaphores({});
 std::vector<VkFence> Graphic::GlobalInstance::frameInFlightFences({});
 Graphic::Manager::MemoryManager* Graphic::GlobalInstance::memoryManager = nullptr;
-Graphic::Render::RenderPassManager* const Graphic::GlobalInstance::renderPassManager = new Graphic::Render::RenderPassManager();
+Graphic::Manager::RenderPassManager* const Graphic::GlobalInstance::renderPassManager = new Graphic::Manager::RenderPassManager();
 Graphic::Manager::DescriptorSetManager* const Graphic::GlobalInstance::descriptorSetManager = new Graphic::Manager::DescriptorSetManager();
 Graphic::Manager::FrameBufferManager* const Graphic::GlobalInstance::frameBufferManager = new Graphic::Manager::FrameBufferManager();
 

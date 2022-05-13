@@ -92,9 +92,6 @@
     <ClInclude Include="header\Graphic\Asset\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\RenderPassUtils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header\Graphic\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -123,6 +120,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Instance\FrameBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\RenderPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Manager\RenderPassManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -154,7 +157,7 @@
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />
-    <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
+    <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
@@ -166,5 +169,6 @@
     <ClCompile Include="source\Graphic\Instance\Image.cpp" />
     <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
     <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
   </ItemGroup>
 </Project>

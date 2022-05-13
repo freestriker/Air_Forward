@@ -36,6 +36,7 @@
     <ClInclude Include="header\Graphic\Instance\Image.h" />
     <ClInclude Include="header\Graphic\Instance\ImageSampler.h" />
     <ClInclude Include="header\Graphic\Instance\Memory.h" />
+    <ClInclude Include="header\Graphic\Instance\RenderPass.h" />
     <ClInclude Include="header\Graphic\Instance\Semaphore.h" />
     <ClInclude Include="header\Graphic\Instance\Buffer.h" />
     <ClInclude Include="header\Graphic\CommandBuffer.h" />
@@ -49,9 +50,9 @@
     <ClInclude Include="header\Graphic\GlobalSetting.h" />
     <ClInclude Include="header\Graphic\GraphicThread.h" />
     <ClInclude Include="header\core\SubLoadThread.h" />
+    <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
-    <ClInclude Include="header\Graphic\RenderPassUtils.h" />
     <ClInclude Include="header\utils\ChildBrotherTree.h" />
     <ClInclude Include="header\utils\Log.h" />
     <ClInclude Include="header\utils\spirv_reflect.h" />
@@ -77,6 +78,7 @@
     <ClCompile Include="source\Graphic\Instance\Image.cpp" />
     <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
+    <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\CommandBuffer.cpp" />
@@ -92,7 +94,7 @@
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
-    <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
+    <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
     <ClCompile Include="source\utils\Log.cpp" />
     <ClCompile Include="source\utils\spirv_reflect.cpp" />

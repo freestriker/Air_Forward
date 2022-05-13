@@ -83,6 +83,16 @@ Graphic::Instance::Memory& Graphic::Instance::Image::Memory_()
 	return *_memory;
 }
 
+VkFormat Graphic::Instance::Image::VkFormat_()
+{
+	return _vkFormat;
+}
+
+VkSampleCountFlagBits Graphic::Instance::Image::VkSampleCountFlagBits_()
+{
+	return _vkSampleCount;
+}
+
 VkImageSubresourceRange Graphic::Instance::Image::VkImageSubresourceRange_()
 {
 	VkImageSubresourceRange range{};

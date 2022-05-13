@@ -24,6 +24,8 @@ namespace Graphic
 			VkImageView VkImageView_();
 			VkExtent3D VkExtent3D_();
 			Memory& Memory_();
+			VkFormat VkFormat_();
+			VkSampleCountFlagBits VkSampleCountFlagBits_();
 			VkImageSubresourceRange VkImageSubresourceRange_();
 			VkImageSubresourceLayers VkImageSubresourceLayers_();
 		private:

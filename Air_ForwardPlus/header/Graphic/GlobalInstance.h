@@ -9,15 +9,12 @@
 
 namespace Graphic
 {
-	namespace Render
-	{
-		class RenderPassManager;
-	}
 	namespace Manager
 	{
 		class DescriptorSetManager;
 		class FrameBufferManager;
 		class MemoryManager;
+		class RenderPassManager;
 	}
 	class Queue
 	{
@@ -66,7 +63,7 @@ namespace Graphic
 		static std::vector<VkSemaphore> renderImageFinishedSemaphores;
 		static std::vector<VkFence> frameInFlightFences;
 		static Graphic::Manager::MemoryManager* memoryManager;
-		static Graphic::Render::RenderPassManager* const renderPassManager;
+		static Graphic::Manager::RenderPassManager* const renderPassManager;
 		static Graphic::Manager::DescriptorSetManager* const descriptorSetManager;
 		static Graphic::Manager::FrameBufferManager* const frameBufferManager;
 	private:

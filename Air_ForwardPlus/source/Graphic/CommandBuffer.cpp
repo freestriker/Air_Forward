@@ -3,7 +3,7 @@
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
 #include "Graphic/Manager/FrameBufferManager.h"
-#include "Graphic/RenderPassUtils.h"
+#include "Graphic/Instance/RenderPass.h"
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
@@ -114,11 +114,11 @@ void Graphic::CommandBuffer::WaitForFinish()
 
 }
 
-void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle renderPass, Graphic::Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
+void Graphic::CommandBuffer::BeginRenderPass(Graphic::Instance::RenderPassHandle renderPass, Graphic::Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
 {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass->vkRenderPass;
+    renderPassInfo.renderPass = renderPass->VkRenderPass_();
     renderPassInfo.framebuffer = frameBuffer->VkFramebuffer_();
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = Graphic::GlobalSetting::windowExtent;

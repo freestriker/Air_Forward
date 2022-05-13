@@ -1,7 +1,7 @@
 #include "Graphic/Manager/FrameBufferManager.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Manager/MemoryManager.h"
-#include "Graphic/RenderPassUtils.h"
+#include "Graphic/Instance/RenderPass.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
 #include "utils/Log.h"
@@ -17,7 +17,7 @@ void Graphic::Manager::FrameBufferManager::AddColorAttachment(std::string name, 
     _attachmentRefCounts.emplace(name, 0);
 }
 
-void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Render::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
+void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Instance::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
 {
     std::unique_lock<std::shared_mutex> lock(_managerMutex);
 
@@ -33,7 +33,7 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
         _frameBuffers[attachmentNames[i]]++;
     }
 
-    for (const auto& pair1 : renderPass->colorAttachmentMap)
+    for (const auto& pair1 : renderPass->ColorAttachmentMaps())
     {
         for (const auto& pair2 : pair1.second)
         {
@@ -43,7 +43,7 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Rend
 
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.renderPass = renderPass->vkRenderPass;
+    framebufferInfo.renderPass = renderPass->VkRenderPass_();
     framebufferInfo.attachmentCount = static_cast<uint32_t>(usedVkImageViews.size());
     framebufferInfo.pAttachments = usedVkImageViews.data();
     framebufferInfo.width = usedAttachments[0]->_extent.width;

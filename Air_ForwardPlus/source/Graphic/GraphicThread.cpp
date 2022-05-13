@@ -3,7 +3,8 @@
 #include "Graphic/Creator/VulkanInstanceCreator.h"
 #include "Graphic/Creator/VulkanDeviceCreator.h"
 #include "Graphic/GlobalInstance.h"
-#include "Graphic/RenderPassUtils.h"
+#include "Graphic/Manager/RenderPassManager.h"
+#include "Graphic/Instance/RenderPass.h"
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Asset/Shader.h"
@@ -71,17 +72,25 @@ void Graphic::GraphicThread::OnThreadStart()
 	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	this->presentCommandPool = new Graphic::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	
+	Graphic::GlobalInstance::frameBufferManager->AddColorAttachment(
+		"ColorAttachment",
+		Graphic::GlobalSetting::windowExtent,
+		VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
+		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
 	{
-		Graphic::Render::RenderPassCreator renderPassCreator = Graphic::Render::RenderPassCreator("OpaqueRenderPass");
+		Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
 			"ColorAttachment",
-			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
+			Graphic::GlobalInstance::frameBufferManager->Attachment("ColorAttachment"),
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			VK_ATTACHMENT_STORE_OP_STORE,
-			VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 		);
-		renderPassCreator.AddSubpassWithColorAttachment(
+		renderPassCreator.AddSubpass(
 			"DrawSubpass",
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			{ "ColorAttachment" }
@@ -107,14 +116,7 @@ void Graphic::GraphicThread::OnThreadStart()
 	}
 
 	{
-		Graphic::GlobalInstance::frameBufferManager->AddColorAttachment(
-			"ColorAttachment",
-			Graphic::GlobalSetting::windowExtent,
-			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
-			static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-		Graphic::GlobalInstance::frameBufferManager->AddFrameBuffer("OpaqueFrameBuffer", Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"), { "ColorAttachment" });
+		Graphic::GlobalInstance::frameBufferManager->AddFrameBuffer("OpaqueFrameBuffer", Graphic::GlobalInstance::renderPassManager->RenderPass("OpaqueRenderPass"), { "ColorAttachment" });
 		Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer");
 	}
 
@@ -210,7 +212,7 @@ void Graphic::GraphicThread::OnRun()
 			VkClearValue clearValue{};
 			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 			renderCommandBuffer->BeginRenderPass(
-				Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
+				Graphic::GlobalInstance::renderPassManager->RenderPass("OpaqueRenderPass"),
 				Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer"),
 				{ clearValue }
 			);
