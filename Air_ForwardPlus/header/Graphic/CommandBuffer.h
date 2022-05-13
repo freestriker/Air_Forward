@@ -10,7 +10,7 @@ namespace Graphic
 		class RenderPass;
 		typedef RenderPass* RenderPassHandle;
 	}
-	namespace Manager
+	namespace Instance
 	{
 		class FrameBuffer;
 		typedef FrameBuffer* FrameBufferHandle;
@@ -53,7 +53,7 @@ namespace Graphic
 		void EndRecord();
 		void Submit(std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<VkSemaphore> signalSemaphores);
 		void WaitForFinish();
-		void BeginRenderPass(Render::RenderPassHandle renderPass, Manager::FrameBufferHandle frameBuffer, std::vector< VkClearValue> clearValues);
+		void BeginRenderPass(Render::RenderPassHandle renderPass, Instance::FrameBufferHandle frameBuffer, std::vector< VkClearValue> clearValues);
 		void EndRenderPass();
 		void BindShader(Asset::Shader* shader);
 		void BindMesh(Asset::Mesh* mesh);

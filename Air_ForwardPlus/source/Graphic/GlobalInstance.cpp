@@ -8,7 +8,7 @@
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
-#include "Graphic/FrameBufferUtils.h"
+#include "Graphic/Manager/FrameBufferManager.h"
 #include "utils/Log.h"
 
 VkInstance Graphic::GlobalInstance::instance(VK_NULL_HANDLE);

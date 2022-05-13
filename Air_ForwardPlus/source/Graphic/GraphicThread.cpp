@@ -7,7 +7,7 @@
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Asset/Shader.h"
-#include "Graphic/FrameBufferUtils.h"
+#include "Graphic/Manager/FrameBufferManager.h"
 #include "Graphic/CommandPool.h"
 #include "Graphic/CommandBuffer.h"
 #include <vulkan/vulkan_core.h>
@@ -18,6 +18,7 @@
 #include <glm/glm.hpp>
 #include "Graphic/Material.h"
 #include "Graphic/Instance/Image.h"
+#include "Graphic/Instance/FrameBuffer.h"
 
 Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
 
@@ -106,17 +107,15 @@ void Graphic::GraphicThread::OnThreadStart()
 	}
 
 	{
-		Graphic::GlobalInstance::frameBufferManager->AddAttachment(
+		Graphic::GlobalInstance::frameBufferManager->AddColorAttachment(
 			"ColorAttachment",
 			Graphic::GlobalSetting::windowExtent,
 			VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
-			VK_IMAGE_TILING_OPTIMAL,
-			static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VK_IMAGE_ASPECT_COLOR_BIT
+			static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 		Graphic::GlobalInstance::frameBufferManager->AddFrameBuffer("OpaqueFrameBuffer", Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"), { "ColorAttachment" });
-		Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer");
+		Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer");
 	}
 
 
@@ -194,8 +193,8 @@ void Graphic::GraphicThread::OnRun()
 			attachmentAcquireBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 			attachmentAcquireBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
 			attachmentAcquireBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
-			attachmentAcquireBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
+			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
+			attachmentAcquireBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
 			attachmentAcquireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
 			attachmentAcquireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
@@ -212,7 +211,7 @@ void Graphic::GraphicThread::OnRun()
 			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 			renderCommandBuffer->BeginRenderPass(
 				Graphic::GlobalInstance::renderPassManager->GetRenderPass("OpaqueRenderPass"),
-				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer"),
+				Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer"),
 				{ clearValue }
 			);
 			renderCommandBuffer->BindShader(shader);
@@ -236,8 +235,8 @@ void Graphic::GraphicThread::OnRun()
 			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
 			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
-			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
-			attachmentReleaseBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
+			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
+			attachmentReleaseBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
 			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			attachmentReleaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
 
@@ -263,8 +262,8 @@ void Graphic::GraphicThread::OnRun()
 			attachmentAcquireBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			attachmentAcquireBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
 			attachmentAcquireBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
-			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
-			attachmentAcquireBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
+			attachmentAcquireBarrier.image = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
+			attachmentAcquireBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
 			attachmentAcquireBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			attachmentAcquireBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
 
@@ -295,7 +294,7 @@ void Graphic::GraphicThread::OnRun()
 			VkImageSubresourceLayers imageSubresourceLayers = { VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT , 0, 0, 1};
 			VkImageBlit imageBlit = { imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}}, imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}} };
 			presentCommandBuffer->Blit(
-				Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_(),
+				Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_(),
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				Graphic::GlobalInstance::windowSwapchainImages[imageIndex],
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -310,8 +309,8 @@ void Graphic::GraphicThread::OnRun()
 			attachmentReleaseBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 			attachmentReleaseBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["PresentQueue"]->queueFamilyIndex;
 			attachmentReleaseBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["RenderQueue"]->queueFamilyIndex;
-			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
-			attachmentReleaseBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->GetFrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
+			attachmentReleaseBarrier.image = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_();
+			attachmentReleaseBarrier.subresourceRange = Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImageSubresourceRange_();
 			attachmentReleaseBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
 			attachmentReleaseBarrier.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 

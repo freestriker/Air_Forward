@@ -2,12 +2,13 @@
 #include <Graphic/CommandPool.h>
 #include "Graphic/GlobalInstance.h"
 #include <stdexcept>
-#include "Graphic/FrameBufferUtils.h"
+#include "Graphic/Manager/FrameBufferManager.h"
 #include "Graphic/RenderPassUtils.h"
 #include "Graphic/GlobalSetting.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Material.h"
+#include "Graphic/Instance/FrameBuffer.h"
 #include "Graphic/Instance/Buffer.h"
 Graphic::CommandBuffer::CommandBuffer(const char* name, Graphic::CommandPool* const commandPool, VkCommandBufferLevel level)
     : name(name)
@@ -113,7 +114,7 @@ void Graphic::CommandBuffer::WaitForFinish()
 
 }
 
-void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle renderPass, Graphic::Manager::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
+void Graphic::CommandBuffer::BeginRenderPass(Graphic::Render::RenderPassHandle renderPass, Graphic::Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
 {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

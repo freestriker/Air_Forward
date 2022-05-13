@@ -101,7 +101,7 @@
     <ClInclude Include="header\Graphic\Instance\Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\FrameBufferUtils.h">
+    <ClInclude Include="header\Graphic\Manager\FrameBufferManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\utils\Log.h">
@@ -120,6 +120,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Instance\ImageSampler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\FrameBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -154,7 +157,7 @@
     <ClCompile Include="source\Graphic\RenderPassUtils.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
-    <ClCompile Include="source\Graphic\FrameBufferUtils.cpp" />
+    <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
     <ClCompile Include="source\utils\Log.cpp" />
     <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
@@ -162,5 +165,6 @@
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
     <ClCompile Include="source\Graphic\Instance\Image.cpp" />
     <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
+    <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />
   </ItemGroup>
 </Project>
