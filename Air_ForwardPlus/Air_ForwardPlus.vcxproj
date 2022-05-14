@@ -34,6 +34,7 @@
     <ClInclude Include="header\Graphic\Command\ImageMemoryBarrier.h" />
     <ClInclude Include="header\Graphic\Core\Device.h" />
     <ClInclude Include="header\Graphic\Core\Instance.h" />
+    <ClInclude Include="header\Graphic\Core\GraphicThread.h" />
     <ClInclude Include="header\Graphic\Core\Window.h" />
     <ClInclude Include="header\Graphic\Instance\DescriptorSet.h" />
     <ClInclude Include="header\Graphic\Command\Fence.h" />
@@ -49,7 +50,6 @@
     <ClInclude Include="header\Graphic\Instance\SwapchainImage.h" />
     <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h" />
     <ClInclude Include="header\Graphic\Manager\FrameBufferManager.h" />
-    <ClInclude Include="header\Graphic\GraphicThread.h" />
     <ClInclude Include="header\core\SubLoadThread.h" />
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
@@ -77,6 +77,7 @@
     <ClCompile Include="source\Graphic\Command\ImageMemoryBarrier.cpp" />
     <ClCompile Include="source\Graphic\Core\Device.cpp" />
     <ClCompile Include="source\Graphic\Core\Instance.cpp" />
+    <ClCompile Include="source\Graphic\Core\GraphicThread.cpp" />
     <ClCompile Include="source\Graphic\Core\Window.cpp" />
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
     <ClCompile Include="source\Graphic\Command\Fence.cpp" />
@@ -92,7 +93,6 @@
     <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
     <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
-    <ClCompile Include="source\Graphic\GraphicThread.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />

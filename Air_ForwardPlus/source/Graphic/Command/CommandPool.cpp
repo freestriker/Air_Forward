@@ -10,7 +10,7 @@ Graphic::Command::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, std::s
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = flag;
-    poolInfo.queueFamilyIndex = Core::Device::Queue_(std::string(queueName)).queueFamilyIndex;
+    poolInfo.queueFamilyIndex = Core::Device::Queue_(std::string(queueName)).QueueFamilyIndex();
 
     Log::Exception("Failed to create command pool.", vkCreateCommandPool(Core::Device::VkDevice_(), &poolInfo, nullptr, &_vkCommandPool));
 }

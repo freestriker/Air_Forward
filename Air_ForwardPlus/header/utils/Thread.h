@@ -25,3 +25,4 @@ private:
 	Thread(Thread&&) = delete;
 	Thread& operator=(Thread&&) = delete;
 };
+using _Thread = Thread;

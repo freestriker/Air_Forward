@@ -23,11 +23,13 @@ namespace Graphic
 		public:
 			class Queue
 			{
-			public:
+				friend class Device;
+			private:
 				std::string name;
 				uint32_t queueFamilyIndex;
 				VkQueue queue;
 				std::mutex submitMutex;
+			public:
 				Queue(std::string& name, uint32_t queueFamilyIndex, VkQueue queue) :
 					name(name), queueFamilyIndex(queueFamilyIndex), queue(queue), submitMutex()
 				{
@@ -36,6 +38,18 @@ namespace Graphic
 				~Queue()
 				{
 
+				}
+				inline uint32_t QueueFamilyIndex()
+				{
+					return queueFamilyIndex;
+				}
+				inline VkQueue VkQueue_()
+				{
+					return queue;
+				}
+				inline std::mutex& SubmitMutex()
+				{
+					return submitMutex;
 				}
 			};
 			class DeviceCreator

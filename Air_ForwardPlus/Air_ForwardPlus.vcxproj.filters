@@ -41,9 +41,6 @@
     <ClInclude Include="header\utils\Thread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\GraphicThread.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header\Graphic\Asset\Texture2D.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -131,6 +128,9 @@
     <ClInclude Include="header\Graphic\Core\Device.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Core\GraphicThread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -144,7 +144,6 @@
     <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
     <ClCompile Include="source\utils\Thread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="source\Graphic\GraphicThread.cpp" />
     <ClCompile Include="source\utils\ThreadPool.cpp" />
     <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\Command\CommandBuffer.cpp" />
@@ -174,5 +173,6 @@
     <ClCompile Include="source\Graphic\Core\Window.cpp" />
     <ClCompile Include="source\Graphic\Core\Instance.cpp" />
     <ClCompile Include="source\Graphic\Core\Device.cpp" />
+    <ClCompile Include="source\Graphic\Core\GraphicThread.cpp" />
   </ItemGroup>
 </Project>

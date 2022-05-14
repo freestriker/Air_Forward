@@ -134,8 +134,8 @@ void Graphic::Command::CommandBuffer::Submit(std::vector<Command::Semaphore*> wa
     submitInfo.pSignalSemaphores = signal.data();
 
     {
-        std::unique_lock<std::mutex> lock(Core::Device::Queue_(_parentCommandPool->_queueName).submitMutex);
-        vkQueueSubmit(Core::Device::Queue_(_parentCommandPool->_queueName).queue, 1, &submitInfo, _vkFence);
+        std::unique_lock<std::mutex> lock(Core::Device::Queue_(_parentCommandPool->_queueName).SubmitMutex());
+        vkQueueSubmit(Core::Device::Queue_(_parentCommandPool->_queueName).VkQueue_(), 1, &submitInfo, _vkFence);
     }
 }
 

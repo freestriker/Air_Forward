@@ -1,4 +1,4 @@
-#include "Graphic/GraphicThread.h"
+#include "Graphic/Core/GraphicThread.h"
 #include "Graphic/Core/Device.h"
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Window.h"
@@ -23,36 +23,36 @@
 #include "Graphic/Command/Fence.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
 
-Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
+Graphic::Core::GraphicThread* Graphic::Core::GraphicThread::_instance = new Graphic::Core::GraphicThread();
 
-Graphic::GraphicThread::GraphicThread()
-	: _stopped(true)
+Graphic::Core::GraphicThread::GraphicThread()
+	: Thread()
+	, _stopped(true)
+{
+
+}
+Graphic::Core::GraphicThread::~GraphicThread()
 {
 
 }
 
-Graphic::GraphicThread::~GraphicThread()
-{
-
-}
-
-void Graphic::GraphicThread::Init()
+void Graphic::Core::GraphicThread::Init()
 {
 }
 
-void Graphic::GraphicThread::StartRender()
+void Graphic::Core::GraphicThread::_StartRender()
 {
 	_readyToRender = true;
 	_readyToRenderCondition.notify_all();
 }
 
-void Graphic::GraphicThread::OnStart()
+void Graphic::Core::GraphicThread::OnStart()
 {
 	_stopped = false;
 	_readyToRender = false;
 }
 
-void Graphic::GraphicThread::OnThreadStart()
+void Graphic::Core::GraphicThread::OnThreadStart()
 {
 	{
 		Core::Window::WindowCreator windowCreator = Core::Window::WindowCreator();
@@ -65,9 +65,9 @@ void Graphic::GraphicThread::OnThreadStart()
 	{
 		Core::Device::DeviceCreator deviceCreator = Core::Device::DeviceCreator();
 		deviceCreator.SetFeature([](VkPhysicalDeviceFeatures& features)
-		{
-			features.geometryShader = VK_TRUE;
-		});
+			{
+				features.geometryShader = VK_TRUE;
+			});
 		deviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 		deviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 		deviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
@@ -80,7 +80,7 @@ void Graphic::GraphicThread::OnThreadStart()
 	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	this->presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	
+
 	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
 		Core::Window::VkExtent2D_(),
@@ -131,7 +131,7 @@ void Graphic::GraphicThread::OnThreadStart()
 
 }
 
-void Graphic::GraphicThread::OnRun()
+void Graphic::Core::GraphicThread::OnRun()
 {
 	{
 		std::unique_lock<std::mutex> lock(_mutex);
@@ -270,7 +270,7 @@ void Graphic::GraphicThread::OnRun()
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				&Core::Window::SwapchainImage_(imageIndex),
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				);
+			);
 		}
 		//Present queue swapchain image to present layout
 		{
@@ -289,7 +289,7 @@ void Graphic::GraphicThread::OnRun()
 			);
 		}
 		presentCommandBuffer->EndRecord();
-		presentCommandBuffer->Submit({ &attachmentAvailableSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
+		presentCommandBuffer->Submit({ &attachmentAvailableSemaphore }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
 
 		//Present
 		{
@@ -303,7 +303,7 @@ void Graphic::GraphicThread::OnRun()
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pWaitSemaphores = &vkSemphmore;
 
-			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").queue, &presentInfo);
+			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
 
 		presentCommandBuffer->WaitForFinish();
@@ -311,7 +311,31 @@ void Graphic::GraphicThread::OnRun()
 	}
 }
 
-void Graphic::GraphicThread::OnEnd()
+void Graphic::Core::GraphicThread::OnEnd()
 {
 	_stopped = true;
+}
+
+void Graphic::Core::GraphicThread::InitThread()
+{
+	_instance->Init();
+}
+
+void Graphic::Core::GraphicThread::StartThread()
+{
+	_instance->Start();
+}
+
+void Graphic::Core::GraphicThread::StartRender()
+{
+	_instance->_StartRender();
+}
+
+void Graphic::Core::GraphicThread::EndThread()
+{
+	_instance->End();
+}
+void Graphic::Core::GraphicThread::WaitForThreadStartFinish()
+{
+	_instance->WaitForStartFinish();
 }
