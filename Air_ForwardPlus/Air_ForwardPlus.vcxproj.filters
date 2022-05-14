@@ -137,6 +137,15 @@
     <ClInclude Include="header\Graphic\Command\ImageMemoryBarrier.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Core\Window.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Core\Instance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Core\Device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -182,5 +191,8 @@
     <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
     <ClCompile Include="source\Graphic\Command\Fence.cpp" />
     <ClCompile Include="source\Graphic\Command\ImageMemoryBarrier.cpp" />
+    <ClCompile Include="source\Graphic\Core\Window.cpp" />
+    <ClCompile Include="source\Graphic\Core\Instance.cpp" />
+    <ClCompile Include="source\Graphic\Core\Device.cpp" />
   </ItemGroup>
 </Project>

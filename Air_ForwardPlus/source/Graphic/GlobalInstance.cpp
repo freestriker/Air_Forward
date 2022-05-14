@@ -74,7 +74,7 @@ void Graphic::GlobalInstance::CreateDebugMessenger(VulkanInstanceCreator* creato
 		result = VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-    Log::Message("Failed to set up debug messenger.", result);
+    Log::Exception("Failed to set up debug messenger.", result);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::GlobalInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -218,13 +218,6 @@ void Graphic::GlobalInstance::CreateVulkanInstance(VulkanInstanceCreator* creato
 	createInfo.ppEnabledExtensionNames = creator->_desiredExtensions.data();
 
 #ifdef _USE_GRAPHIC_DEBUG
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-	debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	debugCreateInfo.messageSeverity = creator->messageSeverity;
-	debugCreateInfo.messageType = creator->messageType;
-	debugCreateInfo.pfnUserCallback = creator->debugCallback;
-
-	debugCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 	createInfo.enabledLayerCount = static_cast<uint32_t>(creator->_desiredLayers.size());
 	createInfo.ppEnabledLayerNames = creator->_desiredLayers.data();
 #endif

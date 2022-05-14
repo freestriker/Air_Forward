@@ -3,7 +3,6 @@
 #include "FreeImage/FreeImage.h"
 #include "Graphic/GlobalInstance.h"
 #include "Graphic/Command/CommandBuffer.h"
-#include <iostream>
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Instance/Buffer.h"
 #include "utils/Log.h"

@@ -32,6 +32,9 @@
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
     <ClInclude Include="header\Graphic\Command\ImageMemoryBarrier.h" />
+    <ClInclude Include="header\Graphic\Core\Device.h" />
+    <ClInclude Include="header\Graphic\Core\Instance.h" />
+    <ClInclude Include="header\Graphic\Core\Window.h" />
     <ClInclude Include="header\Graphic\Instance\DescriptorSet.h" />
     <ClInclude Include="header\Graphic\Command\Fence.h" />
     <ClInclude Include="header\Graphic\Instance\FrameBuffer.h" />
@@ -77,6 +80,9 @@
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Command\ImageMemoryBarrier.cpp" />
+    <ClCompile Include="source\Graphic\Core\Device.cpp" />
+    <ClCompile Include="source\Graphic\Core\Instance.cpp" />
+    <ClCompile Include="source\Graphic\Core\Window.cpp" />
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
     <ClCompile Include="source\Graphic\Command\Fence.cpp" />
     <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />

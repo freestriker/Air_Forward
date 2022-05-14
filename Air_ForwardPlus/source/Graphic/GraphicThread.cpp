@@ -63,9 +63,9 @@ void Graphic::GraphicThread::OnThreadStart()
 	Graphic::GlobalInstance::CreateVulkanInstance(&vulkanInstanceCreator);
 	Graphic::VulkanDeviceCreator vulkanDeviceCreator = Graphic::VulkanDeviceCreator();
 	vulkanDeviceCreator.SetDeviceFeature([](VkPhysicalDeviceFeatures& features)
-		{
-			features.geometryShader = VK_TRUE;
-		});
+	{
+		features.geometryShader = VK_TRUE;
+	});
 	vulkanDeviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
 	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
