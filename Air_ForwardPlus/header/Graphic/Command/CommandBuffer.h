@@ -13,7 +13,6 @@ namespace Graphic
 		typedef RenderPass* RenderPassHandle;
 		class Buffer;
 		class Image;
-		class Semaphore;
 		class SwapchainImage;
 	}
 	namespace Asset
@@ -23,6 +22,8 @@ namespace Graphic
 	}
 	namespace Command
 	{
+		class Semaphore;
+		class ImageMemoryBarrier;
 		class CommandPool;
 		class CommandBuffer
 		{
@@ -51,11 +52,12 @@ namespace Graphic
 		public:
 			void Reset();
 			void BeginRecord(VkCommandBufferUsageFlags flag);
-			void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier> memoryBarriers, std::vector <VkBufferMemoryBarrier> bufferMemoryBarriers, std::vector < VkImageMemoryBarrier> imageMemoryBarriers);
+			void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector <ImageMemoryBarrier*> imageMemoryBarriers);
+			void AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask);
 			void CopyBufferToImage(Instance::Buffer* srcBuffer, Instance::Image* dstImage, VkImageLayout dstImageLayout);
 			void CopyBuffer(Instance::Buffer* srcBuffer, Instance::Buffer* dstBuffer);
 			void EndRecord();
-			void Submit(std::vector<Instance::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Instance::Semaphore*> signalSemaphores);
+			void Submit(std::vector<Command::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Command::Semaphore*> signalSemaphores);
 			void WaitForFinish();
 			void BeginRenderPass(Instance::RenderPassHandle renderPass, Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues);
 			void EndRenderPass();

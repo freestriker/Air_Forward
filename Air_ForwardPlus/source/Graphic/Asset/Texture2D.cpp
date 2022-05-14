@@ -7,10 +7,11 @@
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Instance/Buffer.h"
 #include "utils/Log.h"
-#include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Command/Semaphore.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/ImageSampler.h"
+#include "Graphic/Command/ImageMemoryBarrier.h"
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
 	, _extent()
@@ -37,7 +38,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 	_settings = Graphic::Asset::Texture2D::Texture2DSetting(path.c_str());;
 	Graphic::Asset::Texture2D::Texture2DSetting& config = _settings;
 
-	Instance::Semaphore semaphore = Instance::Semaphore();
+	Command::Semaphore semaphore = Command::Semaphore();
 
 	//Load bitmap
 	{
@@ -92,43 +93,32 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 
 	transferCommandBuffer->Reset();
 	transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	VkImageMemoryBarrier imageTransferStartBarrier{};
-	imageTransferStartBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageTransferStartBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageTransferStartBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	imageTransferStartBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageTransferStartBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageTransferStartBarrier.image = _image->VkImage_();
-	imageTransferStartBarrier.subresourceRange = _image->VkImageSubresourceRange_();
-	imageTransferStartBarrier.srcAccessMask = 0;
-	imageTransferStartBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
+	Command::ImageMemoryBarrier imageTransferStartBarrier = Command::ImageMemoryBarrier(
+		_image,
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		0,
+		VK_ACCESS_TRANSFER_WRITE_BIT
+	);
 	transferCommandBuffer->AddPipelineBarrier(
 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-		{},
-		{},
-		{ imageTransferStartBarrier }
+		{ &imageTransferStartBarrier }
 	);
 
 	transferCommandBuffer->CopyBufferToImage(&textureStagingBuffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	transferCommandBuffer->CopyBuffer(&infoStagingBuffer, _textureInfoBuffer);
 
-	VkImageMemoryBarrier imageTransferEndBarrier{};
-	imageTransferEndBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageTransferEndBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	imageTransferEndBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageTransferEndBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageTransferEndBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageTransferEndBarrier.image = _image->VkImage_();
-	imageTransferEndBarrier.subresourceRange = _image->VkImageSubresourceRange_();
-	imageTransferEndBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageTransferEndBarrier.dstAccessMask = 0;
-
+	Command::ImageMemoryBarrier imageTransferEndBarrier = Command::ImageMemoryBarrier(
+		_image,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		VK_ACCESS_TRANSFER_WRITE_BIT,
+		0
+	);
 	transferCommandBuffer->AddPipelineBarrier(
 		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-		{},
-		{},
-		{ imageTransferEndBarrier }
+		{ &imageTransferEndBarrier }
 	);
 
 	transferCommandBuffer->EndRecord();

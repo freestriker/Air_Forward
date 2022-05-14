@@ -12,8 +12,9 @@
 #include "Graphic/Instance/Buffer.h"
 #include "utils/Log.h"
 #include "Graphic/Instance/Image.h"
-#include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Command/Semaphore.h"
 #include "Graphic/Instance/SwapchainImage.h"
+#include "Graphic/Command/ImageMemoryBarrier.h"
 Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Command::CommandPool* commandPool, VkCommandBufferLevel level)
     : _name(name)
     , _parentCommandPool(commandPool)
@@ -55,17 +56,33 @@ void Graphic::Command::CommandBuffer::BeginRecord(VkCommandBufferUsageFlags flag
     vkBeginCommandBuffer(_vkCommandBuffer, &beginInfo);
 }
 
-void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<VkMemoryBarrier> memoryBarriers, std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers, std::vector<VkImageMemoryBarrier> imageMemoryBarriers)
+void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<ImageMemoryBarrier*> imageMemoryBarriers)
+{
+    std::vector< VkImageMemoryBarrier> vkBarriers = std::vector< VkImageMemoryBarrier>(imageMemoryBarriers.size());
+    for (uint32_t i = 0; i < imageMemoryBarriers.size(); i++)
+    {
+        vkBarriers[i] = imageMemoryBarriers[i]->VkImageMemoryBarrier_();
+    }
+    vkCmdPipelineBarrier(
+        _vkCommandBuffer,
+        srcStageMask, dstStageMask,
+        0,
+        0, nullptr,
+        0, nullptr,
+        static_cast<uint32_t>(vkBarriers.size()), vkBarriers.data()
+    );
+
+}
+void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask)
 {
     vkCmdPipelineBarrier(
         _vkCommandBuffer,
         srcStageMask, dstStageMask,
         0,
-        static_cast<uint32_t>(memoryBarriers.size()), memoryBarriers.data(),
-        static_cast<uint32_t>(bufferMemoryBarriers.size()), bufferMemoryBarriers.data(),
-        static_cast<uint32_t>(imageMemoryBarriers.size()), imageMemoryBarriers.data()
+        0, nullptr,
+        0, nullptr,
+        0, nullptr
     );
-
 }
 
 void Graphic::Command::CommandBuffer::CopyBufferToImage(Instance::Buffer* srcBuffer, Instance::Image* dstImage, VkImageLayout dstImageLayout)
@@ -94,7 +111,7 @@ void Graphic::Command::CommandBuffer::EndRecord()
     vkEndCommandBuffer(_vkCommandBuffer);
 }
 
-void Graphic::Command::CommandBuffer::Submit(std::vector<Instance::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Instance::Semaphore*> signalSemaphores)
+void Graphic::Command::CommandBuffer::Submit(std::vector<Command::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Command::Semaphore*> signalSemaphores)
 {
     std::vector <VkSemaphore> wait = std::vector <VkSemaphore>(waitSemaphores.size());
     for (uint32_t i = 0; i < waitSemaphores.size(); i++)

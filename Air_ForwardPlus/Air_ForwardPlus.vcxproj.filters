@@ -104,7 +104,7 @@
     <ClInclude Include="header\utils\Log.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\Graphic\Instance\Semaphore.h">
+    <ClInclude Include="header\Graphic\Command\Semaphore.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Instance\Memory.h">
@@ -129,6 +129,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Instance\SwapchainImage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Command\Fence.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Graphic\Command\ImageMemoryBarrier.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -165,7 +171,7 @@
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
     <ClCompile Include="source\utils\Log.cpp" />
-    <ClCompile Include="source\Graphic\Instance\Semaphore.cpp" />
+    <ClCompile Include="source\Graphic\Command\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
     <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
@@ -174,5 +180,7 @@
     <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />
     <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
     <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
+    <ClCompile Include="source\Graphic\Command\Fence.cpp" />
+    <ClCompile Include="source\Graphic\Command\ImageMemoryBarrier.cpp" />
   </ItemGroup>
 </Project>

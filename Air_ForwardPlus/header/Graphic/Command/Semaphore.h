@@ -2,7 +2,7 @@
 #include <vulkan/vulkan_core.h>
 namespace Graphic
 {
-	namespace Instance
+	namespace Command
 	{
 		class Semaphore
 		{

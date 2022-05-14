@@ -7,7 +7,7 @@
 #include "Graphic/Command/CommandBuffer.h"
 #include <Graphic/Manager/MemoryManager.h>
 #include "Graphic/Instance/Buffer.h"
-#include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Command/Semaphore.h"
 
 Graphic::Asset::Mesh::MeshInstance::MeshInstance(std::string path)
 	: IAssetInstance(path)
