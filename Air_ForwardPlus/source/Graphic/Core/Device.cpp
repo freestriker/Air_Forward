@@ -18,7 +18,7 @@ Graphic::Manager::DescriptorSetManager* Graphic::Core::Device::_descriptorSetMan
 Graphic::Manager::FrameBufferManager* Graphic::Core::Device::_frameBufferManager = nullptr;
 
 
-Graphic::Core::Device::Creator::Creator()
+Graphic::Core::Device::DeviceCreator::DeviceCreator()
     : desiredPhysicalDeviceType(VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
     , _desiredPhysicalDeviceFeatures()
     , _desiredDeviceExtensions()
@@ -30,34 +30,34 @@ Graphic::Core::Device::Creator::Creator()
 
 }
 
-Graphic::Core::Device::Creator::~Creator()
+Graphic::Core::Device::DeviceCreator::~DeviceCreator()
 {
 
 }
 
-void Graphic::Core::Device::Creator::AddExtension(std::string extensionName)
+void Graphic::Core::Device::DeviceCreator::AddExtension(std::string extensionName)
 {
     _desiredDeviceExtensions.emplace_back(extensionName);
 }
 
-void Graphic::Core::Device::Creator::SetFeature(std::function<void(VkPhysicalDeviceFeatures&)> const& func)
+void Graphic::Core::Device::DeviceCreator::SetFeature(std::function<void(VkPhysicalDeviceFeatures&)> const& func)
 {
     func(_desiredPhysicalDeviceFeatures);
 }
 
 #ifdef _USE_GRAPHIC_DEBUG
-void Graphic::Core::Device::Creator::AddLayer(std::string layerName)
+void Graphic::Core::Device::DeviceCreator::AddLayer(std::string layerName)
 {
     _desiredDeviceLayers.emplace_back(layerName);
 }
 #endif
 
-void Graphic::Core::Device::Creator::AddQueue(std::string name, VkQueueFlags flag, float prioritie)
+void Graphic::Core::Device::DeviceCreator::AddQueue(std::string name, VkQueueFlags flag, float prioritie)
 {
     _desiredQueues.emplace_back(name, flag, prioritie);
 }
 
-void Graphic::Core::Device::Create(Graphic::Core::Device::Creator& creator)
+void Graphic::Core::Device::Create(Graphic::Core::Device::DeviceCreator& creator)
 {
     _AddWindowExtension(creator);
 
@@ -198,27 +198,23 @@ void Graphic::Core::Device::Create(Graphic::Core::Device::Creator& creator)
 
         createInfo.pEnabledFeatures = &creator._desiredPhysicalDeviceFeatures;
 
+        std::vector<const char*> enabledExtensionNames = std::vector<const char*>(creator._desiredDeviceExtensions.size());
+        for (uint32_t i = 0; i < enabledExtensionNames.size(); i++)
         {
-            std::vector<const char*> enabledExtensionNames = std::vector<const char*>(creator._desiredDeviceExtensions.size());
-            for (uint32_t i = 0; i < enabledExtensionNames.size(); i++)
-            {
-                enabledExtensionNames[i] = creator._desiredDeviceExtensions[i].c_str();
-            }
-
-            createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensionNames.size());
-            createInfo.ppEnabledExtensionNames = enabledExtensionNames.data();
+            enabledExtensionNames[i] = creator._desiredDeviceExtensions[i].c_str();
         }
+
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensionNames.size());
+        createInfo.ppEnabledExtensionNames = enabledExtensionNames.data();
 
 #ifdef _USE_GRAPHIC_DEBUG
+        std::vector<const char*> enabledLayerNames = std::vector<const char*>(creator._desiredDeviceLayers.size());
+        for (uint32_t i = 0; i < enabledLayerNames.size(); i++)
         {
-            std::vector<const char*> enabledLayerNames = std::vector<const char*>(creator._desiredDeviceLayers.size());
-            for (uint32_t i = 0; i < enabledLayerNames.size(); i++)
-            {
-                enabledLayerNames[i] = creator._desiredDeviceLayers[i].c_str();
-            }
-            createInfo.enabledLayerCount = static_cast<uint32_t>(enabledLayerNames.size());
-            createInfo.ppEnabledLayerNames = enabledLayerNames.data();
+            enabledLayerNames[i] = creator._desiredDeviceLayers[i].c_str();
         }
+        createInfo.enabledLayerCount = static_cast<uint32_t>(enabledLayerNames.size());
+        createInfo.ppEnabledLayerNames = enabledLayerNames.data();
 #endif
 
         _vkPhysicalDevice = device;
@@ -246,7 +242,7 @@ void Graphic::Core::Device::Create(Graphic::Core::Device::Creator& creator)
 
 }
 
-void Graphic::Core::Device::_AddWindowExtension(Graphic::Core::Device::Creator& creator)
+void Graphic::Core::Device::_AddWindowExtension(Graphic::Core::Device::DeviceCreator& creator)
 {
     creator.AddExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     creator.AddQueue("PresentQueue", VK_QUEUE_FLAG_BITS_MAX_ENUM, 1.0f);
@@ -256,7 +252,7 @@ void Graphic::Core::Device::_AddWindowExtension(Graphic::Core::Device::Creator& 
 #endif
 }
 
-void Graphic::Core::Device::_CreateManager(Graphic::Core::Device::Creator& creator)
+void Graphic::Core::Device::_CreateManager(Graphic::Core::Device::DeviceCreator& creator)
 {
     _memoryManager = new Manager::MemoryManager(32 * 1024 * 1024);
     _renderPassManager = new Manager::RenderPassManager();

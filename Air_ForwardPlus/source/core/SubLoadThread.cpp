@@ -1,5 +1,4 @@
 #include "core/SubLoadThread.h"
-#include "Graphic/GlobalInstance.h"
 #include "core/LoadThread.h"
 #include "Graphic/Command/CommandPool.h"
 #include "Graphic/Command/CommandBuffer.h"

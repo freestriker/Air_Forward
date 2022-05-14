@@ -1,5 +1,5 @@
 #include "Graphic/Instance/Image.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include "utils/Log.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Manager/MemoryManager.h"
@@ -32,14 +32,14 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	imageInfo.samples = _vkSampleCount;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	Log::Exception("Failed to create image.", vkCreateImage(Graphic::GlobalInstance::device, &imageInfo, nullptr, &_vkImage));
+	Log::Exception("Failed to create image.", vkCreateImage(Core::Device::VkDevice_(), &imageInfo, nullptr, &_vkImage));
 
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(Graphic::GlobalInstance::device, _vkImage, &memRequirements);
+	vkGetImageMemoryRequirements(Core::Device::VkDevice_(), _vkImage, &memRequirements);
 
 	_memory = new Instance::Memory();
-	*_memory = Graphic::GlobalInstance::memoryManager->AcquireMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	vkBindImageMemory(Graphic::GlobalInstance::device, _vkImage, _memory->VkMemory(), _memory->Offset());
+	*_memory = Core::Device::MemoryManager().AcquireMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	vkBindImageMemory(Core::Device::VkDevice_(), _vkImage, _memory->VkMemory(), _memory->Offset());
 
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -52,14 +52,14 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	Log::Exception("Failed to create image view.", vkCreateImageView(Graphic::GlobalInstance::device, &viewInfo, nullptr, &_vkImageView));
+	Log::Exception("Failed to create image view.", vkCreateImageView(Core::Device::VkDevice_(), &viewInfo, nullptr, &_vkImageView));
 }
 
 Graphic::Instance::Image::~Image()
 {
-	vkDestroyImageView(Graphic::GlobalInstance::device, _vkImageView, nullptr);
-	vkDestroyImage(Graphic::GlobalInstance::device, _vkImage, nullptr);
-	Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(*_memory);
+	vkDestroyImageView(Core::Device::VkDevice_(), _vkImageView, nullptr);
+	vkDestroyImage(Core::Device::VkDevice_(), _vkImage, nullptr);
+	Core::Device::MemoryManager().ReleaseMemBlock(*_memory);
 	delete _memory;
 }
 

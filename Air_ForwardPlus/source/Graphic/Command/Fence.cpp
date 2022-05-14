@@ -1,6 +1,6 @@
 #include "Graphic/Command/Fence.h"
 #include <utils/Log.h>
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 
 Graphic::Command::Fence::Fence(VkFenceCreateFlags flag)
     : _vkFence(VK_NULL_HANDLE)
@@ -9,7 +9,7 @@ Graphic::Command::Fence::Fence(VkFenceCreateFlags flag)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = flag;
 
-    Log::Exception("failed to create synchronization objects for a frame.", vkCreateFence(Graphic::GlobalInstance::device, &fenceInfo, nullptr, &_vkFence));
+    Log::Exception("failed to create synchronization objects for a frame.", vkCreateFence(Core::Device::VkDevice_(), &fenceInfo, nullptr, &_vkFence));
 }
 Graphic::Command::Fence::Fence()
     : Fence(VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT)
@@ -17,7 +17,7 @@ Graphic::Command::Fence::Fence()
 }
 Graphic::Command::Fence::~Fence()
 {
-    vkDestroyFence(Graphic::GlobalInstance::device, _vkFence, nullptr);
+    vkDestroyFence(Core::Device::VkDevice_(), _vkFence, nullptr);
 }
 
 VkFence Graphic::Command::Fence::VkFence_()
@@ -27,10 +27,10 @@ VkFence Graphic::Command::Fence::VkFence_()
 
 void Graphic::Command::Fence::Reset()
 {
-    vkResetFences(Graphic::GlobalInstance::device, 1, &_vkFence);
+    vkResetFences(Core::Device::VkDevice_(), 1, &_vkFence);
 }
 
 void Graphic::Command::Fence::Wait()
 {
-    vkWaitForFences(Graphic::GlobalInstance::device, 1, &_vkFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(Core::Device::VkDevice_(), 1, &_vkFence, VK_TRUE, UINT64_MAX);
 }

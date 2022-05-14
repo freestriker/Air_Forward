@@ -1,5 +1,5 @@
 #include "Graphic/Instance/Buffer.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include "Graphic/Manager/MemoryManager.h"
 #include <iostream>
 #include "utils/Log.h"
@@ -17,14 +17,14 @@ Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemor
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	Log::Exception("Failed to create buffer.", vkCreateBuffer(Graphic::GlobalInstance::device, &bufferInfo, nullptr, &_vkBuffer));
+	Log::Exception("Failed to create buffer.", vkCreateBuffer(Core::Device::VkDevice_(), &bufferInfo, nullptr, &_vkBuffer));
 
 	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(Graphic::GlobalInstance::device, _vkBuffer, &memRequirements);
+	vkGetBufferMemoryRequirements(Core::Device::VkDevice_(), _vkBuffer, &memRequirements);
 
-	_memoryBlock = Graphic::GlobalInstance::memoryManager->AcquireMemory(memRequirements, properties);
+	_memoryBlock = Core::Device::MemoryManager().AcquireMemory(memRequirements, properties);
 
-	vkBindBufferMemory(Graphic::GlobalInstance::device, _vkBuffer, _memoryBlock.VkMemory(), _memoryBlock.Offset());
+	vkBindBufferMemory(Core::Device::VkDevice_(), _vkBuffer, _memoryBlock.VkMemory(), _memoryBlock.Offset());
 }
 
 void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
@@ -33,16 +33,16 @@ void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 	{
 		std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
 		void* transferData;
-		vkMapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
+		vkMapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
 		memcpy(transferData, data, dataSize);
-		vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory());
+		vkUnmapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory());
 	}
 }
 
 Graphic::Instance::Buffer::~Buffer()
 {
-	vkDestroyBuffer(Graphic::GlobalInstance::device, _vkBuffer, nullptr);
-	Graphic::GlobalInstance::memoryManager->ReleaseMemBlock(_memoryBlock);
+	vkDestroyBuffer(Core::Device::VkDevice_(), _vkBuffer, nullptr);
+	Graphic::Core::Device::MemoryManager().ReleaseMemBlock(_memoryBlock);
 
 	_vkBuffer = VK_NULL_HANDLE;
 }

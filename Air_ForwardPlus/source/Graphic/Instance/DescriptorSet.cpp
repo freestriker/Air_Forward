@@ -1,5 +1,5 @@
 #include "Graphic/Instance/DescriptorSet.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 VkDescriptorSet Graphic::Instance::DescriptorSet::VkDescriptorSet_()
 {
 	return _vkDescriptorSet;
@@ -69,5 +69,5 @@ void Graphic::Instance::DescriptorSet::UpdateBindingData(std::vector<uint32_t> b
 			writeInfos[i].pImageInfo = &imageInfos[i];
 		}
 	}
-	vkUpdateDescriptorSets(Graphic::GlobalInstance::device, static_cast<uint32_t>(writeInfos.size()), writeInfos.data(), 0, nullptr);
+	vkUpdateDescriptorSets(Core::Device::VkDevice_(), static_cast<uint32_t>(writeInfos.size()), writeInfos.data(), 0, nullptr);
 }

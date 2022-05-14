@@ -7,7 +7,7 @@
 VkInstance Graphic::Core::Instance::_vkInstance = VK_NULL_HANDLE;
 VkDebugUtilsMessengerEXT Graphic::Core::Instance::_debugMessenger = VK_NULL_HANDLE;
 
-Graphic::Core::Instance::Creator::Creator()
+Graphic::Core::Instance::InstanceCreator::InstanceCreator()
 	: applicationName("Vulkan Application")
 	, applicationVersion(VK_MAKE_VERSION(1, 0, 0))
 	, engineName("No Engine")
@@ -20,14 +20,25 @@ Graphic::Core::Instance::Creator::Creator()
 #endif
 
 {
+	uint32_t extensionCount;
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	_availableExtensions.resize(extensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, _availableExtensions.data());
+
+#ifdef _USE_GRAPHIC_DEBUG
+	uint32_t layerCount;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+	_availableLayers.resize(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, _availableLayers.data());
+#endif
 }
 
-Graphic::Core::Instance::Creator::~Creator()
+Graphic::Core::Instance::InstanceCreator::~InstanceCreator()
 {
 }
 
 #ifdef _USE_GRAPHIC_DEBUG
-void Graphic::Core::Instance::Creator::AddLayer(std::string layerName)
+void Graphic::Core::Instance::InstanceCreator::AddLayer(std::string layerName)
 {
 	for (const auto& availableLayer : _availableLayers)
 	{
@@ -41,7 +52,7 @@ void Graphic::Core::Instance::Creator::AddLayer(std::string layerName)
 }
 #endif
 
-void Graphic::Core::Instance::Creator::AddExtension(std::string extensionName)
+void Graphic::Core::Instance::InstanceCreator::AddExtension(std::string extensionName)
 {
 	for (const auto& availableExtension : _availableExtensions)
 	{
@@ -54,7 +65,7 @@ void Graphic::Core::Instance::Creator::AddExtension(std::string extensionName)
 	Log::Exception("Do not exist extension named " + std::string(extensionName) + ".");
 }
 
-void Graphic::Core::Instance::Create(Creator& creator)
+void Graphic::Core::Instance::Create(InstanceCreator& creator)
 {
 #ifdef _USE_GRAPHIC_DEBUG
 	_AddDebugExtension(creator);
@@ -102,7 +113,7 @@ void Graphic::Core::Instance::Create(Creator& creator)
 	Graphic::Core::Window::_CreateSurface();
 }
 
-void Graphic::Core::Instance::_AddWindowExtension(Creator& creator)
+void Graphic::Core::Instance::_AddWindowExtension(InstanceCreator& creator)
 {
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensionNames = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -120,14 +131,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::Core::Instance::DebugCallback(VkDebugUti
 	return VK_FALSE;
 }
 
-void Graphic::Core::Instance::_AddDebugExtension(Creator& creator)
+void Graphic::Core::Instance::_AddDebugExtension(InstanceCreator& creator)
 {
 	creator.AddLayer("VK_LAYER_KHRONOS_validation");
 	creator.AddLayer("VK_LAYER_RENDERDOC_Capture");
 	creator.AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 }
 
-void Graphic::Core::Instance::_CreateDebugMessenger(Creator& creator)
+void Graphic::Core::Instance::_CreateDebugMessenger(InstanceCreator& creator)
 {
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 	debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

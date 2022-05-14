@@ -13,7 +13,7 @@ namespace Graphic
 			friend class Graphic::Core::Window;
 			friend class Graphic::Core::Device;
 		public:
-			class Creator
+			class InstanceCreator
 			{
 				friend class Graphic::Core::Instance;
 			public:
@@ -36,23 +36,23 @@ namespace Graphic
 #endif
 
 			public:
-				Creator();
-				~Creator();
+				InstanceCreator();
+				~InstanceCreator();
 				void AddExtension(std::string extensionName);
 #ifdef _USE_GRAPHIC_DEBUG
 				void AddLayer(std::string layerName);
 #endif
 			};
 
-			static void Create(Creator& creator);
+			static void Create(InstanceCreator& creator);
 			static inline VkInstance VkInstance_();
 		private:
 			static VkInstance _vkInstance;
-			static void _AddWindowExtension(Creator& creator);
+			static void _AddWindowExtension(InstanceCreator& creator);
 #ifdef _USE_GRAPHIC_DEBUG
 			static VkDebugUtilsMessengerEXT _debugMessenger;
-			static void _AddDebugExtension(Creator& creator);
-			static void _CreateDebugMessenger(Creator& creator);
+			static void _AddDebugExtension(InstanceCreator& creator);
+			static void _CreateDebugMessenger(InstanceCreator& creator);
 			static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 #endif
 		};

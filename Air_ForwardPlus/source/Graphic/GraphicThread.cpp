@@ -1,11 +1,9 @@
 #include "Graphic/GraphicThread.h"
-#include "Graphic/Creator/GlfwWindowCreator.h"
-#include "Graphic/Creator/VulkanInstanceCreator.h"
-#include "Graphic/Creator/VulkanDeviceCreator.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
+#include "Graphic/Core/Instance.h"
+#include "Graphic/Core/Window.h"
 #include "Graphic/Manager/RenderPassManager.h"
 #include "Graphic/Instance/RenderPass.h"
-#include "Graphic/GlobalSetting.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Manager/FrameBufferManager.h"
@@ -50,35 +48,42 @@ void Graphic::GraphicThread::StartRender()
 
 void Graphic::GraphicThread::OnStart()
 {
-
 	_stopped = false;
 	_readyToRender = false;
 }
 
 void Graphic::GraphicThread::OnThreadStart()
 {
-	Graphic::GlfwWindowCreator glfwWindowCreator = Graphic::GlfwWindowCreator();
-	Graphic::GlobalInstance::CreateGlfwWindow(&glfwWindowCreator);
-	Graphic::VulkanInstanceCreator vulkanInstanceCreator = Graphic::VulkanInstanceCreator();
-	Graphic::GlobalInstance::CreateVulkanInstance(&vulkanInstanceCreator);
-	Graphic::VulkanDeviceCreator vulkanDeviceCreator = Graphic::VulkanDeviceCreator();
-	vulkanDeviceCreator.SetDeviceFeature([](VkPhysicalDeviceFeatures& features)
 	{
-		features.geometryShader = VK_TRUE;
-	});
-	vulkanDeviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
-	vulkanDeviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
-	vulkanDeviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
-	vulkanDeviceCreator.AddQueue("PresentQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
-	Graphic::GlobalInstance::CreateVulkanDevice(&vulkanDeviceCreator);
+		Core::Window::WindowCreator windowCreator = Core::Window::WindowCreator();
+		Core::Window::Create(windowCreator);
+	}
+	{
+		Core::Instance::InstanceCreator instanceCreator = Core::Instance::InstanceCreator();
+		Core::Instance::Create(instanceCreator);
+	}
+	{
+		Core::Device::DeviceCreator deviceCreator = Core::Device::DeviceCreator();
+		deviceCreator.SetFeature([](VkPhysicalDeviceFeatures& features)
+		{
+			features.geometryShader = VK_TRUE;
+		});
+		deviceCreator.AddQueue("TransferQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
+		deviceCreator.AddQueue("RenderQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
+		deviceCreator.AddQueue("ComputeQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
+		deviceCreator.AddQueue("PresentQueue", VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, 1.0);
+		Core::Device::Create(deviceCreator);
+	}
+
+
 	this->renderCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
 	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	this->presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	
-	Graphic::GlobalInstance::frameBufferManager->AddColorAttachment(
+	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
-		Graphic::GlobalSetting::windowExtent,
+		Core::Window::VkExtent2D_(),
 		VkFormat::VK_FORMAT_R8G8B8A8_SRGB,
 		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
@@ -87,7 +92,7 @@ void Graphic::GraphicThread::OnThreadStart()
 		Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
 			"ColorAttachment",
-			Graphic::GlobalInstance::frameBufferManager->Attachment("ColorAttachment"),
+			Core::Device::FrameBufferManager().Attachment("ColorAttachment"),
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			VK_ATTACHMENT_STORE_OP_STORE,
 			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -106,21 +111,21 @@ void Graphic::GraphicThread::OnThreadStart()
 			0,
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
 		);
-		Graphic::GlobalInstance::renderPassManager->CreateRenderPass(renderPassCreator);
+		Core::Device::RenderPassManager().CreateRenderPass(renderPassCreator);
 	}
 
 	{
-		Graphic::GlobalInstance::descriptorSetManager->AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
-		Graphic::GlobalInstance::descriptorSetManager->AddDescriptorSetPool(Asset::SlotType::TEXTURE2D, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }, 10);
-		Graphic::GlobalInstance::descriptorSetManager->AddDescriptorSetPool(Asset::SlotType::TEXTURE2D_WITH_INFO, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
+		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
+		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE2D, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }, 10);
+		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE2D_WITH_INFO, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
 
-		Graphic::GlobalInstance::descriptorSetManager->DeleteDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER);
-		Graphic::GlobalInstance::descriptorSetManager->AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
+		Core::Device::DescriptorSetManager().DeleteDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER);
+		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
 	}
 
 	{
-		Graphic::GlobalInstance::frameBufferManager->AddFrameBuffer("OpaqueFrameBuffer", Graphic::GlobalInstance::renderPassManager->RenderPass("OpaqueRenderPass"), { "ColorAttachment" });
-		Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer");
+		Core::Device::FrameBufferManager().AddFrameBuffer("OpaqueFrameBuffer", Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"), { "ColorAttachment" });
+		Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer");
 	}
 
 
@@ -172,7 +177,7 @@ void Graphic::GraphicThread::OnRun()
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
 
-	while (!_stopped && !glfwWindowShouldClose(Graphic::GlobalInstance::window))
+	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
 		glfwPollEvents();
 
@@ -182,7 +187,7 @@ void Graphic::GraphicThread::OnRun()
 		{
 			Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
 			(
-				&Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+				&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
 				0,
@@ -199,8 +204,8 @@ void Graphic::GraphicThread::OnRun()
 			VkClearValue clearValue{};
 			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 			renderCommandBuffer->BeginRenderPass(
-				Graphic::GlobalInstance::renderPassManager->RenderPass("OpaqueRenderPass"),
-				Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer"),
+				Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"),
+				Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer"),
 				{ clearValue }
 			);
 			renderCommandBuffer->BindShader(shader);
@@ -220,7 +225,7 @@ void Graphic::GraphicThread::OnRun()
 		{
 			Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
 			(
-				&Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+				&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -237,7 +242,7 @@ void Graphic::GraphicThread::OnRun()
 
 		uint32_t imageIndex;
 		swapchainImageAvailableFence.Reset();
-		VkResult result = vkAcquireNextImageKHR(Graphic::GlobalInstance::device, Graphic::GlobalInstance::windowSwapchain, UINT64_MAX, VK_NULL_HANDLE, swapchainImageAvailableFence.VkFence_(), &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(Core::Device::VkDevice_(), Core::Window::VkSwapchainKHR_(), UINT64_MAX, VK_NULL_HANDLE, swapchainImageAvailableFence.VkFence_(), &imageIndex);
 		swapchainImageAvailableFence.Wait();
 
 		presentCommandBuffer->Reset();
@@ -246,7 +251,7 @@ void Graphic::GraphicThread::OnRun()
 		{
 			Command::ImageMemoryBarrier transferDstBarrier = Command::ImageMemoryBarrier
 			(
-				Graphic::GlobalInstance::swapchainImages[imageIndex],
+				&Core::Window::SwapchainImage_(imageIndex),
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				0,
@@ -261,9 +266,9 @@ void Graphic::GraphicThread::OnRun()
 		//Copy attachment
 		{
 			presentCommandBuffer->Blit(
-				&Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+				&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				Graphic::GlobalInstance::swapchainImages[imageIndex],
+				&Core::Window::SwapchainImage_(imageIndex),
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 				);
 		}
@@ -271,7 +276,7 @@ void Graphic::GraphicThread::OnRun()
 		{
 			Command::ImageMemoryBarrier presentSrcBarrier = Command::ImageMemoryBarrier
 			(
-				Graphic::GlobalInstance::swapchainImages[imageIndex],
+				&Core::Window::SwapchainImage_(imageIndex),
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 				VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -289,15 +294,16 @@ void Graphic::GraphicThread::OnRun()
 		//Present
 		{
 			auto vkSemphmore = copyAvailableSemaphore.VkSemphore_();
+			VkSwapchainKHR sc[] = { Core::Window::VkSwapchainKHR_() };
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = &Graphic::GlobalInstance::windowSwapchain;
+			presentInfo.pSwapchains = sc;
 			presentInfo.pImageIndices = &imageIndex;
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pWaitSemaphores = &vkSemphmore;
 
-			result = vkQueuePresentKHR(Graphic::GlobalInstance::queues["PresentQueue"]->queue, &presentInfo);
+			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").queue, &presentInfo);
 		}
 
 		presentCommandBuffer->WaitForFinish();

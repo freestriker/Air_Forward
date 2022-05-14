@@ -2,8 +2,8 @@
 #include <filesystem>
 #include <fstream>
 #include <set>
-#include "Graphic/GlobalInstance.h"
-#include "Graphic/GlobalSetting.h"
+#include "Graphic/Core/Device.h"
+#include "Graphic/Core/Window.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Instance/RenderPass.h"
 #include "Graphic/Manager/RenderPassManager.h"
@@ -17,12 +17,12 @@ Graphic::Asset::Shader::_ShaderInstance::_ShaderInstance(std::string path)
 
 Graphic::Asset::Shader::_ShaderInstance::~_ShaderInstance()
 {
-	vkDestroyPipeline(Graphic::GlobalInstance::device, _vkPipeline, nullptr);
-	vkDestroyPipelineLayout(Graphic::GlobalInstance::device, _vkPipelineLayout, nullptr);
+	vkDestroyPipeline(Core::Device::VkDevice_(), _vkPipeline, nullptr);
+	vkDestroyPipelineLayout(Core::Device::VkDevice_(), _vkPipelineLayout, nullptr);
 
 	for (const auto& slotLayoutPair : _slotLayouts)
 	{
-		vkDestroyDescriptorSetLayout(Graphic::GlobalInstance::device, slotLayoutPair.second.descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(Core::Device::VkDevice_(), slotLayoutPair.second.descriptorSetLayout, nullptr);
 	}
 }
 
@@ -97,7 +97,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateShaderModules(_PipelineData
 			createInfo.pCode = reinterpret_cast<const uint32_t*>(spirvPair.second.data());
 
 			VkShaderModule shaderModule;
-			Log::Exception("Failed to create shader module.", vkCreateShaderModule(Graphic::GlobalInstance::device, &createInfo, nullptr, &shaderModule));
+			Log::Exception("Failed to create shader module.", vkCreateShaderModule(Core::Device::VkDevice_(), &createInfo, nullptr, &shaderModule));
 
 			pipelineData.shaderModuleWarps.emplace_back(_ShaderModuleWarp{ static_cast<VkShaderStageFlagBits>(reflectModule.shader_stage), shaderModule , reflectModule });
 		}
@@ -228,7 +228,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CheckAttachmentOutputState(_Pipel
 	result = spvReflectEnumerateOutputVariables(&fragmentShaderWarp.reflectModule, &ioutputCount, output_vars.data());
 	Log::Exception("Failed to enumerate output variables.", result);
 
-	auto& colorAttachments = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->ColorAttachmentMap(_shaderSettings.subpass);
+	auto& colorAttachments = Core::Device::RenderPassManager().RenderPass(_shaderSettings.renderPass)->ColorAttachmentMap(_shaderSettings.subpass);
 	for (size_t i_var = 0; i_var < output_vars.size(); ++i_var)
 	{
 		const SpvReflectInterfaceVariable& refl_var = *(output_vars[i_var]);
@@ -246,13 +246,13 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 
 	pipelineData.viewport.x = 0.0f;
 	pipelineData.viewport.y = 0.0f;
-	pipelineData.viewport.width = (float)Graphic::GlobalSetting::windowExtent.width;
-	pipelineData.viewport.height = (float)Graphic::GlobalSetting::windowExtent.height;
+	pipelineData.viewport.width = (float)Core::Window::VkExtent2D_().width;
+	pipelineData.viewport.height = (float)Core::Window::VkExtent2D_().height;
 	pipelineData.viewport.minDepth = 0.0f;
 	pipelineData.viewport.maxDepth = 1.0f;
 
 	pipelineData.scissor.offset = { 0, 0 };
-	pipelineData.scissor.extent = Graphic::GlobalSetting::windowExtent;
+	pipelineData.scissor.extent = Core::Window::VkExtent2D_();
 
 	pipelineData.viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	pipelineData.viewportState.viewportCount = 1;
@@ -392,7 +392,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		Log::Exception("Failed to create descriptor set layout.", vkCreateDescriptorSetLayout(Graphic::GlobalInstance::device, &layoutInfo, nullptr, &slotLayout.descriptorSetLayout));
+		Log::Exception("Failed to create descriptor set layout.", vkCreateDescriptorSetLayout(Core::Device::VkDevice_(), &layoutInfo, nullptr, &slotLayout.descriptorSetLayout));
 
 		{
 			
@@ -431,7 +431,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(pipelineData.descriptorSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = pipelineData.descriptorSetLayouts.data();
 
-	Log::Exception("Failed to create pipeline layout.", vkCreatePipelineLayout(Graphic::GlobalInstance::device, &pipelineLayoutInfo, nullptr, &_vkPipelineLayout));
+	Log::Exception("Failed to create pipeline layout.", vkCreatePipelineLayout(Core::Device::VkDevice_(), &pipelineLayoutInfo, nullptr, &_vkPipelineLayout));
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -445,11 +445,11 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreatePipeline(_PipelineData& pip
 	pipelineInfo.pDepthStencilState = &pipelineData.depthStencil;
 	pipelineInfo.pColorBlendState = &pipelineData.colorBlending;
 	pipelineInfo.layout = _vkPipelineLayout;
-	pipelineInfo.renderPass = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->VkRenderPass_();
-	pipelineInfo.subpass = Graphic::GlobalInstance::renderPassManager->RenderPass(_shaderSettings.renderPass)->SubPassIndex(_shaderSettings.subpass);
+	pipelineInfo.renderPass = Core::Device::RenderPassManager().RenderPass(_shaderSettings.renderPass)->VkRenderPass_();
+	pipelineInfo.subpass = Core::Device::RenderPassManager().RenderPass(_shaderSettings.renderPass)->SubPassIndex(_shaderSettings.subpass);
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	Log::Exception("Failed to create pipeline.", vkCreateGraphicsPipelines(Graphic::GlobalInstance::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline));
+	Log::Exception("Failed to create pipeline.", vkCreateGraphicsPipelines(Core::Device::VkDevice_(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_vkPipeline));
 
 }
 
@@ -457,7 +457,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_DestroyData(_PipelineData& pipeli
 {
 	for (auto& warp : pipelineData.shaderModuleWarps)
 	{
-		vkDestroyShaderModule(Graphic::GlobalInstance::device, warp.shaderModule, nullptr);
+		vkDestroyShaderModule(Core::Device::VkDevice_(), warp.shaderModule, nullptr);
 		spvReflectDestroyShaderModule(&warp.reflectModule);
 	}
 }

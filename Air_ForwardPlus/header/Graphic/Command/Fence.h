@@ -7,7 +7,12 @@ namespace Graphic
 	{
 		class Fence
 		{
+		private:
 			VkFence _vkFence;
+			Fence(const Fence&) = delete;
+			Fence& operator=(const Fence&) = delete;
+			Fence(Fence&&) = delete;
+			Fence& operator=(Fence&&) = delete;
 		public:
 			Fence();
 			Fence(VkFenceCreateFlags flag);

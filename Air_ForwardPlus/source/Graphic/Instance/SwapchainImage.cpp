@@ -1,5 +1,5 @@
 #include "Graphic/Instance/SwapchainImage.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include <utils/Log.h>
 
 Graphic::Instance::SwapchainImage::SwapchainImage(VkImage swapchainImage, VkFormat format, VkExtent2D extent, VkImageUsageFlags usage)

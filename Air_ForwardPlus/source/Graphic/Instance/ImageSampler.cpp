@@ -1,5 +1,5 @@
 #include "Graphic/Instance/ImageSampler.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include <utils/Log.h>
 #include <algorithm>
 
@@ -32,7 +32,7 @@ Graphic::Instance::ImageSampler::ImageSampler(VkFilter magFilter, VkFilter minFi
 	samplerInfo.maxLod = 0.0f;
 	samplerInfo.mipLodBias = 0.0f;
 
-	Log::Exception("Failed to create sampler.", vkCreateSampler(Graphic::GlobalInstance::device, &samplerInfo, nullptr, &_vkSampler));
+	Log::Exception("Failed to create sampler.", vkCreateSampler(Core::Device::VkDevice_(), &samplerInfo, nullptr, &_vkSampler));
 
 }
 
@@ -43,7 +43,7 @@ Graphic::Instance::ImageSampler::ImageSampler(VkFilter filter, VkSamplerMipmapMo
 
 Graphic::Instance::ImageSampler::~ImageSampler()
 {
-	vkDestroySampler(Graphic::GlobalInstance::device, _vkSampler, nullptr);
+	vkDestroySampler(Core::Device::VkDevice_(), _vkSampler, nullptr);
 }
 
 VkSampler Graphic::Instance::ImageSampler::VkSampler_()

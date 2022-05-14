@@ -1,5 +1,5 @@
 #include "Graphic/Instance/FrameBuffer.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include "Graphic/Instance/Image.h"
 
 Graphic::Instance::Image& Graphic::Instance::Attachment::Image()
@@ -36,7 +36,7 @@ Graphic::Instance::FrameBuffer::FrameBuffer(VkFramebuffer vkFrameBuffer, std::ma
 }
 Graphic::Instance::FrameBuffer::~FrameBuffer()
 {
-    vkDestroyFramebuffer(Graphic::GlobalInstance::device, _vkFrameBuffer, nullptr);
+    vkDestroyFramebuffer(Core::Device::VkDevice_(), _vkFrameBuffer, nullptr);
 }
 
 VkFramebuffer Graphic::Instance::FrameBuffer::VkFramebuffer_()

@@ -2,7 +2,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Texture2D.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/DescriptorSet.h"
 #include "Graphic/Instance/Image.h"
@@ -18,7 +18,7 @@ Graphic::Material::Material(Asset::Shader* shader)
 		newSlot.asset = nullptr;
 		newSlot.name = pair.second.slotName;
 		newSlot.slotType = pair.second.slotType;
-		newSlot.descriptorSet = Graphic::GlobalInstance::descriptorSetManager->AcquireDescripterSet(pair.second.slotType, pair.second.descriptorSetLayout);
+		newSlot.descriptorSet = Core::Device::DescriptorSetManager().AcquireDescripterSet(pair.second.slotType, pair.second.descriptorSetLayout);
 		newSlot.set = pair.second.set;
 		_slots.emplace(newSlot.name, newSlot);
 	}
@@ -148,7 +148,7 @@ Graphic::Material::~Material()
 	Asset::Shader::Unload(_shader);
 	for (auto& pair : _slots)
 	{
-		Graphic::GlobalInstance::descriptorSetManager->ReleaseDescripterSet(pair.second.descriptorSet);
+		Core::Device::DescriptorSetManager().ReleaseDescripterSet(pair.second.descriptorSet);
 	}
 	_slots.clear();
 }

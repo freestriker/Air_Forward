@@ -1,5 +1,5 @@
 #include "Graphic/Manager/MemoryManager.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include "utils/Log.h"
 #include "Graphic/Instance/Memory.h"
 
@@ -27,12 +27,12 @@ Graphic::Manager::MemoryManager::MemoryChunk::MemoryChunk(uint32_t typeIndex, Vk
 	allocInfo.allocationSize = size;
 	allocInfo.memoryTypeIndex = typeIndex;
 
-	Log::Exception("Failed to allocate memory chunk.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &memory));
+	Log::Exception("Failed to allocate memory chunk.", vkAllocateMemory(Core::Device::VkDevice_(), &allocInfo, nullptr, &memory));
 }
 
 Graphic::Manager::MemoryManager::MemoryChunk::~MemoryChunk()
 {
-	vkFreeMemory(Graphic::GlobalInstance::device, memory, nullptr);
+	vkFreeMemory(Core::Device::VkDevice_(), memory, nullptr);
 	delete mutex;
 }
 
@@ -41,7 +41,7 @@ Graphic::Manager::MemoryManager::MemoryManager(VkDeviceSize defaultSize)
 	: _defaultSize(defaultSize)
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
-	vkGetPhysicalDeviceMemoryProperties(Graphic::GlobalInstance::physicalDevice, &memProperties);
+	vkGetPhysicalDeviceMemoryProperties(Core::Device::VkPhysicalDevice_(), &memProperties);
 
 	_chunkSets.resize(memProperties.memoryTypeCount);
 
@@ -131,7 +131,7 @@ EXCLUSIVE:
 			allocInfo.memoryTypeIndex = i;
 
 			VkDeviceMemory newMemory = VK_NULL_HANDLE;
-			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory));
+			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Core::Device::VkDevice_(), &allocInfo, nullptr, &newMemory));
 			std::mutex* newMutex = new std::mutex();
 
 			return Instance::Memory(true, i, newMemory, 0, newSize, newMutex, properties);
@@ -154,7 +154,7 @@ Graphic::Instance::Memory Graphic::Manager::MemoryManager::AcquireExclusiveMemor
 			allocInfo.memoryTypeIndex = i;
 
 			VkDeviceMemory newMemory = VK_NULL_HANDLE;
-			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Graphic::GlobalInstance::device, &allocInfo, nullptr, &newMemory));
+			Log::Exception("Failed to allocate exculsive memory.", vkAllocateMemory(Core::Device::VkDevice_(), &allocInfo, nullptr, &newMemory));
 			std::mutex* newMutex = new std::mutex();
 
 			return Instance::Memory(true, i, newMemory, 0, newSize, newMutex, properties);
@@ -168,7 +168,7 @@ void Graphic::Manager::MemoryManager::ReleaseMemBlock(Instance::Memory& memoryBl
 {
 	if (memoryBlock._isExclusive)
 	{
-		vkFreeMemory(Graphic::GlobalInstance::device, memoryBlock._vkMemory, nullptr);
+		vkFreeMemory(Core::Device::VkDevice_(), memoryBlock._vkMemory, nullptr);
 		delete memoryBlock._mutex;
 		return;
 	}

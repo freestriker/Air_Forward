@@ -1,5 +1,5 @@
 #include "Graphic/Manager/RenderPassManager.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/FrameBuffer.h"
@@ -157,7 +157,7 @@ void Graphic::Manager::RenderPassManager::CreateRenderPass(Graphic::Manager::Ren
     renderPassInfo.pDependencies = dependencys.data();
 
     VkRenderPass newVkRenderPass = VkRenderPass();
-    Log::Exception("Failed to create render pass", vkCreateRenderPass(Graphic::GlobalInstance::device, &renderPassInfo, nullptr, &newVkRenderPass));
+    Log::Exception("Failed to create render pass", vkCreateRenderPass(Core::Device::VkDevice_(), &renderPassInfo, nullptr, &newVkRenderPass));
 
     _renderPasss.emplace(creator._name, new Instance::RenderPass{ creator._name, newVkRenderPass, subpassMap, colorAttachmentMap });
 }

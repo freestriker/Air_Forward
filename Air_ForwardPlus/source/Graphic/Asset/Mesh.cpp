@@ -3,9 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "Graphic/GlobalInstance.h"
 #include "Graphic/Command/CommandBuffer.h"
-#include <Graphic/Manager/MemoryManager.h>
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Command/Semaphore.h"
 

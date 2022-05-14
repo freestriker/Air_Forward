@@ -1,5 +1,5 @@
 #include "Graphic/Manager/FrameBufferManager.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Instance/RenderPass.h"
 #include "Graphic/Instance/Memory.h"
@@ -51,7 +51,7 @@ void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Inst
     framebufferInfo.layers = 1;
 
     VkFramebuffer newVkFrameBuffer = VK_NULL_HANDLE;
-    Log::Exception("Failed to create framebuffer.", vkCreateFramebuffer(Graphic::GlobalInstance::device, &framebufferInfo, nullptr, &newVkFrameBuffer));
+    Log::Exception("Failed to create framebuffer.", vkCreateFramebuffer(Core::Device::VkDevice_(), &framebufferInfo, nullptr, &newVkFrameBuffer));
 
     _frameBuffers.emplace(name, new Instance::FrameBuffer(newVkFrameBuffer, usedAttachmentsMap));
 }

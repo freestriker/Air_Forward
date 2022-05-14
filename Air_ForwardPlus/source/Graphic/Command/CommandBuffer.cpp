@@ -1,10 +1,10 @@
 #include "Graphic/Command/CommandBuffer.h"
 #include <Graphic/Command/CommandPool.h>
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
+#include "Graphic/Core/Window.h"
 #include <stdexcept>
 #include "Graphic/Manager/FrameBufferManager.h"
 #include "Graphic/Instance/RenderPass.h"
-#include "Graphic/GlobalSetting.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Material.h"
@@ -24,7 +24,7 @@ Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Comman
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    Log::Exception("failed to create synchronization objects for a frame.", vkCreateFence(GlobalInstance::device, &fenceInfo, nullptr, &_vkFence));
+    Log::Exception("failed to create synchronization objects for a frame.", vkCreateFence(Core::Device::VkDevice_(), &fenceInfo, nullptr, &_vkFence));
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -32,18 +32,18 @@ Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Comman
     allocInfo.level = level;
     allocInfo.commandBufferCount = 1;
 
-    Log::Exception("failed to allocate command buffers.", vkAllocateCommandBuffers(Graphic::GlobalInstance::device, &allocInfo, &_vkCommandBuffer));
+    Log::Exception("failed to allocate command buffers.", vkAllocateCommandBuffers(Core::Device::VkDevice_(), &allocInfo, &_vkCommandBuffer));
 
 }
 
 Graphic::Command::CommandBuffer::~CommandBuffer()
 {
-    vkFreeCommandBuffers(GlobalInstance::device, _parentCommandPool->_vkCommandPool, 1, nullptr);
+    vkFreeCommandBuffers(Core::Device::VkDevice_(), _parentCommandPool->_vkCommandPool, 1, nullptr);
 }
 
 void Graphic::Command::CommandBuffer::Reset()
 {
-    vkResetFences(GlobalInstance::device, 1, &_vkFence);
+    vkResetFences(Core::Device::VkDevice_(), 1, &_vkFence);
     vkResetCommandBuffer(_vkCommandBuffer, VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 }
 
@@ -134,14 +134,14 @@ void Graphic::Command::CommandBuffer::Submit(std::vector<Command::Semaphore*> wa
     submitInfo.pSignalSemaphores = signal.data();
 
     {
-        std::unique_lock<std::mutex> lock(Graphic::GlobalInstance::queues[_parentCommandPool->_queueName]->submitMutex);
-        vkQueueSubmit(Graphic::GlobalInstance::queues[_parentCommandPool->_queueName]->queue, 1, &submitInfo, _vkFence);
+        std::unique_lock<std::mutex> lock(Core::Device::Queue_(_parentCommandPool->_queueName).submitMutex);
+        vkQueueSubmit(Core::Device::Queue_(_parentCommandPool->_queueName).queue, 1, &submitInfo, _vkFence);
     }
 }
 
 void Graphic::Command::CommandBuffer::WaitForFinish()
 {
-    vkWaitForFences(Graphic::GlobalInstance::device, 1, &_vkFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(Core::Device::VkDevice_(), 1, &_vkFence, VK_TRUE, UINT64_MAX);
 
 }
 
@@ -152,7 +152,7 @@ void Graphic::Command::CommandBuffer::BeginRenderPass(Graphic::Instance::RenderP
     renderPassInfo.renderPass = renderPass->VkRenderPass_();
     renderPassInfo.framebuffer = frameBuffer->VkFramebuffer_();
     renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = Graphic::GlobalSetting::windowExtent;
+    renderPassInfo.renderArea.extent = Core::Window::VkExtent2D_();
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 

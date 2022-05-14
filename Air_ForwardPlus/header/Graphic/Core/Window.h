@@ -57,7 +57,7 @@ namespace Graphic
 			static inline GLFWwindow* GLFWwindow_();
 			static inline VkSurfaceKHR VkSurfaceKHR_();
 			static inline VkSwapchainKHR VkSwapchainKHR_();
-			static inline Graphic::Instance::SwapchainImage* SwapchainImage_(uint32_t index);
+			static inline Graphic::Instance::SwapchainImage& SwapchainImage_(uint32_t index);
 		};
 	}
 }
@@ -82,7 +82,7 @@ inline VkSwapchainKHR Graphic::Core::Window::VkSwapchainKHR_()
 {
 	return _vkSwapchain;
 }
-inline Graphic::Instance::SwapchainImage* Graphic::Core::Window::SwapchainImage_(uint32_t index)
+inline Graphic::Instance::SwapchainImage& Graphic::Core::Window::SwapchainImage_(uint32_t index)
 {
-	return _swapchainImages[index];
+	return *_swapchainImages[index];
 }

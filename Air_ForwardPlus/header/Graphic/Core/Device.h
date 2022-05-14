@@ -38,7 +38,7 @@ namespace Graphic
 
 				}
 			};
-			class Creator
+			class DeviceCreator
 			{
 				friend class Graphic::Core::Device;
 			private:
@@ -70,8 +70,8 @@ namespace Graphic
 				VkPhysicalDeviceType desiredPhysicalDeviceType;
 
 			public:
-				Creator();
-				~Creator();
+				DeviceCreator();
+				~DeviceCreator();
 				void AddExtension(std::string extensionName);
 				void SetFeature(std::function<void(VkPhysicalDeviceFeatures&)> const& func);
 #ifdef _USE_GRAPHIC_DEBUG
@@ -80,7 +80,7 @@ namespace Graphic
 				void AddQueue(std::string name, VkQueueFlags flag, float prioritie);
 			};
 
-			static void Create(Graphic::Core::Device::Creator& creator);
+			static void Create(Graphic::Core::Device::DeviceCreator& creator);
 
 			static inline VkPhysicalDevice VkPhysicalDevice_();
 			static inline VkDevice VkDevice_();
@@ -99,8 +99,8 @@ namespace Graphic
 			static Graphic::Manager::DescriptorSetManager* _descriptorSetManager;
 			static Graphic::Manager::FrameBufferManager* _frameBufferManager;
 
-			static void _AddWindowExtension(Graphic::Core::Device::Creator& creator);
-			static void _CreateManager(Graphic::Core::Device::Creator& creator);
+			static void _AddWindowExtension(Graphic::Core::Device::DeviceCreator& creator);
+			static void _CreateManager(Graphic::Core::Device::DeviceCreator& creator);
 		};
 	}
 }

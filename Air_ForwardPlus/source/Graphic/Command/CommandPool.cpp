@@ -1,5 +1,5 @@
 #include "Graphic/Command/CommandPool.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include "Graphic/Command/CommandBuffer.h"
 #include "utils/Log.h"
 
@@ -10,9 +10,9 @@ Graphic::Command::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, std::s
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = flag;
-    poolInfo.queueFamilyIndex = Graphic::GlobalInstance::queues[std::string(queueName)]->queueFamilyIndex;
+    poolInfo.queueFamilyIndex = Core::Device::Queue_(std::string(queueName)).queueFamilyIndex;
 
-    Log::Exception("Failed to create command pool.", vkCreateCommandPool(Graphic::GlobalInstance::device, &poolInfo, nullptr, &_vkCommandPool));
+    Log::Exception("Failed to create command pool.", vkCreateCommandPool(Core::Device::VkDevice_(), &poolInfo, nullptr, &_vkCommandPool));
 }
 
 Graphic::Command::CommandPool::~CommandPool()
@@ -24,7 +24,7 @@ Graphic::Command::CommandPool::~CommandPool()
             delete (* i).second;
         }
         _commandBuffers.clear();
-        vkDestroyCommandPool(Graphic::GlobalInstance::device, _vkCommandPool, nullptr);
+        vkDestroyCommandPool(Core::Device::VkDevice_(), _vkCommandPool, nullptr);
         _vkCommandPool = VK_NULL_HANDLE;
     }
 }

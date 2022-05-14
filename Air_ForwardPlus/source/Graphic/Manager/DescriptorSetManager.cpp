@@ -1,5 +1,5 @@
 #include "Graphic/Manager/DescriptorSetManager.h"
-#include "Graphic/GlobalInstance.h"
+#include "Graphic/Core/Device.h"
 #include <stdexcept>
 #include <spirv_cross/spirv_reflect.hpp>
 #include "Graphic/Instance/DescriptorSet.h"
@@ -22,15 +22,15 @@ Graphic::Manager::DescriptorSetManager::_DescriptorPool::~_DescriptorPool()
 
 	for (const auto& handle : handles)
 	{
-		vkFreeDescriptorSets(Graphic::GlobalInstance::device, handle->_sourceVkDescriptorChunk, 1, &handle->_vkDescriptorSet);
+		vkFreeDescriptorSets(Core::Device::VkDevice_(), handle->_sourceVkDescriptorChunk, 1, &handle->_vkDescriptorSet);
 
 		delete handle;
 	}
 
 	for (const auto& chunkPair : chunks)
 	{
-		vkResetDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, 0);
-		vkDestroyDescriptorPool(Graphic::GlobalInstance::device, chunkPair.first, nullptr);
+		vkResetDescriptorPool(Core::Device::VkDevice_(), chunkPair.first, 0);
+		vkDestroyDescriptorPool(Core::Device::VkDevice_(), chunkPair.first, nullptr);
 	}
 }
 
@@ -49,7 +49,7 @@ Graphic::Instance::DescriptorSet* Graphic::Manager::DescriptorSetManager::_Descr
 	}
 	if (useableChunk == VK_NULL_HANDLE)
 	{
-		Log::Exception("Failed to create descriptor chunk.", vkCreateDescriptorPool(Graphic::GlobalInstance::device, &chunkCreateInfo, nullptr, &useableChunk));
+		Log::Exception("Failed to create descriptor chunk.", vkCreateDescriptorPool(Core::Device::VkDevice_(), &chunkCreateInfo, nullptr, &useableChunk));
 		chunks.emplace(useableChunk, chunkSize);
 	}
 	--chunks[useableChunk];
@@ -61,7 +61,7 @@ Graphic::Instance::DescriptorSet* Graphic::Manager::DescriptorSetManager::_Descr
 	allocInfo.pSetLayouts = &descriptorSetLayout;
 
 	VkDescriptorSet newVkSet = VK_NULL_HANDLE;
-	Log::Exception("Failed to allocate descriptor sets.", vkAllocateDescriptorSets(Graphic::GlobalInstance::device, &allocInfo, &newVkSet));
+	Log::Exception("Failed to allocate descriptor sets.", vkAllocateDescriptorSets(Core::Device::VkDevice_(), &allocInfo, &newVkSet));
 
 	Instance::DescriptorSet* newSet = new Instance::DescriptorSet(slotType, newVkSet, useableChunk);
 	
@@ -75,7 +75,7 @@ void Graphic::Manager::DescriptorSetManager::_DescriptorPool::ReleaseDescripterS
 	std::unique_lock<std::mutex> lock(mutex);
 
 	++chunks[descriptorSet->_sourceVkDescriptorChunk];
-	vkFreeDescriptorSets(Graphic::GlobalInstance::device, descriptorSet->_sourceVkDescriptorChunk, 1, &descriptorSet->_vkDescriptorSet);
+	vkFreeDescriptorSets(Core::Device::VkDevice_(), descriptorSet->_sourceVkDescriptorChunk, 1, &descriptorSet->_vkDescriptorSet);
 
 	handles.erase(descriptorSet);
 
@@ -90,8 +90,8 @@ void Graphic::Manager::DescriptorSetManager::_DescriptorPool::CollectEmptyChunk(
 	{
 		if (it->second == 0)
 		{
-			vkResetDescriptorPool(Graphic::GlobalInstance::device, it->first, 0);
-			vkDestroyDescriptorPool(Graphic::GlobalInstance::device, it->first, nullptr);
+			vkResetDescriptorPool(Core::Device::VkDevice_(), it->first, 0);
+			vkDestroyDescriptorPool(Core::Device::VkDevice_(), it->first, nullptr);
 			it = chunks.erase(it);
 		}
 		else

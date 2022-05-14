@@ -1,5 +1,5 @@
 #include "Graphic/Instance/RenderPass.h"
-#include <Graphic/GlobalInstance.h>
+#include <Graphic/Core/Device.h>
 #include "utils/Log.h"
 
 Graphic::Instance::RenderPass::RenderPass(std::string& name, VkRenderPass vkRenderPass, std::map<std::string, uint32_t>& subPassMap, std::map<std::string, std::map<std::string, uint32_t>>& colorAttachmentMap)
@@ -11,7 +11,7 @@ Graphic::Instance::RenderPass::RenderPass(std::string& name, VkRenderPass vkRend
 }
 Graphic::Instance::RenderPass::~RenderPass()
 {
-	vkDestroyRenderPass(Graphic::GlobalInstance::device, this->_vkRenderPass, nullptr);
+	vkDestroyRenderPass(Core::Device::VkDevice_(), this->_vkRenderPass, nullptr);
 }
 
 VkRenderPass Graphic::Instance::RenderPass::VkRenderPass_()
