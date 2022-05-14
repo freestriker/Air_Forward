@@ -44,6 +44,7 @@
     <ClInclude Include="header\Graphic\Creator\GlfwWindowCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanDeviceCreator.h" />
     <ClInclude Include="header\Graphic\Creator\VulkanInstanceCreator.h" />
+    <ClInclude Include="header\Graphic\Instance\SwapchainImage.h" />
     <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h" />
     <ClInclude Include="header\Graphic\Manager\FrameBufferManager.h" />
     <ClInclude Include="header\Graphic\GlobalInstance.h" />
@@ -86,6 +87,7 @@
     <ClCompile Include="source\Graphic\Creator\GlfwWindowCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanDeviceCreator.cpp" />
     <ClCompile Include="source\Graphic\Creator\VulkanInstanceCreator.cpp" />
+    <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
     <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
     <ClCompile Include="source\Graphic\GlobalInstance.cpp" />

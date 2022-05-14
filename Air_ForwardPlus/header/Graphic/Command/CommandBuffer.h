@@ -14,6 +14,7 @@ namespace Graphic
 		class Buffer;
 		class Image;
 		class Semaphore;
+		class SwapchainImage;
 	}
 	namespace Asset
 	{
@@ -63,7 +64,8 @@ namespace Graphic
 			void BindMaterial(Material* material);
 			void CopyImage(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout);
 			void Draw();
-			void Blit(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector< VkImageBlit> regions, VkFilter filter);
+			void Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::SwapchainImage* dstImage, VkImageLayout dstImageLayout);
+			void Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout);
 		};
 	}
 }

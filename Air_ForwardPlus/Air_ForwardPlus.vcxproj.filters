@@ -128,6 +128,9 @@
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="header\Graphic\Instance\SwapchainImage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Component\Transform\Transform.cpp" />
@@ -170,5 +173,6 @@
     <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
     <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />
     <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
+    <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
   </ItemGroup>
 </Project>

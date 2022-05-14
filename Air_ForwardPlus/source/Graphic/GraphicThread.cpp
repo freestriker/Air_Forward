@@ -21,6 +21,7 @@
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/FrameBuffer.h"
 #include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Instance/SwapchainImage.h"
 
 Graphic::GraphicThread* const Graphic::GraphicThread::instance = new Graphic::GraphicThread();
 
@@ -264,7 +265,7 @@ void Graphic::GraphicThread::OnRun()
 			transferDstBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			transferDstBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			transferDstBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			transferDstBarrier.image = Graphic::GlobalInstance::windowSwapchainImages[imageIndex];
+			transferDstBarrier.image = Graphic::GlobalInstance::swapchainImages[imageIndex]->VkImage_();
 			transferDstBarrier.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
 			transferDstBarrier.subresourceRange.baseMipLevel = 0;
 			transferDstBarrier.subresourceRange.levelCount = 1;
@@ -285,12 +286,11 @@ void Graphic::GraphicThread::OnRun()
 			VkImageSubresourceLayers imageSubresourceLayers = { VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT , 0, 0, 1};
 			VkImageBlit imageBlit = { imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}}, imageSubresourceLayers , {{0, 0, 0}, {GlobalSetting::windowExtent.width, GlobalSetting::windowExtent.height, 1}} };
 			presentCommandBuffer->Blit(
-				Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image().VkImage_(),
+				&Graphic::GlobalInstance::frameBufferManager->FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				Graphic::GlobalInstance::windowSwapchainImages[imageIndex],
-				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				{ imageBlit }
-			, VkFilter::VK_FILTER_NEAREST);
+				Graphic::GlobalInstance::swapchainImages[imageIndex],
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				);
 		}
 		//Present queue release attachment
 		{
@@ -311,7 +311,7 @@ void Graphic::GraphicThread::OnRun()
 			presentSrcBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 			presentSrcBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			presentSrcBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			presentSrcBarrier.image = Graphic::GlobalInstance::windowSwapchainImages[imageIndex];
+			presentSrcBarrier.image = Graphic::GlobalInstance::swapchainImages[imageIndex]->VkImage_();
 			presentSrcBarrier.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
 			presentSrcBarrier.subresourceRange.baseMipLevel = 0;
 			presentSrcBarrier.subresourceRange.levelCount = 1;

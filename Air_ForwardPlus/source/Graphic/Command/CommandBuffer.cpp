@@ -13,6 +13,7 @@
 #include "utils/Log.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/Semaphore.h"
+#include "Graphic/Instance/SwapchainImage.h"
 Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Command::CommandPool* commandPool, VkCommandBufferLevel level)
     : _name(name)
     , _parentCommandPool(commandPool)
@@ -182,7 +183,32 @@ void Graphic::Command::CommandBuffer::Draw()
     vkCmdDrawIndexed(_vkCommandBuffer, _commandData.indexCount, 1, 0, 0, 0);
 }
 
-void Graphic::Command::CommandBuffer::Blit(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, std::vector<VkImageBlit> regions, VkFilter filter)
+void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::SwapchainImage* dstImage, VkImageLayout dstImageLayout)
 {
-    vkCmdBlitImage(_vkCommandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>(regions.size()), regions.data(), filter);
+    auto src = srcImage->VkExtent3D_();
+    auto dst = dstImage->VkExtent3D_();
+    VkImageBlit blit{};
+    blit.srcSubresource = srcImage->VkImageSubresourceLayers_();
+    blit.srcOffsets[0] = {0, 0, 0};
+    blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
+    blit.dstSubresource = dstImage->VkImageSubresourceLayers_();
+    blit.dstOffsets[0] = {0, 0, 0};
+    blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+
+    vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, 1, &blit, VkFilter::VK_FILTER_LINEAR);
+}
+
+void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout)
+{
+    auto src = srcImage->VkExtent3D_();
+    auto dst = dstImage->VkExtent3D_();
+    VkImageBlit blit{};
+    blit.srcSubresource = srcImage->VkImageSubresourceLayers_();
+    blit.srcOffsets[0] = { 0, 0, 0 };
+    blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
+    blit.dstSubresource = dstImage->VkImageSubresourceLayers_();
+    blit.dstOffsets[0] = { 0, 0, 0 };
+    blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+
+    vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, 1, &blit, VkFilter::VK_FILTER_LINEAR);
 }

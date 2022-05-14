@@ -9,6 +9,10 @@
 
 namespace Graphic
 {
+	namespace Instance
+	{
+		class SwapchainImage;
+	}
 	namespace Manager
 	{
 		class DescriptorSetManager;
@@ -28,14 +32,6 @@ namespace Graphic
 		{
 
 		}
-		//Queue()
-		//	: name()
-		//	, queueFamilyIndex()
-		//	, queue(VK_NULL_HANDLE)
-		//	, submitMutex()
-		//{
-
-		//}
 		~Queue()
 		{
 
@@ -57,8 +53,7 @@ namespace Graphic
 		static VkDevice device;
 		static std::map<std::string, Queue*> queues;
 		static VkSwapchainKHR windowSwapchain;
-		static std::vector<VkImage> windowSwapchainImages;
-		static std::vector<VkImageView> windowSwapchainImageViews;
+		static std::vector<Instance::SwapchainImage*> swapchainImages;
 		static std::vector<VkSemaphore> windowImageAvailableSemaphores;
 		static std::vector<VkSemaphore> renderImageFinishedSemaphores;
 		static std::vector<VkFence> frameInFlightFences;
