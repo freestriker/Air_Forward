@@ -45,9 +45,9 @@ namespace Graphic
 				MeshInstance(std::string path);
 				virtual ~MeshInstance();
 			private:
-				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)override;
 				void _LoadByteData();
-				void _LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const graphicCommandBuffer);
+				void _LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer);
 			};
 
 		public:

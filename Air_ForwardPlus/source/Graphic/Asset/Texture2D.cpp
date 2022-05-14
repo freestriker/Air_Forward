@@ -32,7 +32,7 @@ Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance::~Texture2DInsta
 	delete _image;
 }
 
-void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)
+void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)
 {
 	_settings = Graphic::Asset::Texture2D::Texture2DSetting(path.c_str());;
 	Graphic::Asset::Texture2D::Texture2DSetting& config = _settings;
@@ -92,103 +92,49 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 
 	transferCommandBuffer->Reset();
 	transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	//Copy buffer to image
-	{
-		VkImageMemoryBarrier imageTransferBarrier{};
-		imageTransferBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageTransferBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageTransferBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageTransferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageTransferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageTransferBarrier.image = _image->VkImage_();
-		imageTransferBarrier.subresourceRange = _image->VkImageSubresourceRange_();
-		imageTransferBarrier.srcAccessMask = 0;
-		imageTransferBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	VkImageMemoryBarrier imageTransferStartBarrier{};
+	imageTransferStartBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageTransferStartBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageTransferStartBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	imageTransferStartBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageTransferStartBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageTransferStartBarrier.image = _image->VkImage_();
+	imageTransferStartBarrier.subresourceRange = _image->VkImageSubresourceRange_();
+	imageTransferStartBarrier.srcAccessMask = 0;
+	imageTransferStartBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		transferCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			{},
-			{},
-			{ imageTransferBarrier }
-		);
+	transferCommandBuffer->AddPipelineBarrier(
+		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		{},
+		{},
+		{ imageTransferStartBarrier }
+	);
 
-		transferCommandBuffer->CopyBufferToImage(&textureStagingBuffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	}
-	//Copy buffer to buffer
-	{
-		transferCommandBuffer->CopyBuffer(&infoStagingBuffer, _textureInfoBuffer);
-	}
-	//Release buffer and image
-	{
-		VkImageMemoryBarrier releaseImageBarrier{};
-		releaseImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		releaseImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		releaseImageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		releaseImageBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-		releaseImageBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		releaseImageBarrier.subresourceRange = _image->VkImageSubresourceRange_();
-		releaseImageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		releaseImageBarrier.dstAccessMask = 0;
-		releaseImageBarrier.image = _image->VkImage_();
+	transferCommandBuffer->CopyBufferToImage(&textureStagingBuffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	transferCommandBuffer->CopyBuffer(&infoStagingBuffer, _textureInfoBuffer);
 
-		VkBufferMemoryBarrier releaseBufferBarrier = {};
-		releaseBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-		releaseBufferBarrier.pNext = nullptr;
-		releaseBufferBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-		releaseBufferBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		releaseBufferBarrier.offset = 0;
-		releaseBufferBarrier.size = _textureInfoBuffer->Size();
-		releaseBufferBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		releaseBufferBarrier.dstAccessMask = 0;
-		releaseBufferBarrier.buffer = _textureInfoBuffer->VkBuffer_();
-		transferCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			{},
-			{ releaseBufferBarrier },
-			{ releaseImageBarrier }
-		);
-	}
+	VkImageMemoryBarrier imageTransferEndBarrier{};
+	imageTransferEndBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageTransferEndBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	imageTransferEndBarrier.newLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageTransferEndBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageTransferEndBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageTransferEndBarrier.image = _image->VkImage_();
+	imageTransferEndBarrier.subresourceRange = _image->VkImageSubresourceRange_();
+	imageTransferEndBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	imageTransferEndBarrier.dstAccessMask = 0;
+
+	transferCommandBuffer->AddPipelineBarrier(
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+		{},
+		{},
+		{ imageTransferEndBarrier }
+	);
+
 	transferCommandBuffer->EndRecord();
-	transferCommandBuffer->Submit({}, {}, { &semaphore });
-
-	renderCommandBuffer->Reset();
-	renderCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	{
-		VkImageMemoryBarrier acquireImageBarrier{};
-		acquireImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		acquireImageBarrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		acquireImageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		acquireImageBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-		acquireImageBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		acquireImageBarrier.subresourceRange = _image->VkImageSubresourceRange_();
-		acquireImageBarrier.srcAccessMask = 0;
-		acquireImageBarrier.dstAccessMask = 0;
-		acquireImageBarrier.image = _image->VkImage_();
-		VkBufferMemoryBarrier acquireBufferBarrier = {};
-		acquireBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-		acquireBufferBarrier.pNext = nullptr;
-		acquireBufferBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-		acquireBufferBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-		acquireBufferBarrier.offset = 0;
-		acquireBufferBarrier.size = _textureInfoBuffer->Size();
-		acquireBufferBarrier.srcAccessMask = 0;
-		acquireBufferBarrier.dstAccessMask = 0;
-		acquireBufferBarrier.buffer = _textureInfoBuffer->VkBuffer_();
-		renderCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			{},
-			{ acquireBufferBarrier },
-			{ acquireImageBarrier }
-		);
-	}
-	renderCommandBuffer->EndRecord();
-	renderCommandBuffer->Submit({ &semaphore }, { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT }, {});
-
-	renderCommandBuffer->WaitForFinish();
-
-	renderCommandBuffer->Reset();
+	transferCommandBuffer->Submit({}, {}, {});
+	transferCommandBuffer->WaitForFinish();
 	transferCommandBuffer->Reset();
-
 }
 
 Graphic::Asset::Texture2D::Texture2D()

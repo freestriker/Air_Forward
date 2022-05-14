@@ -81,7 +81,7 @@ namespace Graphic
 				std::vector<unsigned char> _byteData;
 				Texture2DSetting _settings;
 
-				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)override;
 			};
 
 		public:

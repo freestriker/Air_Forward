@@ -7,8 +7,6 @@ SubLoadThread::SubLoadThread(LoadThread& loadThread)
 	: _loadThread(&loadThread)
 	, _transferCommandPool(new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "TransferQueue"))
 	, _transferCommandBuffer(_transferCommandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY))
-	, _graphiccCommandPool(new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "TransferDstQueue"))
-	, _transferDstCommandBuffer(_graphiccCommandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY))
 {
 }
 
@@ -26,7 +24,7 @@ void SubLoadThread::OnRun()
 {
 	while (true)
 	{
-		std::function<void(Graphic::Command::CommandBuffer* const, Graphic::Command::CommandBuffer* const)> task;
+		std::function<void(Graphic::Command::CommandBuffer* const)> task;
 
 		{
 			std::unique_lock<std::mutex> lock(_loadThread->_queueMutex);
@@ -38,7 +36,7 @@ void SubLoadThread::OnRun()
 			_loadThread->_tasks.pop();
 		}
 
-		task(_transferCommandBuffer, _transferDstCommandBuffer);
+		task(_transferCommandBuffer);
 	}
 }
 

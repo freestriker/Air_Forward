@@ -29,11 +29,14 @@ Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemor
 
 void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 {
-	void* transferData;
-	std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
-	vkMapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
-	memcpy(transferData, data, dataSize);
-	vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory());
+	
+	{
+		std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
+		void* transferData;
+		vkMapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
+		memcpy(transferData, data, dataSize);
+		vkUnmapMemory(Graphic::GlobalInstance::device, _memoryBlock.VkMemory());
+	}
 }
 
 Graphic::Instance::Buffer::~Buffer()

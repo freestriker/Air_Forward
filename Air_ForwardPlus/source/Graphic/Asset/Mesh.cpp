@@ -86,12 +86,10 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
     importer.FreeScene();
 }
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const graphicCommandBuffer)
+void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer)
 {
     VkDeviceSize vertexBufferSize = sizeof(VertexData) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(uint32_t) * _indices.size();
-
-    Instance::Semaphore semaphore = Instance::Semaphore();
 
     Instance::Buffer stageVertexBuffer = Instance::Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     stageVertexBuffer.WriteBuffer(_vertices.data(), vertexBufferSize);
@@ -103,74 +101,21 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBu
 
 
     transferCommandBuffer->Reset();
-    graphicCommandBuffer->Reset();
 
     transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     transferCommandBuffer->CopyBuffer(&stageVertexBuffer, _vertexBuffer);
     transferCommandBuffer->CopyBuffer(&stageIndexBuffer, _indexBuffer);
 
-    VkBufferMemoryBarrier releaseVertexBarrier = {};
-    releaseVertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    releaseVertexBarrier.pNext = nullptr;
-    releaseVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    releaseVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    releaseVertexBarrier.offset = _vertexBuffer->Offset();
-    releaseVertexBarrier.size = _vertexBuffer->Size();
-    releaseVertexBarrier.buffer = _vertexBuffer->VkBuffer_();
-    releaseVertexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    releaseVertexBarrier.dstAccessMask = 0;
-
-    VkBufferMemoryBarrier releaseIndexBarrier = {};
-    releaseIndexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    releaseIndexBarrier.pNext = nullptr;
-    releaseIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    releaseIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    releaseIndexBarrier.offset = _indexBuffer->Offset();
-    releaseIndexBarrier.size = _indexBuffer->Size();
-    releaseIndexBarrier.buffer = _indexBuffer->VkBuffer_();
-    releaseIndexBarrier.srcAccessMask = VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
-    releaseIndexBarrier.dstAccessMask = 0;
-
-    transferCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, { releaseVertexBarrier, releaseIndexBarrier }, {});
     transferCommandBuffer->EndRecord();
-    transferCommandBuffer->Submit({}, {}, { &semaphore});
-
-    graphicCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VkBufferMemoryBarrier acquireVertexBarrier = {};
-    acquireVertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    acquireVertexBarrier.pNext = nullptr;
-    acquireVertexBarrier.srcAccessMask = 0;
-    acquireVertexBarrier.dstAccessMask = 0;
-    acquireVertexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    acquireVertexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    acquireVertexBarrier.offset = _vertexBuffer->Offset();
-    acquireVertexBarrier.size = _vertexBuffer->Size();
-    acquireVertexBarrier.buffer = _vertexBuffer->VkBuffer_();
-
-    VkBufferMemoryBarrier acquireIndexBarrier = {};
-    acquireIndexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    acquireIndexBarrier.pNext = nullptr;
-    acquireIndexBarrier.srcAccessMask = 0;
-    acquireIndexBarrier.dstAccessMask = 0;
-    acquireIndexBarrier.srcQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferQueue"]->queueFamilyIndex;
-    acquireIndexBarrier.dstQueueFamilyIndex = Graphic::GlobalInstance::queues["TransferDstQueue"]->queueFamilyIndex;
-    acquireIndexBarrier.offset = _indexBuffer->Offset();
-    acquireIndexBarrier.size = _indexBuffer->Size();
-    acquireIndexBarrier.buffer = _indexBuffer->VkBuffer_();
-
-    graphicCommandBuffer->AddPipelineBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, { acquireVertexBarrier, acquireIndexBarrier }, {});
-    graphicCommandBuffer->EndRecord();
-    graphicCommandBuffer->Submit({ &semaphore}, {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }, {});
-
-    graphicCommandBuffer->WaitForFinish();
+    transferCommandBuffer->Submit({}, {}, {});
+    transferCommandBuffer->WaitForFinish();
     transferCommandBuffer->Reset();
-    graphicCommandBuffer->Reset();
 }
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)
+void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)
 {
     this->_LoadByteData();
-    this->_LoadBuffer(transferCommandBuffer, renderCommandBuffer);
+    this->_LoadBuffer(transferCommandBuffer);
 }
 
 Graphic::Asset::Mesh::Mesh()

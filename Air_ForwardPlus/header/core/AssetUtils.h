@@ -43,7 +43,7 @@ class IAssetInstance
 	friend class IAsset;
 	friend class AssetManager;
 private:
-	virtual void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer) = 0;
+	virtual void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer) = 0;
 	void _Wait();
 	bool _readyToUse;
 public:
@@ -114,9 +114,9 @@ inline std::future<TAsset*> IAsset::_LoadAsync(const char* path)
 	}
 	else
 	{
-		return LoadThread::instance->AddTask([assetInstance, sPath, newAsset](Graphic::Command::CommandBuffer* const tcb, Graphic::Command::CommandBuffer* const gcb)
+		return LoadThread::instance->AddTask([assetInstance, sPath, newAsset](Graphic::Command::CommandBuffer* const tcb)
 		{
-			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb, gcb);
+			dynamic_cast<IAssetInstance*>(assetInstance)->_LoadAssetInstance(tcb);
 			dynamic_cast<IAssetInstance*>(assetInstance)->_readyToUse = true;
 			dynamic_cast<IAssetInstance*>(assetInstance)->_Wait();
 			Log::Message("AssetManager load " + sPath + " from disk.");

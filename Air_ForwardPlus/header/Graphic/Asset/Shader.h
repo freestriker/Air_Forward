@@ -102,7 +102,7 @@ namespace Graphic
 				std::map<std::string, SlotLayout> _slotLayouts;
 				VkPipeline _vkPipeline;
 				VkPipelineLayout _vkPipelineLayout;
-				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer, Graphic::Command::CommandBuffer* const renderCommandBuffer)override;
+				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)override;
 				
 				void _ParseShaderData(_PipelineData& pipelineData);
 				void _LoadSpirvs(_PipelineData& pipelineData);
