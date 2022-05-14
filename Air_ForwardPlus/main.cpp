@@ -9,7 +9,7 @@
 #include <core/ObjectFactory.h>
 #include <core/Global.h>
 #include "core/LoadThread.h"
-#include "Graphic/Core/GraphicThread.h"
+#include "Graphic/Core/Thread.h"
 #include "utils/Log.h"
 static void f() { std::cout << "Hello World" << std::endl; }
 using namespace rttr;
@@ -46,18 +46,18 @@ int main()
 	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
 	go0->AddComponent(testTransform);
 
-	Graphic::Core::GraphicThread::InitThread();
+	Graphic::Core::Thread::Init();
 	LoadThread::instance->Init();
 
-	Graphic::Core::GraphicThread::StartThread();
-	Graphic::Core::GraphicThread::WaitForThreadStartFinish();
+	Graphic::Core::Thread::Start();
+	Graphic::Core::Thread::WaitForStartFinish();
 
 	LoadThread::instance->Start();
 
-	Graphic::Core::GraphicThread::StartRender();
+	Graphic::Core::Thread::StartRender();
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
 	LoadThread::instance->End();
-	Graphic::Core::GraphicThread::EndThread();
+	Graphic::Core::Thread::End();
 }

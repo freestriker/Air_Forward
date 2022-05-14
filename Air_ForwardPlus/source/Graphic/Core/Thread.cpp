@@ -1,4 +1,4 @@
-#include "Graphic/Core/GraphicThread.h"
+#include "Graphic/Core/Thread.h"
 #include "Graphic/Core/Device.h"
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Window.h"
@@ -23,36 +23,43 @@
 #include "Graphic/Command/Fence.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
 
-Graphic::Core::GraphicThread* Graphic::Core::GraphicThread::_instance = new Graphic::Core::GraphicThread();
+Graphic::Core::Thread::RenderThread* Graphic::Core::Thread::_instance = new Graphic::Core::Thread::RenderThread();
 
-Graphic::Core::GraphicThread::GraphicThread()
-	: Thread()
+Graphic::Core::Thread::RenderThread::RenderThread()
+	: ThreadBase()
 	, _stopped(true)
-{
-
-}
-Graphic::Core::GraphicThread::~GraphicThread()
-{
-
-}
-
-void Graphic::Core::GraphicThread::Init()
+	, renderCommandPool(nullptr)
+	, renderCommandBuffer(nullptr)
+	, presentCommandPool(nullptr)
+	, presentCommandBuffer(nullptr)
+	, _readyToRender(false)
+	, _mutex()
+	, _readyToRenderCondition()
 {
 }
 
-void Graphic::Core::GraphicThread::_StartRender()
+Graphic::Core::Thread::RenderThread::~RenderThread()
+{
+
+}
+
+void Graphic::Core::Thread::RenderThread::Init()
+{
+}
+
+void Graphic::Core::Thread::RenderThread::StartRender()
 {
 	_readyToRender = true;
 	_readyToRenderCondition.notify_all();
 }
 
-void Graphic::Core::GraphicThread::OnStart()
+void Graphic::Core::Thread::RenderThread::OnStart()
 {
 	_stopped = false;
 	_readyToRender = false;
 }
 
-void Graphic::Core::GraphicThread::OnThreadStart()
+void Graphic::Core::Thread::RenderThread::OnThreadStart()
 {
 	{
 		Core::Window::WindowCreator windowCreator = Core::Window::WindowCreator();
@@ -131,7 +138,7 @@ void Graphic::Core::GraphicThread::OnThreadStart()
 
 }
 
-void Graphic::Core::GraphicThread::OnRun()
+void Graphic::Core::Thread::RenderThread::OnRun()
 {
 	{
 		std::unique_lock<std::mutex> lock(_mutex);
@@ -311,31 +318,38 @@ void Graphic::Core::GraphicThread::OnRun()
 	}
 }
 
-void Graphic::Core::GraphicThread::OnEnd()
+void Graphic::Core::Thread::RenderThread::OnEnd()
 {
 	_stopped = true;
 }
 
-void Graphic::Core::GraphicThread::InitThread()
+Graphic::Core::Thread::Thread()
+{
+}
+Graphic::Core::Thread::~Thread()
+{
+}
+
+void Graphic::Core::Thread::Init()
 {
 	_instance->Init();
 }
 
-void Graphic::Core::GraphicThread::StartThread()
+void Graphic::Core::Thread::Start()
 {
 	_instance->Start();
 }
 
-void Graphic::Core::GraphicThread::StartRender()
+void Graphic::Core::Thread::StartRender()
 {
-	_instance->_StartRender();
+	_instance->StartRender();
 }
 
-void Graphic::Core::GraphicThread::EndThread()
+void Graphic::Core::Thread::End()
 {
 	_instance->End();
 }
-void Graphic::Core::GraphicThread::WaitForThreadStartFinish()
+void Graphic::Core::Thread::WaitForStartFinish()
 {
 	_instance->WaitForStartFinish();
 }

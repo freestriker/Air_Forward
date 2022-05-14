@@ -43,7 +43,7 @@ void LoadThread::OnEnd()
 }
 
 LoadThread::LoadThread()
-	: Thread()
+	: ThreadBase()
 	, _subLoadThreads()
 	, _tasks()
 	, _queueMutex()

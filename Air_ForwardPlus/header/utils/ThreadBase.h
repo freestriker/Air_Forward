@@ -1,28 +1,27 @@
 #pragma once
 #include<thread>
-class Thread
+class ThreadBase
 {
 private:
 	std::thread _thread;
 
 public:
-	Thread();
-	virtual ~Thread();
 	virtual void Init();
 	void Start();
 	void End();
 	void WaitForStartFinish();
 protected:
+	ThreadBase();
+	virtual ~ThreadBase();
 	virtual void OnStart();
 	virtual void OnThreadStart();
-	virtual void OnRun();
+	virtual void OnRun() = 0;
 	virtual void OnEnd();
 private:
 	bool _finishOnThreadStart;
 	void Run();
-	Thread(const Thread&) = delete;
-	Thread& operator=(const Thread&) = delete;
-	Thread(Thread&&) = delete;
-	Thread& operator=(Thread&&) = delete;
+	ThreadBase(const ThreadBase&) = delete;
+	ThreadBase& operator=(const ThreadBase&) = delete;
+	ThreadBase(ThreadBase&&) = delete;
+	ThreadBase& operator=(ThreadBase&&) = delete;
 };
-using _Thread = Thread;
