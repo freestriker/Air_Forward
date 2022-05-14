@@ -14,7 +14,7 @@
  limitations under the License.
 */
 
-#include "utils/spirv_reflect.h"
+#include "Graphic/Utils/SpirvReflect.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>

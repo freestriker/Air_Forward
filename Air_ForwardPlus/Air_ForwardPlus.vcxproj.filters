@@ -68,7 +68,7 @@
     <ClInclude Include="header\Graphic\Asset\Mesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="header\utils\spirv_reflect.h">
+    <ClInclude Include="header\Graphic\Utils\SpirvReflect.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="header\Graphic\Asset\Shader.h">
@@ -153,7 +153,7 @@
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
-    <ClCompile Include="source\utils\spirv_reflect.cpp" />
+    <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
