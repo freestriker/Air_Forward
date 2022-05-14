@@ -109,6 +109,7 @@
     <ProjectGuid>{fa8227a6-48a2-48b2-acc3-37181e9a08f2}</ProjectGuid>
     <RootNamespace>AirForwardPlus</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Air_Forward</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -203,7 +204,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions);RTTR_DLL</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_Forward\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
@@ -223,7 +224,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_ForwardPlus\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_Forward\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>26812</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
