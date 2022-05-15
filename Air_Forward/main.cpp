@@ -4,47 +4,33 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FreeImage/FreeImage.h>
-#include "core/Object.h"
-#include <core/GameObject.h>
-#include <core/ObjectFactory.h>
-#include <core/Global.h>
+#include "Core/Object/GameObject.h"
+#include "Core/Object/Object.h"
 #include "core/LoadThread.h"
 #include "Graphic/Core/Thread.h"
+#include "Core/Component/Transform/Transform.h"
 #include "utils/Log.h"
-static void f() { std::cout << "Hello World" << std::endl; }
-using namespace rttr;
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    registration::method("f", &f);
-}
 int main()
 {
+	Core::Object::GameObject* go0 = new Core::Object::GameObject("go0");
+	Core::Object::GameObject::RootObject().AddChild(go0);
 
-    //type::invoke("f", {});
+	Core::Object::GameObject* go1 = new Core::Object::GameObject("go1");
+	Core::Object::GameObject::RootObject().AddChild(go1);
 
-	GameObject* go0 = ObjectFactory::InstantiateGameObject();
-	go0->name = "go0";
-	global.rootGameObject->AddChild(go0);
+	Core::Object::GameObject* go2 = new Core::Object::GameObject("go2");
+	Core::Object::GameObject::RootObject().AddChild(go2);
 
-	GameObject* go1 = ObjectFactory::InstantiateGameObject();
-	go1->name = "go1";
-	global.rootGameObject->AddChild(go1);
-
-	GameObject* go2 = ObjectFactory::InstantiateGameObject();
-	go2->name = "go2";
-	global.rootGameObject->AddChild(go2);
-
-	GameObject* go00 = ObjectFactory::InstantiateGameObject();
-	go00->name = "go00";
+	Core::Object::GameObject* go00 = new Core::Object::GameObject("go00");
 	go0->AddChild(go00);
 
-	GameObject* go01 = ObjectFactory::InstantiateGameObject();
-	go01->name = "go01";
+	Core::Object::GameObject* go01 = new Core::Object::GameObject("go01");
 	go0->AddChild(go01);
 
-	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
+	Core::Component::Transform::Transform* testTransform = new Core::Component::Transform::Transform();
 	go0->AddComponent(testTransform);
+
+	auto foundTransforms = go0->GetComponents("Core::Component::Transform::Transform");
 
 	Graphic::Core::Thread::Init();
 	LoadThread::instance->Init();

@@ -1,9 +1,9 @@
-#include "core/LoadThread.h"
+#include "Core/LoadThread.h"
 #include <iostream>
 #include <chrono> 
-#include <core/SubLoadThread.h>
+#include <Core/SubLoadThread.h>
 #include "Graphic/Command/CommandBuffer.h"
-#include "core/AssetUtils.h"
+#include "Core/AssetUtils.h"
 #include <glm/glm.hpp>
 
 LoadThread* const LoadThread::instance = new LoadThread();

@@ -1,5 +1,5 @@
-#include "core/SubLoadThread.h"
-#include "core/LoadThread.h"
+#include "Core/SubLoadThread.h"
+#include "Core/LoadThread.h"
 #include "Graphic/Command/CommandPool.h"
 #include "Graphic/Command/CommandBuffer.h"
 SubLoadThread::SubLoadThread(LoadThread& loadThread)
