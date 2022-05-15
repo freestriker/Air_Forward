@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\Component\Transform\Transform.h" />
+    <ClInclude Include="header\core\AssetUtils.h" />
+    <ClInclude Include="header\core\Component.h" />
+    <ClInclude Include="header\core\GameObject.h" />
+    <ClInclude Include="header\core\Global.h" />
+    <ClInclude Include="header\core\LifeTime.h" />
+    <ClInclude Include="header\core\LoadThread.h" />
+    <ClInclude Include="header\core\Object.h" />
+    <ClInclude Include="header\core\ObjectFactory.h" />
+    <ClInclude Include="header\Graphic\Asset\Mesh.h" />
+    <ClInclude Include="header\Graphic\Asset\Shader.h" />
+    <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
+    <ClInclude Include="header\Graphic\Command\ImageMemoryBarrier.h" />
+    <ClInclude Include="header\Graphic\Core\Device.h" />
+    <ClInclude Include="header\Graphic\Core\Instance.h" />
+    <ClInclude Include="header\Graphic\Core\Thread.h" />
+    <ClInclude Include="header\Graphic\Core\Window.h" />
+    <ClInclude Include="header\Graphic\Instance\DescriptorSet.h" />
+    <ClInclude Include="header\Graphic\Command\Fence.h" />
+    <ClInclude Include="header\Graphic\Instance\FrameBuffer.h" />
+    <ClInclude Include="header\Graphic\Instance\Image.h" />
+    <ClInclude Include="header\Graphic\Instance\ImageSampler.h" />
+    <ClInclude Include="header\Graphic\Instance\Memory.h" />
+    <ClInclude Include="header\Graphic\Instance\RenderPass.h" />
+    <ClInclude Include="header\Graphic\Command\Semaphore.h" />
+    <ClInclude Include="header\Graphic\Instance\Buffer.h" />
+    <ClInclude Include="header\Graphic\Command\CommandBuffer.h" />
+    <ClInclude Include="header\Graphic\Command\CommandPool.h" />
+    <ClInclude Include="header\Graphic\Instance\SwapchainImage.h" />
+    <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h" />
+    <ClInclude Include="header\Graphic\Manager\FrameBufferManager.h" />
+    <ClInclude Include="header\core\SubLoadThread.h" />
+    <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
+    <ClInclude Include="header\Graphic\Material.h" />
+    <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
+    <ClInclude Include="header\utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\utils\Log.h" />
+    <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
+    <ClInclude Include="header\utils\ThreadBase.h" />
+    <ClInclude Include="header\utils\ThreadPool.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\core\AssetUtils.cpp" />
+    <ClCompile Include="source\core\Component.cpp" />
+    <ClCompile Include="source\core\GameObject.cpp" />
+    <ClCompile Include="source\core\Global.cpp" />
+    <ClCompile Include="source\core\LifeTime.cpp" />
+    <ClCompile Include="source\core\LoadThread.cpp" />
+    <ClCompile Include="source\core\Objecct.cpp" />
+    <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
+    <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
+    <ClCompile Include="source\Graphic\Command\ImageMemoryBarrier.cpp" />
+    <ClCompile Include="source\Graphic\Core\Device.cpp" />
+    <ClCompile Include="source\Graphic\Core\Instance.cpp" />
+    <ClCompile Include="source\Graphic\Core\Thread.cpp" />
+    <ClCompile Include="source\Graphic\Core\Window.cpp" />
+    <ClCompile Include="source\Graphic\Instance\DescriptorSet.cpp" />
+    <ClCompile Include="source\Graphic\Command\Fence.cpp" />
+    <ClCompile Include="source\Graphic\Instance\FrameBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Image.cpp" />
+    <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
+    <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
+    <ClCompile Include="source\Graphic\Command\Semaphore.cpp" />
+    <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandBuffer.cpp" />
+    <ClCompile Include="source\Graphic\Command\CommandPool.cpp" />
+    <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
+    <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
+    <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
+    <ClCompile Include="source\core\SubLoadThread.cpp" />
+    <ClCompile Include="source\Graphic\Material.cpp" />
+    <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
+    <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
+    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\utils\Log.cpp" />
+    <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
+    <ClCompile Include="source\utils\ThreadBase.cpp" />
+    <ClCompile Include="source\utils\ThreadPool.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{fa8227a6-48a2-48b2-acc3-37181e9a08f2}</ProjectGuid>
+    <RootNamespace>AirForwardPlus</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Air_Forward</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions);RTTR_DLL</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_Forward\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(MY_VULKAN_PATH)\Lib;$(MY_GLFW_PATH)\lib-vc2022;..\ThirdParty\rttr\debug\lib;..\ThirdParty\assimp\debug\lib;..\ThirdParty\FreeImage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;rttr_core_d.lib;assimp-vc143-mtd.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;RTTR_DLL;_USE_GRAPHIC_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(MY_VULKAN_PATH)\Include;$(MY_GLM_PATH)\;$(MY_GLFW_PATH)\include;..\ThirdParty\rttr\include;..\ThirdParty\glm\include;..\ThirdParty\assimp\include;..\ThirdParty\FreeImage\include;..\ThirdParty\\NlohmannJson\include;..\Air_Forward\header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>26812</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(MY_VULKAN_PATH)\Lib;$(MY_GLFW_PATH)\lib-vc2022;..\ThirdParty\rttr\release\lib;..\ThirdParty\assimp\release\lib;..\ThirdParty\FreeImage\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;rttr_core.lib;assimp-vc143-mt.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
