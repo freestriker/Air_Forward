@@ -22,10 +22,12 @@
     <ClInclude Include="header\Core\Component\Transform\Transform.h" />
     <ClInclude Include="header\Core\AssetUtils.h" />
     <ClInclude Include="header\Core\Component\Component.h" />
+    <ClInclude Include="header\Core\Instance.h" />
     <ClInclude Include="header\Core\Object\GameObject.h" />
     <ClInclude Include="header\Core\Object\LifeCycle.h" />
     <ClInclude Include="header\Core\LoadThread.h" />
     <ClInclude Include="header\Core\Object\Object.h" />
+    <ClInclude Include="header\Core\Thread.h" />
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
@@ -62,10 +64,12 @@
     <ClCompile Include="source\Core\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Core\AssetUtils.cpp" />
     <ClCompile Include="source\Core\Component\Component.cpp" />
+    <ClCompile Include="source\Core\Instance.cpp" />
     <ClCompile Include="source\Core\Object\GameObject.cpp" />
     <ClCompile Include="source\Core\Object\LifeCycle.cpp" />
     <ClCompile Include="source\Core\LoadThread.cpp" />
     <ClCompile Include="source\Core\Object\Objecct.cpp" />
+    <ClCompile Include="source\Core\Thread.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />

@@ -17,7 +17,6 @@ namespace Graphic
 			class RenderThread final : public Utils::ThreadBase
 			{
 			public:
-				static RenderThread* _instance;
 				bool _stopped;
 				Command::CommandPool* renderCommandPool;
 				Command::CommandBuffer* renderCommandBuffer;

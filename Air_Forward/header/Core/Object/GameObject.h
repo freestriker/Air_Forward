@@ -23,13 +23,9 @@ namespace Core
 			: public Object
 			, public LifeCycle
 		{
-			//friend class ObjectFactory;
-
 		private:
-			static GameObject* _rootGameObject;
 			std::vector<Core::Component::Component*> _components;
 			Utils::ChildBrotherTree<GameObject> _chain;
-
 
 			bool OnCheckValid()override;
 			void OnAwake()override;
@@ -38,7 +34,6 @@ namespace Core
 			void OnDestory()override;
 
 		public:
-			inline static GameObject& RootObject();
 			std::string name;
 			Core::Component::Transform::Transform transform;
 
@@ -64,9 +59,4 @@ namespace Core
 			RTTR_ENABLE(Core::Object::Object, Core::Object::LifeCycle)
 		};
 	}
-}
-
-inline Core::Object::GameObject& Core::Object::GameObject::RootObject()
-{
-	return *_rootGameObject;
 }

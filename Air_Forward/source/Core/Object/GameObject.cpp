@@ -23,8 +23,6 @@ RTTR_REGISTRATION
 		;
 }
 
-Core::Object::GameObject* Core::Object::GameObject::_rootGameObject = new Core::Object::GameObject("RootObject");
-
 Core::Object::GameObject::GameObject(std::string name)
 	: LifeCycle()
 	, Object()
