@@ -54,11 +54,10 @@
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
-    <ClInclude Include="header\utils\ChildBrotherTree.h" />
-    <ClInclude Include="header\utils\Log.h" />
+    <ClInclude Include="header\Utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\Utils\Log.h" />
     <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
-    <ClInclude Include="header\utils\ThreadBase.h" />
-    <ClInclude Include="header\utils\ThreadPool.h" />
+    <ClInclude Include="header\Utils\ThreadBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -97,11 +96,10 @@
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
-    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
-    <ClCompile Include="source\utils\Log.cpp" />
+    <ClCompile Include="source\Utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\Utils\Log.cpp" />
     <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
-    <ClCompile Include="source\utils\ThreadBase.cpp" />
-    <ClCompile Include="source\utils\ThreadPool.cpp" />
+    <ClCompile Include="source\Utils\ThreadBase.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

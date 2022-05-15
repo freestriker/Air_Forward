@@ -1,6 +1,8 @@
 #include "core/AssetUtils.h"
 #include <Graphic/Command/CommandBuffer.h>
 #include <core/LoadThread.h>
+#include <Utils/Log.h>
+using namespace Utils;
 
 IAsset::IAsset()
 	: _assetInstance(nullptr)

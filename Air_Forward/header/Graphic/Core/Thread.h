@@ -1,5 +1,5 @@
 #pragma once
-#include "utils/ThreadBase.h"
+#include "Utils/ThreadBase.h"
 #include <mutex>
 #include <condition_variable>
 namespace Graphic
@@ -14,7 +14,7 @@ namespace Graphic
 		class Thread final
 		{
 		private:
-			class RenderThread final : public ThreadBase
+			class RenderThread final : public Utils::ThreadBase
 			{
 			public:
 				static RenderThread* _instance;

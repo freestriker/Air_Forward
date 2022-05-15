@@ -7,6 +7,8 @@
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Instance/RenderPass.h"
 #include "Graphic/Manager/RenderPassManager.h"
+#include <Utils/Log.h>
+using namespace Utils;
 
 Graphic::Asset::Shader::_ShaderInstance::_ShaderInstance(std::string path)
 	: IAssetInstance(path)

@@ -1,5 +1,6 @@
 #include "Graphic/Command/Semaphore.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include <Graphic/Core/Device.h>
 VkSemaphore Graphic::Command::Semaphore::VkSemphore_()
 {

@@ -1,163 +1,254 @@
 #pragma once
-template<class T>
-class ChildBrotherTree
+namespace Utils
 {
-
-public:
-    struct ChildIterator 
+    template<typename T>
+    class ChildBrotherTree
     {
-        ChildBrotherTree<T>* _node;
-
     public:
-        ChildIterator(ChildBrotherTree<T>* node)
+        struct Iterator
         {
-            node ? this->_node = node->child : nullptr;
+            friend class ChildBrotherTree<T>;
+        private:
+            ChildBrotherTree<T>* _node;
+            Iterator(ChildBrotherTree<T>* node);
+        public:
+            Iterator();
+            ~Iterator();
+            inline bool IsValid();
+            inline typename ChildBrotherTree<T>& Node();
+            inline typename Iterator operator++();
+        };
+    private:
+        ChildBrotherTree<T>* _parent;
+        ChildBrotherTree<T>* _child;
+        ChildBrotherTree<T>* _brother;
+        T* _object;
+    public:
+        ChildBrotherTree(ChildBrotherTree<T>* parent, ChildBrotherTree<T>* child, ChildBrotherTree<T>* brother, T* object);
+        ChildBrotherTree(ChildBrotherTree<T>* parent, T* object);
+        ChildBrotherTree(T* object);
+        ChildBrotherTree();
+        ~ChildBrotherTree();
 
-        }
-        ~ChildIterator()
-        {
-            this->_node = nullptr;
+        inline void SetObject(T* object);
 
-        }
-        bool IsValid()
-        {
-            return _node;
-        }
-        ChildBrotherTree<T>* Node()
-        {
-            return _node;
-        }
-        ChildIterator operator++() 
-        {
-            _node = _node->brother;
-            return *this;
-        }
+        inline bool IsParentValid();
+        inline bool IsChildValid();
+        inline bool IsBrotherValid();
+        inline ChildBrotherTree<T>& Parent();
+        inline ChildBrotherTree<T>& Child();
+        inline ChildBrotherTree<T>& Brother();
+        inline T& Object();
+
+        inline void AddChild(ChildBrotherTree<T>& child);
+        inline void AddBrother(ChildBrotherTree<T>& brother);
+        inline ChildBrotherTree<T>& Remove();
+        inline ChildBrotherTree<T>::Iterator GetChildIterator();
+        inline ChildBrotherTree<T>::Iterator GetBrotherIterator();
     };
 
-    ChildBrotherTree<T>* parent;
-    ChildBrotherTree<T>* child;
-    ChildBrotherTree<T>* brother;
-    T* object;
 
-    ChildBrotherTree(ChildBrotherTree<T>* parent, ChildBrotherTree<T>* child, ChildBrotherTree<T>* brother, T* object);
-    ChildBrotherTree(ChildBrotherTree<T>* parent, T* object);
-    ChildBrotherTree(T* object);
-    ChildBrotherTree();
-    ~ChildBrotherTree();
-
-    void AddChild(ChildBrotherTree<T>* child);
-    void AddBrother(ChildBrotherTree<T>* brother);
-    ChildBrotherTree<T>* Remove();
-    ChildIterator GetChildIterator()
+    template<typename T>
+    ChildBrotherTree<T>::ChildBrotherTree(ChildBrotherTree* parent, ChildBrotherTree* child, ChildBrotherTree* brother, T* object)
+        : _parent(parent)
+        , _child(child)
+        , _brother(brother)
+        , _object(object)
     {
-        return ChildIterator(this);
+
     }
-    ChildIterator GetBrotherIterator()
+
+    template<typename T>
+    ChildBrotherTree<T>::ChildBrotherTree(ChildBrotherTree* parent, T* object)
+        : ChildBrotherTree(parent, nullptr, nullptr, object)
     {
-        return ChildIterator(this->parent);
+
     }
-};
-template<class T>
-ChildBrotherTree<T>::ChildBrotherTree() :ChildBrotherTree(nullptr, nullptr, nullptr, nullptr)
-{
 
-}
-template<class T>
-ChildBrotherTree<T>::~ChildBrotherTree()
-{
-    parent = nullptr;
-    child = nullptr;
-    brother = nullptr;
-    object = nullptr;
-}
-template<class T>
-ChildBrotherTree<T>::ChildBrotherTree(ChildBrotherTree* parent, ChildBrotherTree* child, ChildBrotherTree* brother, T* object)
-{
-    this->parent = parent;
-    this->child = child;
-    this->brother = brother;
-    this->object = object;
-}
-template<class T>
-ChildBrotherTree<T>::ChildBrotherTree(ChildBrotherTree* parent, T* object) :ChildBrotherTree(parent, nullptr, nullptr, object)
-{
-
-}
-template<class T>
-ChildBrotherTree<T>::ChildBrotherTree(T* object) :ChildBrotherTree(nullptr, nullptr, nullptr, object)
-{
-
-}
-
-template<class T>
-void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>* child)
-{
-    child->parent = this;
-    if (this->child)
+    template<typename T>
+    ChildBrotherTree<T>::ChildBrotherTree(T* object)
+        : ChildBrotherTree(nullptr, nullptr, nullptr, object)
     {
-        this->child->AddBrother(child);
+
     }
-    else
-    {
-        this->child = child;
-    }
-}
 
-template<class T>
-void ChildBrotherTree<T>::AddBrother(ChildBrotherTree<T>* brother)
-{
-    brother->parent = this->parent;
-    ChildBrotherTree<T>* b = this->brother;
-    if (b)
+    template<typename T>
+    ChildBrotherTree<T>::ChildBrotherTree() 
+        : ChildBrotherTree(nullptr, nullptr, nullptr, nullptr)
     {
-        while (b->brother)
+
+    }
+
+    template<typename T>
+    ChildBrotherTree<T>::~ChildBrotherTree()
+    {
+        _parent = nullptr;
+        _child = nullptr;
+        _brother = nullptr;
+        _object = nullptr;
+    }
+
+    template<typename T>
+    inline void ChildBrotherTree<T>::SetObject(T* object)
+    {
+        _object = object;
+    }
+
+    template<typename T>
+    inline bool ChildBrotherTree<T>::IsParentValid()
+    {
+        return _parent;
+    }
+
+    template<typename T>
+    inline bool ChildBrotherTree<T>::IsChildValid()
+    {
+        return _child;
+    }
+
+    template<typename T>
+    inline bool ChildBrotherTree<T>::IsBrotherValid()
+    {
+        return _brother;
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Parent()
+    {
+        return *_parent;
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Child()
+    {
+        return *_child;
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Brother()
+    {
+        return *_brother;
+    }
+
+    template<typename T>
+    inline typename T& ChildBrotherTree<T>::Object()
+    {
+        return *_object;
+    }
+
+    template<typename T>
+    inline void ChildBrotherTree<T>::AddChild(ChildBrotherTree<T>& child)
+    {
+        child._parent = this;
+        if (this->_child)
         {
-            b = b->brother;
-        }
-        b->brother = brother;
-    }
-    else
-    {
-        this->brother = brother;
-    }
-}
-
-template<class T>
-ChildBrotherTree<T>* ChildBrotherTree<T>::Remove()
-{
-    ChildBrotherTree<T>* result = nullptr;
-    if (this->parent)
-    {
-        ChildBrotherTree<T>* pre = nullptr;
-        ChildBrotherTree<T>* o = this->parent;
-        for (ChildIterator start = o->GetChildIterator(); start.IsValid(); ++start)
-        {
-            if (start.Node() == this)
-            {
-                break;
-            }
-            pre = start.Node();
-        }
-        if (pre)
-        {
-            pre->brother = this->brother;
-            this->parent = nullptr;
-            this->brother = nullptr;
+            this->_child->AddBrother(child);
         }
         else
         {
-            this->parent->child = this->brother;
+            this->_child = &child;
         }
-        this->parent = nullptr;
-        this->brother = nullptr;
-        result = this;
-    }
-    else
-    {
-        this->parent = nullptr;
-        this->brother = nullptr;
-        result = this;
     }
 
-    return result;
+    template<typename T>
+    inline void ChildBrotherTree<T>::AddBrother(ChildBrotherTree<T>& brother)
+    {
+        brother._parent = this->_parent;
+        ChildBrotherTree<T>* b = this->_brother;
+        if (b)
+        {
+            while (b->_brother)
+            {
+                b = b->_brother;
+            }
+            b->_brother = &brother;
+        }
+        else
+        {
+            this->_brother = &brother;
+        }
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Remove()
+    {
+        ChildBrotherTree<T>* result = nullptr;
+        if (this->_parent)
+        {
+            ChildBrotherTree<T>* pre = nullptr;
+            ChildBrotherTree<T>* o = this->_parent;
+            for (Iterator start = o->GetChildIterator(); start.IsValid(); ++start)
+            {
+                if (start._node == this)
+                {
+                    break;
+                }
+                pre = start._node;
+            }
+            if (pre)
+            {
+                pre->_brother = this->_brother;
+                this->_parent = nullptr;
+                this->_brother = nullptr;
+            }
+            else
+            {
+                this->_parent->_child = this->_brother;
+            }
+            this->_parent = nullptr;
+            this->_brother = nullptr;
+            result = this;
+        }
+        else
+        {
+            this->_parent = nullptr;
+            this->_brother = nullptr;
+            result = this;
+        }
+
+        return *result;
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>::Iterator ChildBrotherTree<T>::GetChildIterator()
+    {
+        return ChildBrotherTree<T>::Iterator(this);
+    }
+
+    template<typename T>
+    inline typename ChildBrotherTree<T>::Iterator ChildBrotherTree<T>::GetBrotherIterator()
+    {
+        return ChildBrotherTree<T>::Iterator(this->_parent);
+    }
+    template<typename T>
+    inline ChildBrotherTree<T>::Iterator::Iterator(ChildBrotherTree<T>* node)
+        : _node(node ? node->_child : nullptr)
+    {
+
+    }
+    template<typename T>
+    inline ChildBrotherTree<T>::Iterator::Iterator()
+        : _node(nullptr)
+    {
+    }
+    template<typename T>
+    inline ChildBrotherTree<T>::Iterator::~Iterator()
+    {
+    }
+    template<typename T>
+    inline bool ChildBrotherTree<T>::Iterator::IsValid()
+    {
+        return _node;
+    }
+    template<typename T>
+    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Iterator::Node()
+    {
+        return *_node;
+    }
+    template<typename T>
+    inline typename ChildBrotherTree<T>::Iterator ChildBrotherTree<T>::Iterator::operator++()
+    {
+        _node = _node->_brother;
+        return *this;
+    }
 }

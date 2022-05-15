@@ -3,7 +3,8 @@
 #include <stdexcept>
 #include <spirv_cross/spirv_reflect.hpp>
 #include "Graphic/Instance/DescriptorSet.h"
-#include "utils/Log.h"
+#include "Utils/Log.h"
+using namespace Utils;
 
 Graphic::Manager::DescriptorSetManager::_DescriptorPool::_DescriptorPool(Asset::SlotType slotType, std::vector<VkDescriptorType>& types, uint32_t chunkSize)
 	: slotType(slotType)

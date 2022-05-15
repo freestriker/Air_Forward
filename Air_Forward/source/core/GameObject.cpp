@@ -34,9 +34,15 @@ GameObject::~GameObject()
 	components.clear();
 }
 
-GameObject::GameObject(std::string name):LifeTime(), name(name), components(), transform(), chain(), active(true)
+GameObject::GameObject(std::string name)
+	: LifeTime()
+	, name(name)
+	, components()
+	, transform()
+	, chain()
+	, active(true)
 {
-	chain.object = this;
+	chain.SetObject(this);
 }
 
 void GameObject::SetActive(bool active)
@@ -230,19 +236,19 @@ std::vector<Component*> GameObject::RemoveComponents(std::string typeName)
 
 GameObject* GameObject::Parent()
 {
-	return chain.parent ? chain.parent->object : nullptr;
+	return &chain.Parent().Object();
 }
 GameObject* GameObject::Child()
 {
-	return chain.child ? chain.child->object : nullptr;
+	return &chain.Child().Object();
 }
 GameObject* GameObject::Brother()
 {
-	return chain.brother ? chain.brother->object : nullptr;
+	return &chain.Brother().Object();
 }
 void GameObject::AddChild(GameObject* child)
 {
-	this->chain.AddChild(&child->chain);
+	this->chain.AddChild(child->chain);
 }
 
 void GameObject::RemoveChild(GameObject* child)
@@ -275,9 +281,9 @@ void GameObject::OnEnable()
 		}
 
 	}
-	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
+	for (Utils::ChildBrotherTree<GameObject>::Iterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
 	{
-		GameObject* go = iter.Node()->object;
+		GameObject* go = &iter.Node().Object();
 		if (go->active)
 		{
 			go->OnEnable();
@@ -297,9 +303,9 @@ void GameObject::OnDisable()
 		}
 
 	}
-	for (ChildBrotherTree<GameObject>::ChildIterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
+	for (Utils::ChildBrotherTree<GameObject>::Iterator iter = chain.GetChildIterator(); iter.IsValid(); ++iter)
 	{
-		GameObject* go = iter.Node()->object;
+		GameObject* go = &iter.Node().Object();
 		if (go->active)
 		{
 			go->OnDisable();

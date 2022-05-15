@@ -1,5 +1,5 @@
 #pragma once
-#include "utils/ThreadBase.h"
+#include "Utils/ThreadBase.h"
 #include <vector>
 #include <queue>
 #include <memory>
@@ -19,7 +19,7 @@ namespace Graphic
 		class CommandBuffer;
 	}
 }
-class LoadThread : public ThreadBase
+class LoadThread : public Utils::ThreadBase
 {
 	friend class SubLoadThread;
 private:

@@ -1,8 +1,8 @@
 #include "Graphic/Manager/MemoryManager.h"
 #include <Graphic/Core/Device.h>
-#include "utils/Log.h"
+#include "Utils/Log.h"
 #include "Graphic/Instance/Memory.h"
-
+using namespace Utils;
 Graphic::Manager::MemoryManager::MemoryChunkUsage::MemoryChunkUsage(VkDeviceSize start, VkDeviceSize size)
 	: offset(start)
 	, size(size)

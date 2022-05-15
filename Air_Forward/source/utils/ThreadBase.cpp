@@ -1,39 +1,35 @@
-#include "utils/ThreadBase.h"
+#include "Utils/ThreadBase.h"
 #include <iostream>
 
-void ThreadBase::OnStart()
+void Utils::ThreadBase::OnStart()
 {
 }
 
-void ThreadBase::OnThreadStart()
+void Utils::ThreadBase::OnThreadStart()
 {
 }
 
-//void Thread::OnRun()
-//{
-//}
-
-void ThreadBase::OnEnd()
+void Utils::ThreadBase::OnEnd()
 {
 }
 
-ThreadBase::ThreadBase()
+Utils::ThreadBase::ThreadBase()
 	: _thread()
 	, _finishOnThreadStart(false)
 {
 
 }
 
-ThreadBase::~ThreadBase()
+Utils::ThreadBase::~ThreadBase()
 {
 
 }
 
-void ThreadBase::Init()
+void Utils::ThreadBase::Init()
 {
 }
 
-void ThreadBase::Start()
+void Utils::ThreadBase::Start()
 {
 	_finishOnThreadStart = false;
 	OnStart();
@@ -41,7 +37,7 @@ void ThreadBase::Start()
 	_thread.swap(t);
 }
 
-void ThreadBase::End()
+void Utils::ThreadBase::End()
 {
 	OnEnd();
 	if (_thread.joinable())
@@ -50,7 +46,7 @@ void ThreadBase::End()
 	}
 }
 
-void ThreadBase::WaitForStartFinish()
+void Utils::ThreadBase::WaitForStartFinish()
 {
 	while (!_finishOnThreadStart)
 	{
@@ -58,7 +54,7 @@ void ThreadBase::WaitForStartFinish()
 	}
 }
 
-void ThreadBase::Run()
+void Utils::ThreadBase::Run()
 {
 	OnThreadStart();
 	_finishOnThreadStart = true;

@@ -1,7 +1,8 @@
 #include "Graphic/Command/CommandPool.h"
 #include "Graphic/Core/Device.h"
 #include "Graphic/Command/CommandBuffer.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 
 Graphic::Command::CommandPool::CommandPool(VkCommandPoolCreateFlags flag, std::string queueName)
     : _commandBuffers()

@@ -1,7 +1,8 @@
 #include "Graphic/Core/Window.h"
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Device.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include <algorithm>
 #include "Graphic/Instance/SwapchainImage.h"
 

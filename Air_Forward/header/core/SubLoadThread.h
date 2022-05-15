@@ -1,5 +1,5 @@
 #pragma once
-#include "utils/ThreadBase.h"
+#include "Utils/ThreadBase.h"
 #include "vulkan/vulkan_core.h"
 #include <memory>
 namespace Graphic
@@ -10,7 +10,7 @@ namespace Graphic
 		class CommandBuffer;
 	}
 }
-class SubLoadThread final : public ThreadBase
+class SubLoadThread final : public Utils::ThreadBase
 {
 	friend class LoadThread;
 public:

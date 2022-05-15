@@ -1,6 +1,6 @@
 #pragma once
 #include "core/object.h"
-#include "utils/ChildBrotherTree.h"
+#include "Utils/ChildBrotherTree.h"
 #include <vector>
 #include <Component/Transform/Transform.h>
 #include <rttr/type>
@@ -12,7 +12,7 @@ class GameObject final: public Object, private LifeTime
 
 private:
 	std::vector<Component*> components;
-	ChildBrotherTree<GameObject> chain;
+	Utils::ChildBrotherTree<GameObject> chain;
 	bool active;
 
 	GameObject(std::string name);

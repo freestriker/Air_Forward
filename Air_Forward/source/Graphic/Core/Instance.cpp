@@ -1,6 +1,7 @@
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Window.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include <GLFW/glfw3.h>
 #define GLFW_INCLUDE_VULKAN
 

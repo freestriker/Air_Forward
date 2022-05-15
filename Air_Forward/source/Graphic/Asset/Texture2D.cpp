@@ -3,7 +3,8 @@
 #include "FreeImage/FreeImage.h"
 #include "Graphic/Command/CommandBuffer.h"
 #include "Graphic/Instance/Buffer.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include "Graphic/Command/Semaphore.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
