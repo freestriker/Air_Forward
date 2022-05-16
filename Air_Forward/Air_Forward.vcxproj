@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\Core\Component\Transform\Transform.h" />
+    <ClInclude Include="header\Core\Manager\ObjectFactory.h" />
     <ClInclude Include="header\IO\Core\Instance.h" />
     <ClInclude Include="header\IO\Manager\AssetManager.h" />
     <ClInclude Include="header\IO\Asset\AssetBase.h" />
@@ -63,6 +64,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\Core\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\Core\Manager\ObjectFactory.cpp" />
     <ClCompile Include="source\IO\Core\Instance.cpp" />
     <ClCompile Include="source\IO\Manager\AssetManager.cpp" />
     <ClCompile Include="source\IO\Asset\AssetBase.cpp" />

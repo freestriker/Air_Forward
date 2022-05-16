@@ -22,8 +22,6 @@ Core::Component::Component::Component()
 
 Core::Component::Component::~Component()
 {
-	SetActive(false);
-	_gameObject = nullptr;
 }
 
 Core::Object::GameObject* Core::Component::Component::GameObject()
