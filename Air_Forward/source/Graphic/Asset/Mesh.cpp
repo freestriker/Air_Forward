@@ -1,5 +1,4 @@
 #include "Graphic/Asset/Mesh.h"
-#include <core/LoadThread.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>

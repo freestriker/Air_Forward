@@ -4,14 +4,21 @@
 #include <string>
 namespace Graphic
 {
+	namespace Command
+	{
+		class CommandPool;
+		class CommandBuffer;
+	}
 	namespace Core
 	{
 		class Window;
 		class Device;
+		class Thread;
 		class Instance
 		{
 			friend class Graphic::Core::Window;
 			friend class Graphic::Core::Device;
+			friend class Graphic::Core::Thread;
 		public:
 			class InstanceCreator
 			{
@@ -47,6 +54,11 @@ namespace Graphic
 			static void Create(InstanceCreator& creator);
 			static inline VkInstance VkInstance_();
 		private:
+			static Command::CommandPool* renderCommandPool;
+			static Command::CommandBuffer* renderCommandBuffer;
+			static Command::CommandPool* presentCommandPool;
+			static Command::CommandBuffer* presentCommandBuffer;
+
 			static VkInstance _vkInstance;
 			static void _AddWindowExtension(InstanceCreator& creator);
 #ifdef _USE_GRAPHIC_DEBUG

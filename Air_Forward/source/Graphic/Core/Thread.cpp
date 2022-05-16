@@ -28,10 +28,6 @@ Graphic::Core::Thread::RenderThread* Graphic::Core::Thread::_instance = new Grap
 Graphic::Core::Thread::RenderThread::RenderThread()
 	: ThreadBase()
 	, _stopped(true)
-	, renderCommandPool(nullptr)
-	, renderCommandBuffer(nullptr)
-	, presentCommandPool(nullptr)
-	, presentCommandBuffer(nullptr)
 	, _readyToRender(false)
 	, _mutex()
 	, _readyToRenderCondition()
@@ -83,10 +79,10 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 	}
 
 
-	this->renderCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
-	this->renderCommandBuffer = this->renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	this->presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
-	this->presentCommandBuffer = this->renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Core::Instance::renderCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
+	Core::Instance::renderCommandBuffer = Core::Instance::renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Core::Instance::presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
+	Core::Instance::presentCommandBuffer = Core::Instance::renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
@@ -184,11 +180,14 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
 
+	auto & renderCommandBuffer = Core::Instance::renderCommandBuffer;
+	auto & presentCommandBuffer = Core::Instance::presentCommandBuffer;
+
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
 		glfwPollEvents();
 
-		renderCommandBuffer->Reset();
+		Core::Instance::renderCommandBuffer->Reset();
 		renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 		//Render queue attachment to attachment layout
 		{

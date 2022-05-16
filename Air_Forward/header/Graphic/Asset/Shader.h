@@ -1,5 +1,5 @@
 #pragma once
-#include "core/AssetUtils.h"
+#include "IO/Asset/AssetBase.h"
 #include <future>
 #include <vulkan/vulkan_core.h>
 #include <vector>
@@ -23,9 +23,9 @@ namespace Graphic
 			TEXTURE2D,
 			TEXTURE2D_WITH_INFO
 		};
-		class Shader:public IAsset
+		class Shader:public IO::Asset::IAsset
 		{
-			friend class IAsset;
+			friend class IO::Asset::IAsset;
 		public:
 			struct SlotLayout
 			{
@@ -91,10 +91,10 @@ namespace Graphic
 				std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 
 			};
-			class _ShaderInstance :public IAssetInstance
+			class _ShaderInstance :public IO::Asset::IAssetInstance
 			{
 				friend class Shader;
-				friend class IAsset;
+				friend class IO::Asset::IAsset;
 				_ShaderInstance(std::string path);
 				virtual ~_ShaderInstance();
 

@@ -4,7 +4,7 @@
 #include "Core/Instance.h"
 #include "Utils/Log.h"
 
-Core::Thread::LogicThread* Core::Thread::_instance = nullptr;
+Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
 Core::Thread::LogicThread::LogicThread()
 	:_stopped(true)
@@ -70,20 +70,19 @@ Core::Thread::~Thread()
 
 void Core::Thread::Init()
 {
-	_instance = new Core::Thread::LogicThread();
-	_instance->Init();
+	_logicThread.Init();
 }
 
 void Core::Thread::Start()
 {
-	_instance->Start();
+	_logicThread.Start();
 }
 
 void Core::Thread::End()
 {
-	_instance->End();
+	_logicThread.End();
 }
 void Core::Thread::WaitForStartFinish()
 {
-	_instance->WaitForStartFinish();
+	_logicThread.WaitForStartFinish();
 }

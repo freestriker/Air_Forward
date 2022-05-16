@@ -1,5 +1,4 @@
 #include "Graphic/Asset/Texture2D.h"
-#include "core/LoadThread.h"
 #include "FreeImage/FreeImage.h"
 #include "Graphic/Command/CommandBuffer.h"
 #include "Graphic/Instance/Buffer.h"
@@ -10,6 +9,7 @@ using namespace Utils;
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/ImageSampler.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
+
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
 	, _extent()

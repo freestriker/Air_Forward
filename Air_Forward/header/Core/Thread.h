@@ -21,7 +21,7 @@ namespace Core
 			void OnEnd() override;
 		};
 	private:
-		static LogicThread* _instance;
+		static LogicThread _logicThread;
 		Thread();
 		~Thread();
 	public:

@@ -5,7 +5,7 @@
 #include <string>
 #include <glm/vec4.hpp>
 #include <future>
-#include "core/AssetUtils.h"
+#include "IO/Asset/AssetBase.h"
 namespace Graphic
 {
 	namespace Command
@@ -21,9 +21,9 @@ namespace Graphic
 	}
 	namespace Asset
 	{
-		class Texture2D : IAsset
+		class Texture2D : IO::Asset::IAsset
 		{
-			friend class IAsset;
+			friend class IO::Asset::IAsset;
 		public:
 			struct TextureInfo
 			{
@@ -67,10 +67,10 @@ namespace Graphic
 				}
 			};
 		private:
-			class Texture2DInstance : public IAssetInstance
+			class Texture2DInstance : public IO::Asset::IAssetInstance
 			{
 				friend class Texture2D;
-				friend class IAsset;
+				friend class IO::Asset::IAsset;
 				Texture2DInstance(std::string path);
 				virtual ~Texture2DInstance();
 				VkExtent2D _extent;

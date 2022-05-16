@@ -4,11 +4,6 @@
 #include <condition_variable>
 namespace Graphic
 {
-	namespace Command
-	{
-		class CommandPool;
-		class CommandBuffer;
-	}
 	namespace Core
 	{
 		class Thread final
@@ -18,10 +13,6 @@ namespace Graphic
 			{
 			public:
 				bool _stopped;
-				Command::CommandPool* renderCommandPool;
-				Command::CommandBuffer* renderCommandBuffer;
-				Command::CommandPool* presentCommandPool;
-				Command::CommandBuffer* presentCommandBuffer;
 
 				std::mutex _mutex;
 				std::condition_variable _readyToRenderCondition;
