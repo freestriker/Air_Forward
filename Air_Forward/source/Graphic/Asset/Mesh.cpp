@@ -1,11 +1,12 @@
 #include "Graphic/Asset/Mesh.h"
-#include <core/LoadThread.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Graphic/Command/CommandBuffer.h"
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Command/Semaphore.h"
+#include <Utils/Log.h>
+using namespace Utils;
 
 Graphic::Asset::Mesh::MeshInstance::MeshInstance(std::string path)
 	: IAssetInstance(path)

@@ -2,7 +2,8 @@
 #include "Graphic/Core/Device.h"
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Window.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include "Graphic/Manager/MemoryManager.h"
 #include "Graphic/Manager/RenderPassManager.h"
 #include "Graphic/Manager/DescriptorSetManager.h"

@@ -1,5 +1,6 @@
 #include "Graphic/Command/Fence.h"
-#include <utils/Log.h>
+#include <Utils/Log.h>
+using namespace Utils;
 #include <Graphic/Core/Device.h>
 
 Graphic::Command::Fence::Fence(VkFenceCreateFlags flag)

@@ -7,6 +7,7 @@
 #include "Graphic/Instance/DescriptorSet.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/ImageSampler.h"
+#include "Utils/Log.h"
 
 Graphic::Material::Material(Asset::Shader* shader)
 	: _shader(shader)
@@ -32,7 +33,7 @@ const Graphic::Asset::Texture2D* Graphic::Material::GetTexture2D(const char* nam
 	}
 	else
 	{
-		throw std::runtime_error("Failed to get texture2d.");
+		Utils::Log::Exception("Failed to get texture2d.");
 	}
 }
 
@@ -59,7 +60,7 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 	}
 	else
 	{
-		throw std::runtime_error("Failed to set texture2d.");
+		Utils::Log::Exception("Failed to set texture2d.");
 	}
 }
 
@@ -71,7 +72,7 @@ const Graphic::Instance::Buffer* Graphic::Material::GetUniformBuffer(const char*
 	}
 	else
 	{
-		throw std::runtime_error("Failed to get uniform buffer.");
+		Utils::Log::Exception("Failed to get uniform buffer.");
 	}
 }
 
@@ -89,7 +90,7 @@ void Graphic::Material::SetUniformBuffer(const char* name, Graphic::Instance::Bu
 	}
 	else
 	{
-		throw std::runtime_error("Failed to set uniform buffer.");
+		Utils::Log::Exception("Failed to set uniform buffer.");
 	}
 }
 

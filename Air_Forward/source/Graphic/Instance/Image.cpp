@@ -1,6 +1,7 @@
 #include "Graphic/Instance/Image.h"
 #include <Graphic/Core/Device.h>
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Manager/MemoryManager.h"
 

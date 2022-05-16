@@ -2,7 +2,8 @@
 #include "Graphic/Core/Device.h"
 #include "Graphic/Manager/MemoryManager.h"
 #include <iostream>
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include "Graphic/Instance/Memory.h"
 
 Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)

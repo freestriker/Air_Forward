@@ -19,15 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="header\Component\Transform\Transform.h" />
-    <ClInclude Include="header\core\AssetUtils.h" />
-    <ClInclude Include="header\core\Component.h" />
-    <ClInclude Include="header\core\GameObject.h" />
-    <ClInclude Include="header\core\Global.h" />
-    <ClInclude Include="header\core\LifeTime.h" />
-    <ClInclude Include="header\core\LoadThread.h" />
-    <ClInclude Include="header\core\Object.h" />
-    <ClInclude Include="header\core\ObjectFactory.h" />
+    <ClInclude Include="header\Core\Component\Transform\Transform.h" />
+    <ClInclude Include="header\IO\Core\Instance.h" />
+    <ClInclude Include="header\IO\Manager\AssetManager.h" />
+    <ClInclude Include="header\IO\Asset\AssetBase.h" />
+    <ClInclude Include="header\Core\Component\Component.h" />
+    <ClInclude Include="header\Core\Instance.h" />
+    <ClInclude Include="header\Core\Object\GameObject.h" />
+    <ClInclude Include="header\Core\Object\LifeCycle.h" />
+    <ClInclude Include="header\IO\Core\Thread.h" />
+    <ClInclude Include="header\Core\Object\Object.h" />
+    <ClInclude Include="header\Core\Thread.h" />
     <ClInclude Include="header\Graphic\Asset\Mesh.h" />
     <ClInclude Include="header\Graphic\Asset\Shader.h" />
     <ClInclude Include="header\Graphic\Asset\Texture2D.h" />
@@ -50,27 +52,27 @@
     <ClInclude Include="header\Graphic\Instance\SwapchainImage.h" />
     <ClInclude Include="header\Graphic\Manager\DescriptorSetManager.h" />
     <ClInclude Include="header\Graphic\Manager\FrameBufferManager.h" />
-    <ClInclude Include="header\core\SubLoadThread.h" />
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
-    <ClInclude Include="header\utils\ChildBrotherTree.h" />
-    <ClInclude Include="header\utils\Log.h" />
+    <ClInclude Include="header\Utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\Utils\Log.h" />
     <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
-    <ClInclude Include="header\utils\ThreadBase.h" />
-    <ClInclude Include="header\utils\ThreadPool.h" />
+    <ClInclude Include="header\Utils\ThreadBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="source\Component\Transform\Transform.cpp" />
-    <ClCompile Include="source\core\AssetUtils.cpp" />
-    <ClCompile Include="source\core\Component.cpp" />
-    <ClCompile Include="source\core\GameObject.cpp" />
-    <ClCompile Include="source\core\Global.cpp" />
-    <ClCompile Include="source\core\LifeTime.cpp" />
-    <ClCompile Include="source\core\LoadThread.cpp" />
-    <ClCompile Include="source\core\Objecct.cpp" />
-    <ClCompile Include="source\core\ObjectFactory.cpp" />
+    <ClCompile Include="source\Core\Component\Transform\Transform.cpp" />
+    <ClCompile Include="source\IO\Core\Instance.cpp" />
+    <ClCompile Include="source\IO\Manager\AssetManager.cpp" />
+    <ClCompile Include="source\IO\Asset\AssetBase.cpp" />
+    <ClCompile Include="source\Core\Component\Component.cpp" />
+    <ClCompile Include="source\Core\Instance.cpp" />
+    <ClCompile Include="source\Core\Object\GameObject.cpp" />
+    <ClCompile Include="source\Core\Object\LifeCycle.cpp" />
+    <ClCompile Include="source\IO\Core\Thread.cpp" />
+    <ClCompile Include="source\Core\Object\Objecct.cpp" />
+    <ClCompile Include="source\Core\Thread.cpp" />
     <ClCompile Include="source\Graphic\Asset\Mesh.cpp" />
     <ClCompile Include="source\Graphic\Asset\Shader.cpp" />
     <ClCompile Include="source\Graphic\Asset\Texture2D.cpp" />
@@ -93,15 +95,13 @@
     <ClCompile Include="source\Graphic\Instance\SwapchainImage.cpp" />
     <ClCompile Include="source\Graphic\Manager\DescriptorSetManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\FrameBufferManager.cpp" />
-    <ClCompile Include="source\core\SubLoadThread.cpp" />
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
-    <ClCompile Include="source\utils\ChildBrotherTree.cpp" />
-    <ClCompile Include="source\utils\Log.cpp" />
+    <ClCompile Include="source\Utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\Utils\Log.cpp" />
     <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
-    <ClCompile Include="source\utils\ThreadBase.cpp" />
-    <ClCompile Include="source\utils\ThreadPool.cpp" />
+    <ClCompile Include="source\Utils\ThreadBase.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

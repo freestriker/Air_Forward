@@ -1,7 +1,7 @@
 #include "utils/Log.h"
 #include <iostream>
 
-void Log::Message(std::string info, VkResult logCondition)
+void Utils::Log::Message(std::string info, VkResult logCondition)
 {
 	if (logCondition != VkResult::VK_SUCCESS)
 	{
@@ -11,7 +11,7 @@ void Log::Message(std::string info, VkResult logCondition)
 	}
 }
 
-void Log::Message(std::string info, bool logCondition)
+void Utils::Log::Message(std::string info, bool logCondition)
 {
 	if (logCondition)
 	{
@@ -20,12 +20,12 @@ void Log::Message(std::string info, bool logCondition)
 	}
 }
 
-void Log::Message(std::string info)
+void Utils::Log::Message(std::string info)
 {
 	std::cerr << "Message: " + info << std::endl;
 }
 
-void Log::Exception(std::string info, VkResult logCondition)
+void Utils::Log::Exception(std::string info, VkResult logCondition)
 {
 	if (logCondition != VkResult::VK_SUCCESS)
 	{
@@ -35,7 +35,7 @@ void Log::Exception(std::string info, VkResult logCondition)
 	}
 }
 
-void Log::Exception(std::string info, bool logCondition)
+void Utils::Log::Exception(std::string info, bool logCondition)
 {
 	if (logCondition)
 	{
@@ -44,7 +44,7 @@ void Log::Exception(std::string info, bool logCondition)
 	}
 }
 
-void Log::Exception(std::string info)
+void Utils::Log::Exception(std::string info)
 {
 	std::cerr << "Exception: " + info << std::endl;
 	getchar();

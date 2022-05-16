@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "core/AssetUtils.h"
+#include "IO/Asset/AssetBase.h"
 #include <future>
 #include <vulkan/vulkan_core.h>
 #include <vector>
@@ -27,13 +27,13 @@ namespace Graphic
 		};
 
 
-		class Mesh : IAsset
+		class Mesh : IO::Asset::IAsset
 		{
-			friend class IAsset;
+			friend class IO::Asset::IAsset;
 		private:
-			class MeshInstance : public IAssetInstance
+			class MeshInstance : public IO::Asset::IAssetInstance
 			{
-				friend class IAssetInstance;
+				friend class IO::Asset::IAssetInstance;
 				friend class Mesh;
 
 			private:

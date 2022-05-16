@@ -1,11 +1,16 @@
 #include "Graphic/Core/Instance.h"
 #include "Graphic/Core/Window.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include <GLFW/glfw3.h>
 #define GLFW_INCLUDE_VULKAN
 
 VkInstance Graphic::Core::Instance::_vkInstance = VK_NULL_HANDLE;
 VkDebugUtilsMessengerEXT Graphic::Core::Instance::_debugMessenger = VK_NULL_HANDLE;
+Graphic::Command::CommandPool* Graphic::Core::Instance::renderCommandPool = nullptr;
+Graphic::Command::CommandBuffer* Graphic::Core::Instance::renderCommandBuffer = nullptr;
+Graphic::Command::CommandPool* Graphic::Core::Instance::presentCommandPool = nullptr;
+Graphic::Command::CommandBuffer* Graphic::Core::Instance::presentCommandBuffer = nullptr;
 
 Graphic::Core::Instance::InstanceCreator::InstanceCreator()
 	: applicationName("Vulkan Application")

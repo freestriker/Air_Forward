@@ -4,8 +4,9 @@
 #include "Graphic/Instance/RenderPass.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
-#include "utils/Log.h"
+#include "Utils/Log.h"
 #include "Graphic/Instance/FrameBuffer.h"
+using namespace Utils;
 
 void Graphic::Manager::FrameBufferManager::AddColorAttachment(std::string name, VkExtent2D extent, VkFormat format, VkImageUsageFlagBits extraUsage, VkMemoryPropertyFlagBits properties)
 {

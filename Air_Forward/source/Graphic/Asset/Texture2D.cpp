@@ -1,14 +1,15 @@
 #include "Graphic/Asset/Texture2D.h"
-#include "core/LoadThread.h"
 #include "FreeImage/FreeImage.h"
 #include "Graphic/Command/CommandBuffer.h"
 #include "Graphic/Instance/Buffer.h"
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 #include "Graphic/Command/Semaphore.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/ImageSampler.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
+
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
 	, _extent()

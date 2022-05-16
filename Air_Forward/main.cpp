@@ -4,60 +4,32 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FreeImage/FreeImage.h>
-#include "core/Object.h"
-#include <core/GameObject.h>
-#include <core/ObjectFactory.h>
-#include <core/Global.h>
-#include "core/LoadThread.h"
+#include "Core/Object/GameObject.h"
+#include "Core/Object/Object.h"
+#include "IO/Core/Thread.h"
 #include "Graphic/Core/Thread.h"
+#include "Core/Component/Transform/Transform.h"
 #include "utils/Log.h"
-static void f() { std::cout << "Hello World" << std::endl; }
-using namespace rttr;
-RTTR_REGISTRATION
-{
-    using namespace rttr;
-    registration::method("f", &f);
-}
+#include "Core/Thread.h"
 int main()
 {
-
-    //type::invoke("f", {});
-
-	GameObject* go0 = ObjectFactory::InstantiateGameObject();
-	go0->name = "go0";
-	global.rootGameObject->AddChild(go0);
-
-	GameObject* go1 = ObjectFactory::InstantiateGameObject();
-	go1->name = "go1";
-	global.rootGameObject->AddChild(go1);
-
-	GameObject* go2 = ObjectFactory::InstantiateGameObject();
-	go2->name = "go2";
-	global.rootGameObject->AddChild(go2);
-
-	GameObject* go00 = ObjectFactory::InstantiateGameObject();
-	go00->name = "go00";
-	go0->AddChild(go00);
-
-	GameObject* go01 = ObjectFactory::InstantiateGameObject();
-	go01->name = "go01";
-	go0->AddChild(go01);
-
-	Transform* testTransform = ObjectFactory::InstantiateComponent<Transform>("Transform", {});
-	go0->AddComponent(testTransform);
-
 	Graphic::Core::Thread::Init();
-	LoadThread::instance->Init();
-
 	Graphic::Core::Thread::Start();
 	Graphic::Core::Thread::WaitForStartFinish();
 
-	LoadThread::instance->Start();
+	IO::Core::Thread::Init();
+	IO::Core::Thread::Start();
+	IO::Core::Thread::WaitForStartFinish();
+
+	Core::Thread::Init();
+	Core::Thread::Start();
+	Core::Thread::WaitForStartFinish();
 
 	Graphic::Core::Thread::StartRender();
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 
-	LoadThread::instance->End();
+	Core::Thread::End();
+	IO::Core::Thread::End();
 	Graphic::Core::Thread::End();
 }

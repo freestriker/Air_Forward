@@ -1,6 +1,7 @@
 #include "Graphic/Instance/RenderPass.h"
 #include <Graphic/Core/Device.h>
-#include "utils/Log.h"
+#include <Utils/Log.h>
+using namespace Utils;
 
 Graphic::Instance::RenderPass::RenderPass(std::string& name, VkRenderPass vkRenderPass, std::map<std::string, uint32_t>& subPassMap, std::map<std::string, std::map<std::string, uint32_t>>& colorAttachmentMap)
 	: name(name)
