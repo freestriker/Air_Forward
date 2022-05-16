@@ -23,7 +23,7 @@
 #include "Graphic/Command/Fence.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
 
-Graphic::Core::Thread::RenderThread* Graphic::Core::Thread::_instance = new Graphic::Core::Thread::RenderThread();
+Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
 Graphic::Core::Thread::RenderThread::RenderThread()
 	: ThreadBase()
@@ -331,24 +331,24 @@ Graphic::Core::Thread::~Thread()
 
 void Graphic::Core::Thread::Init()
 {
-	_instance->Init();
+	_renderThread.Init();
 }
 
 void Graphic::Core::Thread::Start()
 {
-	_instance->Start();
+	_renderThread.Start();
 }
 
 void Graphic::Core::Thread::StartRender()
 {
-	_instance->StartRender();
+	_renderThread.StartRender();
 }
 
 void Graphic::Core::Thread::End()
 {
-	_instance->End();
+	_renderThread.End();
 }
 void Graphic::Core::Thread::WaitForStartFinish()
 {
-	_instance->WaitForStartFinish();
+	_renderThread.WaitForStartFinish();
 }

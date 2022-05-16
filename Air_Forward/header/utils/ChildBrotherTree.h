@@ -15,7 +15,7 @@ namespace Utils
             Iterator();
             ~Iterator();
             inline bool IsValid();
-            inline typename ChildBrotherTree<T>& Node();
+            inline typename ChildBrotherTree<T>* Node();
             inline typename Iterator operator++();
         };
     private:
@@ -35,14 +35,14 @@ namespace Utils
         inline bool IsParentValid();
         inline bool IsChildValid();
         inline bool IsBrotherValid();
-        inline ChildBrotherTree<T>& Parent();
-        inline ChildBrotherTree<T>& Child();
-        inline ChildBrotherTree<T>& Brother();
-        inline T& Object();
+        inline ChildBrotherTree<T>* Parent();
+        inline ChildBrotherTree<T>* Child();
+        inline ChildBrotherTree<T>* Brother();
+        inline T* Object();
 
         inline void AddChild(ChildBrotherTree<T>& child);
         inline void AddBrother(ChildBrotherTree<T>& brother);
-        inline ChildBrotherTree<T>& Remove();
+        inline ChildBrotherTree<T>* Remove();
         inline ChildBrotherTree<T>::Iterator GetChildIterator();
         inline ChildBrotherTree<T>::Iterator GetBrotherIterator();
     };
@@ -113,27 +113,27 @@ namespace Utils
     }
 
     template<typename T>
-    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Parent()
+    inline typename ChildBrotherTree<T>* ChildBrotherTree<T>::Parent()
     {
-        return *_parent;
+        return _parent;
     }
 
     template<typename T>
-    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Child()
+    inline typename ChildBrotherTree<T>* ChildBrotherTree<T>::Child()
     {
-        return *_child;
+        return _child;
     }
 
     template<typename T>
-    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Brother()
+    inline typename ChildBrotherTree<T>* ChildBrotherTree<T>::Brother()
     {
-        return *_brother;
+        return _brother;
     }
 
     template<typename T>
-    inline typename T& ChildBrotherTree<T>::Object()
+    inline typename T* ChildBrotherTree<T>::Object()
     {
-        return *_object;
+        return _object;
     }
 
     template<typename T>
@@ -170,7 +170,7 @@ namespace Utils
     }
 
     template<typename T>
-    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Remove()
+    inline typename ChildBrotherTree<T>* ChildBrotherTree<T>::Remove()
     {
         ChildBrotherTree<T>* result = nullptr;
         if (this->_parent)
@@ -206,7 +206,7 @@ namespace Utils
             result = this;
         }
 
-        return *result;
+        return result;
     }
 
     template<typename T>
@@ -241,7 +241,7 @@ namespace Utils
         return _node;
     }
     template<typename T>
-    inline typename ChildBrotherTree<T>& ChildBrotherTree<T>::Iterator::Node()
+    inline typename ChildBrotherTree<T>* ChildBrotherTree<T>::Iterator::Node()
     {
         return *_node;
     }

@@ -1,8 +1,13 @@
 #pragma once
 #include "Core/Object/Object.h"
 #include "Core/Object/LifeCycle.h"
+#include "Utils/ActivableBase.h"
 namespace Core
 {
+	namespace Manager
+	{
+		class ObjectFactory;
+	}
 	namespace Object
 	{
 		class GameObject;
@@ -11,19 +16,24 @@ namespace Core
 	{
 		class Component 
 			: public Core::Object::Object
+			, public Utils::ActivableBase
 			, public Core::Object::LifeCycle
 		{
 			friend class Core::Object::GameObject;
-			//friend class ObjectFactory;
+			friend class Manager::ObjectFactory;
+		private:
+			Component(const Component&) = delete;
+			Component& operator=(const Component&) = delete;
+			Component(Component&&) = delete;
+			Component& operator=(Component&&) = delete;
 		protected:
 			Core::Object::GameObject* _gameObject;
 			Component();
 			virtual ~Component();
-			bool OnCheckValid()override;
 		public:
 			Core::Object::GameObject* GameObject();
 
-			RTTR_ENABLE(Core::Object::Object, Core::Object::LifeCycle)
+			RTTR_ENABLE(Core::Object::Object, Utils::ActivableBase)
 		};
 	}
 }

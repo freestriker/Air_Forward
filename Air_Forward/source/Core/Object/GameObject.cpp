@@ -24,18 +24,14 @@ RTTR_REGISTRATION
 }
 
 Core::Object::GameObject::GameObject(std::string name)
-	: LifeCycle()
+	: Utils::ActivableBase()
 	, Object()
 	, name(name)
 	, _components()
 	, transform()
 	, _chain()
 {
-	_active = true;
-
 	_chain.SetObject(this);
-
-	OnAwake();
 }
 
 Core::Object::GameObject::GameObject()
@@ -52,28 +48,18 @@ void Core::Object::GameObject::AddComponent(Core::Component::Component* targetCo
 {
 	_components.push_back(targetComponent);
 	targetComponent->_gameObject = this;
-
-	if (_active && targetComponent->_active)
-	{
-		targetComponent->OnEnable();
-		targetComponent->OnStart();
-	}
 }
 
 void Core::Object::GameObject::RemoveComponent(Core::Component::Component* targetComponent)
 {
-	for (auto iter = _components.begin(), end = _components.end(); iter < end; iter++)
+	for (auto iter = _components.begin(), end = _components.end(); iter != end; iter++)
 	{
 		Core::Component::Component* iterComponent = *iter;
 		if (iterComponent == targetComponent)
 		{
-			if (_active && targetComponent->_active)
-			{
-				targetComponent->OnDisable();
-			}
-
 			targetComponent->_gameObject = nullptr;
 			_components.erase(iter);
+
 			return;
 		}
 	}
@@ -99,11 +85,6 @@ Core::Component::Component* Core::Object::GameObject::RemoveComponent(std::strin
 			type iterType = type::get(*iterComponent);
 			if (iterType == targetType || targetType.is_base_of(iterType))
 			{
-				if (_active && iterComponent->_active)
-				{
-					iterComponent->OnDisable();
-				}
-
 				iterComponent->_gameObject = nullptr;
 				_components.erase(iter);
 
@@ -136,11 +117,6 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveCompone
 			type iterType = type::get(*iterComponent);
 			if (iterType == targetType || targetType.is_base_of(iterType))
 			{
-				if (_active && iterComponent->_active)
-				{
-					iterComponent->OnDisable();
-				}
-
 				iterComponent->_gameObject = nullptr;
 				iter = _components.erase(iter);
 
@@ -218,17 +194,29 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents
 }
 
 
+bool Core::Object::GameObject::HaveParent()
+{
+	return _chain.IsParentValid();
+}
+bool Core::Object::GameObject::HaveChild()
+{
+	return _chain.IsChildValid();
+}
+bool Core::Object::GameObject::HaveBrother()
+{
+	return _chain.IsBrotherValid();
+}
 Core::Object::GameObject* Core::Object::GameObject::Parent()
 {
-	return &_chain.Parent().Object();
+	return _chain.IsParentValid() ? _chain.Parent()->Object() : nullptr;
 }
 Core::Object::GameObject* Core::Object::GameObject::Child()
 {
-	return &_chain.Child().Object();
+	return  _chain.IsChildValid() ? _chain.Child()->Object() : nullptr;
 }
 Core::Object::GameObject* Core::Object::GameObject::Brother()
 {
-	return &_chain.Brother().Object();
+	return  _chain.IsBrotherValid() ? _chain.Brother()->Object() : nullptr;
 }
 void Core::Object::GameObject::AddChild(Core::Object::GameObject* child)
 {
@@ -246,56 +234,4 @@ void Core::Object::GameObject::RemoveChild(Core::Object::GameObject* child)
 void Core::Object::GameObject::RemoveSelf()
 {
 	_chain.Remove();
-}
-
-
-bool Core::Object::GameObject::OnCheckValid()
-{
-	return Parent();
-}
-
-void Core::Object::GameObject::OnAwake()
-{
-}
-
-void Core::Object::GameObject::OnEnable()
-{
-	for (const auto& component : _components)
-	{
-		if (component->_active)
-		{
-			component->OnEnable();
-		}
-	}
-	for (Utils::ChildBrotherTree<Core::Object::GameObject>::Iterator iter = _chain.GetChildIterator(); iter.IsValid(); ++iter)
-	{
-		GameObject* go = &iter.Node().Object();
-		if (go->_active)
-		{
-			go->OnEnable();
-		}
-	}
-}
-
-void Core::Object::GameObject::OnDisable()
-{
-	for (const auto& component : _components)
-	{
-		if (component->_active)
-		{
-			component->OnDisable();
-		}
-	}
-	for (Utils::ChildBrotherTree<Core::Object::GameObject>::Iterator iter = _chain.GetChildIterator(); iter.IsValid(); ++iter)
-	{
-		GameObject* go = &iter.Node().Object();
-		if (go->_active)
-		{
-			go->OnDisable();
-		}
-	}
-}
-
-void Core::Object::GameObject::OnDestory()
-{
 }

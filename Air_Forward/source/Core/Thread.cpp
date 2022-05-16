@@ -3,6 +3,7 @@
 #include <Core/Component/Component.h>
 #include "Core/Instance.h"
 #include "Utils/Log.h"
+#include "Core/Manager/ObjectFactory.h"
 
 Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
@@ -45,10 +46,28 @@ void Core::Thread::LogicThread::OnRun()
 	Core::Object::GameObject* go01 = new Core::Object::GameObject("go01");
 	go0->AddChild(go01);
 
-	Core::Component::Transform::Transform* testTransform = new Core::Component::Transform::Transform();
-	go0->AddComponent(testTransform);
+	{
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->RemoveComponents("Core::Component::Transform::Transform");
+	}
+	{
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Core::Component::Transform::Transform"))
+		{
+			Core::Manager::ObjectFactory::Destroy(foundTransform);
+		}
+	}
+	{
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go00->AddComponent(new Core::Component::Transform::Transform());
+		go01->AddComponent(new Core::Component::Transform::Transform());
+		Core::Manager::ObjectFactory::Destroy(go0);
+	}
 
-	auto foundTransforms = Core::Instance::rootObject.Child()->GetComponents("Core::Component::Transform::Transform");
 
 	while (!_stopped)
 	{

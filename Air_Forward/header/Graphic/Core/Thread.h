@@ -27,7 +27,7 @@ namespace Graphic
 				void OnEnd() override;
 			};
 		private:
-			static RenderThread* _instance;
+			static RenderThread _renderThread;
 			Thread();
 			~Thread();
 		public:

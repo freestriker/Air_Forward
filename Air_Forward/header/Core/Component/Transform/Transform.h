@@ -14,7 +14,6 @@ namespace Core
 				: public Core::Component::Component
 			{
 			private:
-				bool OnCheckValid()override;
 				bool Active();
 				void SetActive();
 			public:
