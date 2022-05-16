@@ -2,13 +2,18 @@
 #include "Core/Object/Object.h"
 #include "Utils/ChildBrotherTree.h"
 #include <vector>
+#include <list>
 #include "Core/Component/Component.h"
 #include <rttr/type>
-#include "Core/Object/LifeCycle.h"
 #include "Core/Component/Transform/Transform.h"
+#include "Utils/ActivableBase.h"
 
 namespace Core
 {
+	namespace Manager
+	{
+		class ObjectFactory;
+	}
 	namespace Component
 	{
 		class Component;
@@ -21,17 +26,12 @@ namespace Core
 	{
 		class GameObject final 
 			: public Object
-			, public LifeCycle
+			, public Utils::ActivableBase
 		{
+			friend class Manager::ObjectFactory;
 		private:
-			std::vector<Core::Component::Component*> _components;
+			std::list<Core::Component::Component*> _components;
 			Utils::ChildBrotherTree<GameObject> _chain;
-
-			bool OnCheckValid()override;
-			void OnAwake()override;
-			void OnEnable()override;
-			void OnDisable()override;
-			void OnDestory()override;
 
 		public:
 			std::string name;
@@ -56,7 +56,7 @@ namespace Core
 			void RemoveChild(GameObject* child);
 			void RemoveSelf();
 
-			RTTR_ENABLE(Core::Object::Object, Core::Object::LifeCycle)
+			RTTR_ENABLE(Core::Object::Object, Utils::ActivableBase)
 		};
 	}
 }

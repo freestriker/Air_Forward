@@ -8,14 +8,10 @@ RTTR_REGISTRATION
 		.method("GameObject", &Core::Component::Component::GameObject);
 }
 
-bool Core::Component::Component::OnCheckValid()
-{
-	return _gameObject && _gameObject->Active();
-}
-
 Core::Component::Component::Component()
 	: LifeCycle()
 	, Object()
+	, ActivableBase()
 	, _gameObject(nullptr)
 {
 }

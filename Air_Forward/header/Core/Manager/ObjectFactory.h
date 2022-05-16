@@ -19,6 +19,7 @@ namespace Core
 			~ObjectFactory();
 		public:
 			static void Destroy(Component::Component* component);
+			static void Destroy(Object::GameObject* gameObject);
 		};
 	}
 }

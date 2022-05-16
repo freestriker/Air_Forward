@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Object/Object.h"
 #include "Core/Object/LifeCycle.h"
+#include "Utils/ActivableBase.h"
 namespace Core
 {
 	namespace Manager
@@ -15,6 +16,7 @@ namespace Core
 	{
 		class Component 
 			: public Core::Object::Object
+			, public Utils::ActivableBase
 			, public Core::Object::LifeCycle
 		{
 			friend class Core::Object::GameObject;
@@ -23,11 +25,10 @@ namespace Core
 			Core::Object::GameObject* _gameObject;
 			Component();
 			virtual ~Component();
-			bool OnCheckValid()override;
 		public:
 			Core::Object::GameObject* GameObject();
 
-			RTTR_ENABLE(Core::Object::Object, Core::Object::LifeCycle)
+			RTTR_ENABLE(Core::Object::Object, Utils::ActivableBase)
 		};
 	}
 }

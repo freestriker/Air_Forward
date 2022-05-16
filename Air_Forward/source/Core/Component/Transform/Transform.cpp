@@ -28,16 +28,11 @@ Core::Component::Transform::Transform::Transform()
     , _rotation(glm::quat(1, 0, 0, 0))
     , _scale(glm::vec3(1, 1, 1))
 {
-    _active = true;
+
 }
 
 Core::Component::Transform::Transform::~Transform()
 {
-}
-
-bool Core::Component::Transform::Transform::OnCheckValid()
-{
-    return false;
 }
 
 bool Core::Component::Transform::Transform::Active()
