@@ -21,6 +21,11 @@ namespace Core
 		{
 			friend class Core::Object::GameObject;
 			friend class Manager::ObjectFactory;
+		private:
+			Component(const Component&) = delete;
+			Component& operator=(const Component&) = delete;
+			Component(Component&&) = delete;
+			Component& operator=(Component&&) = delete;
 		protected:
 			Core::Object::GameObject* _gameObject;
 			Component();

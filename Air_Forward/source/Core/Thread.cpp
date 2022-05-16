@@ -61,6 +61,12 @@ void Core::Thread::LogicThread::OnRun()
 			Core::Manager::ObjectFactory::Destroy(foundTransform);
 		}
 	}
+	{
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go00->AddComponent(new Core::Component::Transform::Transform());
+		go01->AddComponent(new Core::Component::Transform::Transform());
+		Core::Manager::ObjectFactory::Destroy(go0);
+	}
 
 
 	while (!_stopped)

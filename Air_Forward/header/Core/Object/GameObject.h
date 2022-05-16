@@ -33,6 +33,11 @@ namespace Core
 			std::list<Core::Component::Component*> _components;
 			Utils::ChildBrotherTree<GameObject> _chain;
 
+			GameObject(const GameObject&) = delete;
+			GameObject& operator=(const GameObject&) = delete;
+			GameObject(GameObject&&) = delete;
+			GameObject& operator=(GameObject&&) = delete;
+
 		public:
 			std::string name;
 			Core::Component::Transform::Transform transform;
@@ -43,6 +48,9 @@ namespace Core
 
 			Core::Component::Component* GetComponent(std::string typeName);
 			std::vector<Core::Component::Component*> GetComponents(std::string typeName);
+			bool HaveParent();
+			bool HaveChild();
+			bool HaveBrother();
 			void AddComponent(Core::Component::Component* component);
 			void RemoveComponent(Core::Component::Component* component);
 			Core::Component::Component* RemoveComponent(std::string typeName);

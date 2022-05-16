@@ -28,7 +28,7 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 	while (child)
 	{
 		Destroy(child);
-		child = child->Brother();
+		child = gameObject->Child();
 	}
 	
 	while (gameObject->_components.size() > 0)

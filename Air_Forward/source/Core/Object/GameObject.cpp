@@ -194,17 +194,29 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents
 }
 
 
+bool Core::Object::GameObject::HaveParent()
+{
+	return _chain.IsParentValid();
+}
+bool Core::Object::GameObject::HaveChild()
+{
+	return _chain.IsChildValid();
+}
+bool Core::Object::GameObject::HaveBrother()
+{
+	return _chain.IsBrotherValid();
+}
 Core::Object::GameObject* Core::Object::GameObject::Parent()
 {
-	return &_chain.Parent().Object();
+	return _chain.IsParentValid() ? _chain.Parent()->Object() : nullptr;
 }
 Core::Object::GameObject* Core::Object::GameObject::Child()
 {
-	return &_chain.Child().Object();
+	return  _chain.IsChildValid() ? _chain.Child()->Object() : nullptr;
 }
 Core::Object::GameObject* Core::Object::GameObject::Brother()
 {
-	return &_chain.Brother().Object();
+	return  _chain.IsBrotherValid() ? _chain.Brother()->Object() : nullptr;
 }
 void Core::Object::GameObject::AddChild(Core::Object::GameObject* child)
 {
