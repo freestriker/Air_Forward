@@ -58,6 +58,7 @@
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
     <ClInclude Include="header\Utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\Utils\CrossLinkableNode.h" />
     <ClInclude Include="header\Utils\Log.h" />
     <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
     <ClInclude Include="header\Utils\ThreadBase.h" />
@@ -103,6 +104,7 @@
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
     <ClCompile Include="source\Utils\ActivableBase.cpp" />
     <ClCompile Include="source\Utils\ChildBrotherTree.cpp" />
+    <ClCompile Include="source\Utils\CrossLinkableNode.cpp" />
     <ClCompile Include="source\Utils\Log.cpp" />
     <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
     <ClCompile Include="source\Utils\ThreadBase.cpp" />
