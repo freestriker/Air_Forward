@@ -78,6 +78,11 @@ void Utils::CrossLinkableColHead::Remove(CrossLinkableNode* node)
 	node->_colHead = nullptr;
 }
 
+bool Utils::CrossLinkableColHead::HaveNode()
+{
+	return _end != &_head;
+}
+
 Utils::CrossLinkableColHead::Itertor Utils::CrossLinkableColHead::GetItertor()
 {
 	return Itertor(_head._bottom);
@@ -138,6 +143,11 @@ Utils::CrossLinkableRowHead::CrossLinkableRowHead()
 
 Utils::CrossLinkableRowHead::~CrossLinkableRowHead()
 {
+}
+
+bool Utils::CrossLinkableRowHead::HaveNode()
+{
+	return _end != &_head;
 }
 
 void Utils::CrossLinkableRowHead::Add(CrossLinkableNode* node)

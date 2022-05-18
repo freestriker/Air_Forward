@@ -46,6 +46,7 @@ namespace Utils
 
 		void Add(CrossLinkableNode* node);
 		void Remove(CrossLinkableNode* node);
+		bool HaveNode();
 		Itertor GetItertor();
 	};
 	class CrossLinkableRowHead final
@@ -72,6 +73,7 @@ namespace Utils
 		CrossLinkableRowHead();
 		virtual ~CrossLinkableRowHead();
 
+		bool HaveNode();
 		void Add(CrossLinkableNode* node);
 		void Remove(CrossLinkableNode* node);
 		Itertor GetItertor();

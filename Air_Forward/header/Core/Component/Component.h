@@ -2,6 +2,7 @@
 #include "Core/Object/Object.h"
 #include "Core/Object/LifeCycle.h"
 #include "Utils/ActivableBase.h"
+#include "Utils/CrossLinkableNode.h"
 namespace Core
 {
 	namespace Manager
@@ -18,21 +19,32 @@ namespace Core
 			: public Core::Object::Object
 			, public Utils::ActivableBase
 			, public Core::Object::LifeCycle
+			, private Utils::CrossLinkableNode
 		{
 			friend class Core::Object::GameObject;
 			friend class Manager::ObjectFactory;
+		public:
+			enum class ComponentType
+			{
+				DEFAULT,
+				TRANSFORM,
+			};
 		private:
 			Component(const Component&) = delete;
 			Component& operator=(const Component&) = delete;
 			Component(Component&&) = delete;
 			Component& operator=(Component&&) = delete;
 		protected:
+			const static std::map<rttr::type, ComponentType> TYPE_MAP;
+			const static rttr::type COMPONENT_TYPE;
+			ComponentType _type;
 			Core::Object::GameObject* _gameObject;
 			Component();
+			Component(ComponentType type);
 			virtual ~Component();
 		public:
 			Core::Object::GameObject* GameObject();
-
+			ComponentType GetComponentType();
 			RTTR_ENABLE(Core::Object::Object, Utils::ActivableBase)
 		};
 	}

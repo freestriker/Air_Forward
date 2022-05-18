@@ -12,7 +12,7 @@ namespace Core
 		public:
 			Object();
 			virtual ~Object();
-			std::string TypeName();
+			rttr::type Type();
 			virtual std::string ToString();
 
 			RTTR_ENABLE()

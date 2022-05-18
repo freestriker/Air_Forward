@@ -50,7 +50,20 @@ void Core::Thread::LogicThread::OnRun()
 		go0->AddComponent(new Core::Component::Transform::Transform());
 		go0->AddComponent(new Core::Component::Transform::Transform());
 		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->RemoveComponents("Core::Component::Transform::Transform");
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Core::Component::Transform::Transform());
+		auto f1 = go0->GetComponent<Core::Component::Transform::Transform>();
+		auto r1 = go0->RemoveComponent<Core::Component::Transform::Transform>();
+		auto f2 = go0->GetComponent("Core::Component::Transform::Transform");
+		go0->RemoveComponent(f2);
+		auto f3 = go0->GetComponents<Core::Component::Transform::Transform>();
+		go0->RemoveComponents(std::vector<Component::Component*>({ f3[0], f3[1] }));
+		auto f4 = go0->GetComponents("Core::Component::Transform::Transform");
+		auto r2 = go0->RemoveComponents<Core::Component::Transform::Transform>();
 	}
 	{
 		go0->AddComponent(new Core::Component::Transform::Transform());
