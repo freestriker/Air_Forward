@@ -7,26 +7,30 @@ namespace Utils
 		friend class CrossLinkableColHead;
 		friend class CrossLinkableRowHead;
 	private:
-		CrossLinkableNode* left;
-		CrossLinkableNode* right;
-		CrossLinkableNode* top;
-		CrossLinkableNode* bottom;
-		CrossLinkableNode* head;
+		CrossLinkableNode* _left;
+		CrossLinkableNode* _right;
+		CrossLinkableNode* _top;
+		CrossLinkableNode* _bottom;
+		CrossLinkableColHead* _colHead;
+		CrossLinkableRowHead* _rowHead;
 	protected:
 		CrossLinkableNode();
 		virtual ~CrossLinkableNode();
+		CrossLinkableColHead* ColHead();
+		CrossLinkableRowHead* RowHead();
+		void RemoveSelf();
 	};
 	class CrossLinkableColHead final
 	{
 	private:
-		CrossLinkableNode head;
-		CrossLinkableNode* end;
+		CrossLinkableNode _head;
+		CrossLinkableNode* _end;
 	public:
 		class Itertor final
 		{
 			friend class CrossLinkableColHead;
 		private:
-			CrossLinkableNode* node;
+			CrossLinkableNode* _node;
 			Itertor(CrossLinkableNode* node);
 		public:
 			~Itertor();
@@ -47,14 +51,14 @@ namespace Utils
 	class CrossLinkableRowHead final
 	{
 	private:
-		CrossLinkableNode head;
-		CrossLinkableNode* end;
+		CrossLinkableNode _head;
+		CrossLinkableNode* _end;
 	public:
 		class Itertor final
 		{
 			friend class CrossLinkableRowHead;
 		private:
-			CrossLinkableNode* node;
+			CrossLinkableNode* _node;
 			Itertor(CrossLinkableNode* node);
 		public:
 			~Itertor();
