@@ -31,15 +31,15 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 		child = gameObject->Child();
 	}
 	
-	while (gameObject->_components.size() > 0)
+	auto itertor = gameObject->_timeSqueueComponentsHead.GetItertor();
+	while (itertor.IsValid())
 	{
-		auto backComponent = gameObject->_components.back();
+		auto component = static_cast<Core::Component::Component*>(itertor.Node());
+		itertor++;
 
-		backComponent->_gameObject = nullptr;
-		gameObject->_components.pop_back();
-
-		backComponent->OnDestory();
-		delete backComponent;
+		gameObject->RemoveComponent(component);
+		component->OnDestory();
+		delete component;
 	}
 
 	delete gameObject;

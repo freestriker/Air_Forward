@@ -5,7 +5,7 @@ RTTR_REGISTRATION
 {
 	rttr::registration::class_<Core::Object::Object>("Core::Object::Object")
 		.constructor<>()
-		.method("TypeName", &Core::Object::Object::TypeName)
+		.method("Type", &Core::Object::Object::Type)
 		.method("ToString", &Core::Object::Object::ToString);
 }
 
@@ -17,12 +17,12 @@ Core::Object::Object::~Object()
 {
 }
 
-std::string Core::Object::Object::TypeName()
+rttr::type Core::Object::Object::Type()
 {
-    return typeid(*this).name();
+    return rttr::type::get(*this);
 }
 
 std::string Core::Object::Object::ToString()
 {
-    return TypeName();
+    return Type().get_name().to_string();
 }

@@ -8,12 +8,13 @@ RTTR_REGISTRATION
 {
 	using namespace rttr;
 	registration::class_<Core::Object::GameObject>("Core::Object::GameObject")
-		.method("GetComponent", &Core::Object::GameObject::GetComponent)
-		.method("GetComponents", &Core::Object::GameObject::GetComponents)
 		.method("AddComponent", &Core::Object::GameObject::AddComponent)
-		.method("RemoveComponent", select_overload<void(Core::Component::Component*)>(&Core::Object::GameObject::RemoveComponent))
-		.method("RemoveComponent", select_overload<Core::Component::Component*(std::string)>(&Core::Object::GameObject::RemoveComponent))
-		.method("RemoveComponents", &Core::Object::GameObject::RemoveComponents)
+		.method("RemoveComponent", &Core::Object::GameObject::_RemoveComponent1)
+		.method("RemoveComponentByTypeName", &Core::Object::GameObject::_RemoveComponent2)
+		.method("RemoveComponents", &Core::Object::GameObject::_RemoveComponents1)
+		.method("RemoveComponentsByTypeName", &Core::Object::GameObject::_RemoveComponents2)
+		.method("GetComponent", &Core::Object::GameObject::_GetComponent)
+		.method("GetComponents", &Core::Object::GameObject::_GetComponents)
 		.method("Parent", &Core::Object::GameObject::Parent)
 		.method("Child", &Core::Object::GameObject::Child)
 		.method("Brother", &Core::Object::GameObject::Brother)
@@ -27,7 +28,8 @@ Core::Object::GameObject::GameObject(std::string name)
 	: Utils::ActivableBase()
 	, Object()
 	, name(name)
-	, _components()
+	, _timeSqueueComponentsHead()
+	, _typeSqueueComponentsHeadMap()
 	, transform()
 	, _chain()
 {
@@ -41,156 +43,215 @@ Core::Object::GameObject::GameObject()
 
 Core::Object::GameObject::~GameObject()
 {
-	_components.clear();
+
 }
 
 void Core::Object::GameObject::AddComponent(Core::Component::Component* targetComponent)
 {
-	_components.push_back(targetComponent);
+	_timeSqueueComponentsHead.Add(targetComponent);
+	if (!_typeSqueueComponentsHeadMap.count(targetComponent->_type))
+	{
+		_typeSqueueComponentsHeadMap[targetComponent->_type] = std::unique_ptr<Utils::CrossLinkableRowHead>(new Utils::CrossLinkableRowHead());
+	}
+	_typeSqueueComponentsHeadMap[targetComponent->_type]->Add(targetComponent);
 	targetComponent->_gameObject = this;
 }
 
 void Core::Object::GameObject::RemoveComponent(Core::Component::Component* targetComponent)
 {
-	for (auto iter = _components.begin(), end = _components.end(); iter != end; iter++)
+	if (targetComponent->_gameObject != this)
 	{
-		Core::Component::Component* iterComponent = *iter;
-		if (iterComponent == targetComponent)
-		{
-			targetComponent->_gameObject = nullptr;
-			_components.erase(iter);
-
-			return;
-		}
+		Utils::Log::Exception("Component do not blong to this GameObject.");
 	}
-	Utils::Log::Exception("GameObject " + name + " do not have the " + targetComponent->TypeName() + " component.");
+
+	_timeSqueueComponentsHead.Remove(targetComponent);
+	_typeSqueueComponentsHeadMap[targetComponent->_type]->Remove(targetComponent);
+	targetComponent->_gameObject = nullptr;
+
+	if (!_typeSqueueComponentsHeadMap[targetComponent->_type]->HaveNode())
+	{
+		_typeSqueueComponentsHeadMap.erase(targetComponent->_type);
+	}
 }
 
 Core::Component::Component* Core::Object::GameObject::RemoveComponent(std::string targetTypeName)
 {
-	using namespace rttr;
+	return RemoveComponent(rttr::type::get_by_name(targetTypeName));
+}
 
-	type targetType = type::get_by_name(targetTypeName);
-	type componentType = type::get<Core::Component::Component>();
+void Core::Object::GameObject::_RemoveComponent1(Core::Component::Component* component)
+{
+	RemoveComponent(component);
+}
 
-	if (targetType)
+Core::Component::Component* Core::Object::GameObject::_RemoveComponent2(std::string typeName)
+{
+	return RemoveComponent(typeName);
+}
+
+Core::Component::Component* Core::Object::GameObject::RemoveComponent(rttr::type targetType)
+{
+	if (!targetType)
 	{
-		if (!targetType.is_derived_from(componentType))
-		{
-			Utils::Log::Exception(targetTypeName + " is not a component.");
-		}
-		for (auto iter = _components.begin(), end = _components.end(); iter != end; iter++)
-		{
-			Core::Component::Component* iterComponent = *iter;
-			type iterType = type::get(*iterComponent);
-			if (iterType == targetType || targetType.is_base_of(iterType))
-			{
-				iterComponent->_gameObject = nullptr;
-				_components.erase(iter);
+		Utils::Log::Exception("Do not have " + targetType.get_name().to_string() + ".");
+	}
 
-				return iterComponent;
-			}
+	if (!targetType.is_derived_from(Core::Component::Component::COMPONENT_TYPE))
+	{
+		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
+	}
+
+	for (const auto& pair : Core::Component::Component::TYPE_MAP)
+	{
+		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			auto found = static_cast<Core::Component::Component*>(_typeSqueueComponentsHeadMap[pair.second]->GetItertor().Node());
+			RemoveComponent(found);
+			return found;
 		}
 	}
-	else
+
+	Utils::Log::Exception("GameObject " + name + " do not have a " + targetType.get_name().to_string() + " Component.");
+}
+
+void Core::Object::GameObject::RemoveComponents(std::vector<Component::Component*> components)
+{
+	for (const auto& component : components)
 	{
-		Utils::Log::Exception("Do not have " + targetTypeName + ".");
+		RemoveComponent(component);
 	}
 }
 
 std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveComponents(std::string targetTypeName)
 {
-	using namespace rttr;
-	type targetType = type::get_by_name(targetTypeName);
-	type componentType = type::get<Core::Component::Component>();
-	std::vector<Core::Component::Component*> targetComponents = std::vector<Core::Component::Component*>();
-
-	if (targetType)
-	{
-		if (!targetType.is_derived_from(componentType))
-		{
-			Utils::Log::Exception(targetTypeName + " is not a component.");
-		}
-		for (auto iter = _components.begin(); iter != _components.end(); )
-		{
-			Core::Component::Component* iterComponent = *iter;
-			type iterType = type::get(*iterComponent);
-			if (iterType == targetType || targetType.is_base_of(iterType))
-			{
-				iterComponent->_gameObject = nullptr;
-				iter = _components.erase(iter);
-
-				targetComponents.push_back(iterComponent);
-			}
-			else
-			{
-				++iter;
-			}
-		}
-		return targetComponents;
-	}
-	else
-	{
-		Utils::Log::Exception("Do not have " + targetTypeName + ".");
-	}
+	return RemoveComponents(rttr::type::get_by_name(targetTypeName));
 }
 
-Core::Component::Component* Core::Object::GameObject::GetComponent(std::string typeName)
+void Core::Object::GameObject::_RemoveComponents1(std::vector<Component::Component*> components)
 {
-	using namespace rttr;
+	RemoveComponents(components);
+}
 
-	type class_type = type::get_by_name(typeName);
-	type class_component = type::get<Core::Component::Component>();
+std::vector<Core::Component::Component*> Core::Object::GameObject::_RemoveComponents2(std::string typeName)
+{
+	return RemoveComponents(typeName);
+}
 
-	if (class_type)
+std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveComponents(rttr::type targetType)
+{
+	if (!targetType)
 	{
-		if (!class_component.is_derived_from(class_component))
+		Utils::Log::Exception("Do not have " + targetType.get_name().to_string() + ".");
+	}
+
+	if (!targetType.is_derived_from(Core::Component::Component::COMPONENT_TYPE))
+	{
+		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
+	}
+
+	for (const auto& pair : Core::Component::Component::TYPE_MAP)
+	{
+		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			Utils::Log::Exception(typeName + " is not a component.");
-		}
-		for (auto component : _components)
-		{
-			type class_target = type::get(*component);
-			if (class_target == class_type || class_type.is_base_of(class_target))
+			auto targetComponents = std::vector<Core::Component::Component*>();
+			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetItertor();
+			while (itertor.IsValid())
 			{
-				return component;
+				auto foundComponent = static_cast<Component::Component*>(itertor.Node());
+				itertor++;
+
+				_timeSqueueComponentsHead.Remove(foundComponent);
+				_typeSqueueComponentsHeadMap[pair.second]->Remove(foundComponent);
+				foundComponent->_gameObject = nullptr;
+
+				targetComponents.emplace_back(foundComponent);
+			}
+			if (!_typeSqueueComponentsHeadMap[pair.second]->HaveNode())
+			{
+				_typeSqueueComponentsHeadMap.erase(pair.second);
+			}
+			return targetComponents;
+		}
+	}
+
+	Utils::Log::Exception("GameObject " + name + " do not have " + targetType.get_name().to_string() + " Components.");
+}
+
+Core::Component::Component* Core::Object::GameObject::GetComponent(rttr::type targetType)
+{
+	if (!targetType)
+	{
+		Utils::Log::Exception("Do not have " + targetType.get_name().to_string() + ".");
+	}
+
+	if (!targetType.is_derived_from(Core::Component::Component::COMPONENT_TYPE))
+	{
+		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
+	}
+
+	for (const auto& pair : Core::Component::Component::TYPE_MAP)
+	{
+		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			auto node = _typeSqueueComponentsHeadMap[pair.second]->GetItertor().Node();
+			Core::Component::Component* found = static_cast<Core::Component::Component*>(node);
+			return found;
+		}
+	}
+
+	Utils::Log::Exception("GameObject " + name + " do not have a " + targetType.get_name().to_string() + " Component.");
+}
+
+Core::Component::Component* Core::Object::GameObject::GetComponent(std::string targetTypeName)
+{
+	return GetComponent(rttr::type::get_by_name(targetTypeName));
+}
+
+Core::Component::Component* Core::Object::GameObject::_GetComponent(std::string targetTypeName)
+{
+	return GetComponent(targetTypeName);
+}
+
+std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents(rttr::type targetType)
+{
+	if (!targetType)
+	{
+		Utils::Log::Exception("Do not have " + targetType.get_name().to_string() + ".");
+	}
+
+	if (!targetType.is_derived_from(Core::Component::Component::COMPONENT_TYPE))
+	{
+		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
+	}
+
+	auto targetComponents = std::vector<Core::Component::Component*>();
+
+	for (const auto& pair : Core::Component::Component::TYPE_MAP)
+	{
+		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetItertor();
+			while (itertor.IsValid())
+			{
+				auto foundComponent = static_cast<Component::Component*>(itertor.Node());
+				itertor++;
+
+				targetComponents.emplace_back(foundComponent);
 			}
 		}
-		Utils::Log::Exception("GameObject " + name + " do not have a " + typeName + " component.");
 	}
-	else
-	{
-		Utils::Log::Exception("Do not have " + typeName + ".");
-	}
+
+	return targetComponents;
 }
 
 std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents(std::string targetTypeName)
 {
-	using namespace rttr;
-	type targetType = type::get_by_name(targetTypeName);
-	type componentType = type::get<Core::Component::Component>();
-	std::vector<Core::Component::Component*> targetComponents = std::vector<Core::Component::Component*>();
+	return GetComponents(rttr::type::get_by_name(targetTypeName));
+}
 
-	if (targetType)
-	{
-		if (!targetType.is_derived_from(componentType))
-		{
-			Utils::Log::Exception(targetTypeName + " is not a component.");
-		}
-		for (auto component : _components)
-		{
-			type iterType = type::get(*component);
-			if (iterType == targetType || targetType.is_base_of(iterType))
-			{
-				targetComponents.push_back(component);
-			}
-		}
-		return targetComponents;
-	}
-	else
-	{
-		Utils::Log::Exception("Do not have " + targetTypeName + ".");
-	}
+std::vector<Core::Component::Component*> Core::Object::GameObject::_GetComponents(std::string targetTypeName)
+{
+	return GetComponents(targetTypeName);
 }
 
 

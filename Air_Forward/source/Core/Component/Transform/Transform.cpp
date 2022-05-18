@@ -23,7 +23,7 @@ RTTR_REGISTRATION
 }
 
 Core::Component::Transform::Transform::Transform()
-    : Component()
+    : Component(Component::ComponentType::TRANSFORM)
     , _translation(glm::vec3(0, 0, 0))
     , _rotation(glm::quat(1, 0, 0, 0))
     , _scale(glm::vec3(1, 1, 1))
