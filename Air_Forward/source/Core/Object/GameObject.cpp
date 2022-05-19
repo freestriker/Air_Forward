@@ -105,7 +105,7 @@ Core::Component::Component* Core::Object::GameObject::RemoveComponent(rttr::type
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto found = static_cast<Core::Component::Component*>(_typeSqueueComponentsHeadMap[pair.second]->GetItertor().Node());
+			auto found = static_cast<Core::Component::Component*>(_typeSqueueComponentsHeadMap[pair.second]->GetIterator().Node());
 			RemoveComponent(found);
 			return found;
 		}
@@ -154,7 +154,7 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveCompone
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
 			auto targetComponents = std::vector<Core::Component::Component*>();
-			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetItertor();
+			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator();
 			while (itertor.IsValid())
 			{
 				auto foundComponent = static_cast<Component::Component*>(itertor.Node());
@@ -193,7 +193,7 @@ Core::Component::Component* Core::Object::GameObject::GetComponent(rttr::type ta
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto node = _typeSqueueComponentsHeadMap[pair.second]->GetItertor().Node();
+			auto node = _typeSqueueComponentsHeadMap[pair.second]->GetIterator().Node();
 			Core::Component::Component* found = static_cast<Core::Component::Component*>(node);
 			return found;
 		}
@@ -230,7 +230,7 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetItertor();
+			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator();
 			while (itertor.IsValid())
 			{
 				auto foundComponent = static_cast<Component::Component*>(itertor.Node());

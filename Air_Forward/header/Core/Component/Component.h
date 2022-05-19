@@ -28,6 +28,7 @@ namespace Core
 			{
 				DEFAULT,
 				TRANSFORM,
+				BEHAVIOUR
 			};
 		private:
 			Component(const Component&) = delete;

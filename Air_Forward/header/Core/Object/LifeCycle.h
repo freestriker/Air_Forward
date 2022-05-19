@@ -8,15 +8,16 @@ namespace Core
 		{
 		private:
 			bool _neverStarted;
+			bool _neverAwaked;
+		public:
 			void Awake();
 			void Update();
-		public:
 			LifeCycle();
 			virtual ~LifeCycle();
 			virtual void OnAwake();
 			virtual void OnStart();
 			virtual void OnUpdate();
-			virtual void OnDestory();
+			virtual void OnDestroy();
 
 		};
 	}

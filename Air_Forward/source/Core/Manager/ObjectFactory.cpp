@@ -16,7 +16,7 @@ void Core::Manager::ObjectFactory::Destroy(Component::Component* component)
 	{
 		component->_gameObject->RemoveComponent(component);
 	}
-	component->OnDestory();
+	component->OnDestroy();
 	delete component;
 }
 
@@ -38,7 +38,7 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 		itertor++;
 
 		gameObject->RemoveComponent(component);
-		component->OnDestory();
+		component->OnDestroy();
 		delete component;
 	}
 

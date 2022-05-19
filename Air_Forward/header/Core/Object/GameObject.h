@@ -11,6 +11,7 @@
 
 namespace Core
 {
+	class Thread;
 	namespace Manager
 	{
 		class ObjectFactory;
