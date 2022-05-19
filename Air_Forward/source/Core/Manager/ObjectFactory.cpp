@@ -31,7 +31,7 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 		child = gameObject->Child();
 	}
 	
-	auto itertor = gameObject->_timeSqueueComponentsHead.GetItertor();
+	auto itertor = gameObject->_timeSqueueComponentsHead.GetIterator();
 	while (itertor.IsValid())
 	{
 		auto component = static_cast<Core::Component::Component*>(itertor.Node());
