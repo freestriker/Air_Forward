@@ -10,7 +10,7 @@ namespace Core
 			bool _neverStarted;
 			void Awake();
 			void Update();
-		protected:
+		public:
 			LifeCycle();
 			virtual ~LifeCycle();
 			virtual void OnAwake();

@@ -30,6 +30,7 @@ namespace Core
 			, public Utils::ActivableBase
 		{
 			friend class Manager::ObjectFactory;
+			friend class Core::Thread;
 		private:
 			Utils::CrossLinkableColHead _timeSqueueComponentsHead;
 			std::map<Component::Component::ComponentType, std::unique_ptr< Utils::CrossLinkableRowHead>> _typeSqueueComponentsHeadMap;

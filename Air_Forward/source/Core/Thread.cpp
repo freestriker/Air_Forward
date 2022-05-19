@@ -4,6 +4,7 @@
 #include "Core/Instance.h"
 #include "Utils/Log.h"
 #include "Core/Manager/ObjectFactory.h"
+#include <list>
 
 Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
@@ -81,10 +82,90 @@ void Core::Thread::LogicThread::OnRun()
 		Core::Manager::ObjectFactory::Destroy(go0);
 	}
 
+	struct GameObjectWarp
+	{
+		Core::Object::GameObject* parent;
+		Core::Object::GameObject* gameObject;
+	};
+	std::list< GameObjectWarp> curGenHeadWarps = std::list<GameObjectWarp>();
+	std::list< GameObjectWarp> nextGenHeadWarps = std::list<GameObjectWarp>();
+	auto& validGameObjectInIteration = Instance::_validGameObjectInIteration;
+	auto& validComponentInIteration = Instance::_validComponentInIteration;
 
 	while (!_stopped)
 	{
+		auto targetComponentType = Core::Component::Component::ComponentType::TRANSFORM;
+		//Clear
+		validGameObjectInIteration.clear();
+		validComponentInIteration.clear();
+		curGenHeadWarps.clear();
+		nextGenHeadWarps.clear();
 
+		//Init
+		if (Instance::rootObject._gameObject.HaveChild())
+		{
+			validGameObjectInIteration.emplace(&Instance::rootObject._gameObject);
+			validGameObjectInIteration.emplace(Instance::rootObject._gameObject.Child());
+
+			curGenHeadWarps.emplace_back(GameObjectWarp{ &Instance::rootObject._gameObject , Instance::rootObject._gameObject.Child() });
+		}
+
+		while (!curGenHeadWarps.empty())
+		{
+			for (const auto& head : curGenHeadWarps)
+			{
+				if (!validGameObjectInIteration.count(head.gameObject)) continue;
+
+				std::vector<GameObjectWarp> curGenWarps = std::vector<GameObjectWarp>();
+				{
+					curGenWarps.emplace_back(head);
+					Object::GameObject* gameObject = head.gameObject->Brother();
+					Object::GameObject* parent = head.parent;
+					while (gameObject)
+					{
+						curGenWarps.emplace_back(GameObjectWarp{ parent, gameObject });
+						validGameObjectInIteration.emplace(gameObject);
+
+						gameObject = gameObject->Brother();
+					}
+				}
+
+				for (const auto& curWarp : curGenWarps)
+				{
+					if (!validGameObjectInIteration.count(curWarp.gameObject))continue;
+
+					//Run Components
+					validComponentInIteration.clear();
+					if (curWarp.gameObject->_typeSqueueComponentsHeadMap.count(targetComponentType))
+					{
+						std::vector< Component::Component*> components = std::vector< Component::Component*>();
+						for (auto iterator = curWarp.gameObject->_typeSqueueComponentsHeadMap[targetComponentType]->GetIterator(); iterator.IsValid(); iterator++)
+						{
+							auto component = dynamic_cast<Component::Component*>(iterator.Node());
+							validComponentInIteration.insert(component);
+							components.emplace_back(component);
+						}
+
+						for (const auto& component : components)
+						{
+							if (validComponentInIteration.count(component)) component->OnUpdate();
+						}
+					}
+
+					if (!validGameObjectInIteration.count(curWarp.gameObject))continue;
+					if (curWarp.gameObject->HaveChild())
+					{
+						auto childHead = curWarp.gameObject->Child();
+
+						nextGenHeadWarps.emplace_back(GameObjectWarp{ curWarp.gameObject , childHead });
+						validGameObjectInIteration.emplace(childHead);
+					}
+				}
+			}
+
+			curGenHeadWarps.clear();
+			std::swap(nextGenHeadWarps, curGenHeadWarps);
+		}
 	}
 }
 
