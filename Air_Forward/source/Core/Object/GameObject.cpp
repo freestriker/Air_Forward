@@ -105,9 +105,21 @@ Core::Component::Component* Core::Object::GameObject::RemoveComponent(rttr::type
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto found = static_cast<Core::Component::Component*>(_typeSqueueComponentsHeadMap[pair.second]->GetIterator().Node());
+			Core::Component::Component* found = static_cast<Core::Component::Component*>(_typeSqueueComponentsHeadMap[pair.second]->GetIterator().Node());
 			RemoveComponent(found);
 			return found;
+		}
+		else if (pair.first.is_base_of(targetType) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			for (auto iterator = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); iterator.IsValid(); iterator++)
+			{
+				Core::Component::Component* found = static_cast<Core::Component::Component*>(iterator.Node());
+				if (targetType.is_base_of(found->Type()))
+				{
+					RemoveComponent(found);
+					return found;
+				}
+			}
 		}
 	}
 
@@ -149,19 +161,17 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveCompone
 		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
 	}
 
+	auto targetComponents = std::vector<Core::Component::Component*>();
 	for (const auto& pair : Core::Component::Component::TYPE_MAP)
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto targetComponents = std::vector<Core::Component::Component*>();
-			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator();
-			while (itertor.IsValid())
+			for (auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); itertor.IsValid(); )
 			{
 				auto foundComponent = static_cast<Component::Component*>(itertor.Node());
-				itertor++;
 
 				_timeSqueueComponentsHead.Remove(foundComponent);
-				_typeSqueueComponentsHeadMap[pair.second]->Remove(foundComponent);
+				itertor = _typeSqueueComponentsHeadMap[pair.second]->Remove(itertor);
 				foundComponent->_gameObject = nullptr;
 
 				targetComponents.emplace_back(foundComponent);
@@ -170,11 +180,29 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::RemoveCompone
 			{
 				_typeSqueueComponentsHeadMap.erase(pair.second);
 			}
-			return targetComponents;
+		}
+		else if (pair.first.is_base_of(targetType) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			for (auto iterator = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); iterator.IsValid(); )
+			{
+				Core::Component::Component* found = static_cast<Core::Component::Component*>(iterator.Node());
+				if (targetType.is_base_of(found->Type()))
+				{
+					_timeSqueueComponentsHead.Remove(found);
+					iterator = _typeSqueueComponentsHeadMap[pair.second]->Remove(iterator);
+					found->_gameObject = nullptr;
+
+					targetComponents.emplace_back(found);
+				}
+			}
+			if (!_typeSqueueComponentsHeadMap[pair.second]->HaveNode())
+			{
+				_typeSqueueComponentsHeadMap.erase(pair.second);
+			}
 		}
 	}
 
-	Utils::Log::Exception("GameObject " + name + " do not have " + targetType.get_name().to_string() + " Components.");
+	return targetComponents;
 }
 
 Core::Component::Component* Core::Object::GameObject::GetComponent(rttr::type targetType)
@@ -184,7 +212,7 @@ Core::Component::Component* Core::Object::GameObject::GetComponent(rttr::type ta
 		Utils::Log::Exception("Do not have " + targetType.get_name().to_string() + ".");
 	}
 
-	if (!targetType.is_derived_from(Core::Component::Component::COMPONENT_TYPE))
+	if (!Core::Component::Component::COMPONENT_TYPE.is_base_of(targetType))
 	{
 		Utils::Log::Exception(targetType.get_name().to_string() + " is not a component.");
 	}
@@ -196,6 +224,14 @@ Core::Component::Component* Core::Object::GameObject::GetComponent(rttr::type ta
 			auto node = _typeSqueueComponentsHeadMap[pair.second]->GetIterator().Node();
 			Core::Component::Component* found = static_cast<Core::Component::Component*>(node);
 			return found;
+		}
+		else if (pair.first.is_base_of(targetType) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			for (auto iterator = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); iterator.IsValid(); iterator++)
+			{
+				Core::Component::Component* found = static_cast<Core::Component::Component*>(iterator.Node());
+				if(targetType.is_base_of(found->Type())) return found;
+			}
 		}
 	}
 
@@ -230,13 +266,22 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::GetComponents
 	{
 		if ((targetType == pair.first || targetType.is_base_of(pair.first)) && _typeSqueueComponentsHeadMap.count(pair.second))
 		{
-			auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator();
-			while (itertor.IsValid())
+			for (auto itertor = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); itertor.IsValid(); )
 			{
 				auto foundComponent = static_cast<Component::Component*>(itertor.Node());
-				itertor++;
 
 				targetComponents.emplace_back(foundComponent);
+			}
+		}
+		else if (pair.first.is_base_of(targetType) && _typeSqueueComponentsHeadMap.count(pair.second))
+		{
+			for (auto iterator = _typeSqueueComponentsHeadMap[pair.second]->GetIterator(); iterator.IsValid(); iterator++)
+			{
+				Core::Component::Component* found = static_cast<Core::Component::Component*>(iterator.Node());
+				if (targetType.is_base_of(found->Type()))
+				{
+					targetComponents.emplace_back(found);
+				}
 			}
 		}
 	}

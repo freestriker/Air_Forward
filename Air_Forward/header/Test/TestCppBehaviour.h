@@ -14,5 +14,6 @@ namespace Test
 		void OnStart()override;
 		void OnUpdate()override;
 		void OnDestroy()override;
+		RTTR_ENABLE(Core::Component::Behaviour::CppBehaviour)
 	};
 }

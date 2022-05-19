@@ -15,6 +15,7 @@ namespace Core
 				virtual void OnStart()override = 0;
 				virtual void OnUpdate()override = 0;
 				virtual void OnDestroy()override = 0;
+				RTTR_ENABLE(Core::Component::Behaviour::Behaviour)
 			};
 		}
 	}

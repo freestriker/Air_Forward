@@ -5,6 +5,7 @@
 #include "Utils/Log.h"
 #include "Core/Manager/ObjectFactory.h"
 #include <list>
+#include "Test/TestCppBehaviour.h"
 
 Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
@@ -47,38 +48,47 @@ void Core::Thread::LogicThread::OnRun()
 	Core::Object::GameObject* go01 = new Core::Object::GameObject("go01");
 	go0->AddChild(go01);
 
+	Core::Object::GameObject* go10 = new Core::Object::GameObject("go10");
+	go1->AddChild(go10);
+
+	Core::Object::GameObject* go11 = new Core::Object::GameObject("go11");
+	go1->AddChild(go11);
+
+	Core::Object::GameObject* go20 = new Core::Object::GameObject("go20");
+	go2->AddChild(go20);
+
 	{
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		auto f1 = go0->GetComponent<Core::Component::Transform::Transform>();
-		auto r1 = go0->RemoveComponent<Core::Component::Transform::Transform>();
-		auto f2 = go0->GetComponent("Core::Component::Transform::Transform");
+		go0->AddComponent(new Test::TestCppBehaviour("go0:1"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:2"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:3"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:4"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:5"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:6"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:7"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:8"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:9"));
+		auto f1 = go0->GetComponent<Test::TestCppBehaviour>();
+		auto r1 = go0->RemoveComponent<Test::TestCppBehaviour>();
+		auto f2 = go0->GetComponent("Test::TestCppBehaviour");
 		go0->RemoveComponent(f2);
-		auto f3 = go0->GetComponents<Core::Component::Transform::Transform>();
+		auto f3 = go0->GetComponents<Test::TestCppBehaviour>();
 		go0->RemoveComponents(std::vector<Component::Component*>({ f3[0], f3[1] }));
-		auto f4 = go0->GetComponents("Core::Component::Transform::Transform");
-		auto r2 = go0->RemoveComponents<Core::Component::Transform::Transform>();
+		auto f4 = go0->GetComponents("Test::TestCppBehaviour");
+		auto r2 = go0->RemoveComponents<Test::TestCppBehaviour>();
 	}
 	{
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Core::Component::Transform::Transform"))
+		go0->AddComponent(new Test::TestCppBehaviour());
+		go0->AddComponent(new Test::TestCppBehaviour());
+		go0->AddComponent(new Test::TestCppBehaviour());
+		for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Test::TestCppBehaviour"))
 		{
 			Core::Manager::ObjectFactory::Destroy(foundTransform);
 		}
 	}
 	{
-		go0->AddComponent(new Core::Component::Transform::Transform());
-		go00->AddComponent(new Core::Component::Transform::Transform());
-		go01->AddComponent(new Core::Component::Transform::Transform());
+		go0->AddComponent(new Test::TestCppBehaviour());
+		go00->AddComponent(new Test::TestCppBehaviour());
+		go01->AddComponent(new Test::TestCppBehaviour());
 		Core::Manager::ObjectFactory::Destroy(go0);
 	}
 
