@@ -12,11 +12,8 @@ Core::Manager::ObjectFactory::~ObjectFactory()
 
 void Core::Manager::ObjectFactory::Destroy(Component::Component* component)
 {
-	if (component->_gameObject)
-	{
-		component->_gameObject->RemoveComponent(component);
-	}
 	component->OnDestroy();
+	if (component->_gameObject) component->_gameObject->RemoveComponent(component);
 	delete component;
 }
 
@@ -35,6 +32,5 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 	}
 
 	gameObject->RemoveSelf();
-
 	delete gameObject;
 }

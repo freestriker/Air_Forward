@@ -107,8 +107,10 @@ void Core::Thread::LogicThread::OnRun()
 		go00->AddComponent(new Test::TestCppBehaviour("go00:1"));
 		go01->AddComponent(new Test::TestCppBehaviour("go01:1"));
 		go10->AddComponent(new Test::TestCppBehaviour("go10:1"));
+		go10->AddComponent(new Test::TestCppBehaviour("go10:2", go1));
 		go11->AddComponent(new Test::TestCppBehaviour("go11:1"));
-		go20->AddComponent(new Test::TestCppBehaviour("go20:1"));
+		go20->AddComponent(new Test::TestCppBehaviour("go20:1", go0));
+		go20->AddComponent(new Test::TestCppBehaviour("go20:2"));
 	}
 
 	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
@@ -190,7 +192,8 @@ void Core::Thread::LogicThread::OnRun()
 			std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 		}
 
-		std::this_thread::yield();
+		Utils::Log::Message("Core::Thread::LogicThread finish iterate GameObjects.\n");
+		std::this_thread::sleep_for(std::chrono::seconds(2));
 	}
 }
 
