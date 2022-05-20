@@ -16,6 +16,7 @@ namespace Core
 	class Instance final
 	{
 		friend class Core::Thread;
+		friend class Core::Object::GameObject;
 	public:
 		class RootGameObject final
 		{

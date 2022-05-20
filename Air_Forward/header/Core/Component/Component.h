@@ -5,6 +5,7 @@
 #include "Utils/CrossLinkableNode.h"
 namespace Core
 {
+	class Thread;
 	namespace Manager
 	{
 		class ObjectFactory;
@@ -23,6 +24,7 @@ namespace Core
 		{
 			friend class Core::Object::GameObject;
 			friend class Manager::ObjectFactory;
+			friend class Core::Thread;
 		public:
 			enum class ComponentType
 			{

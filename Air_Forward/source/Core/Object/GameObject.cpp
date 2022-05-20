@@ -3,6 +3,7 @@
 #include <cassert>
 #include <rttr/registration>
 #include "Utils/Log.h"
+#include "Core/Instance.h"
 
 RTTR_REGISTRATION
 {
@@ -71,6 +72,11 @@ void Core::Object::GameObject::RemoveComponent(Core::Component::Component* targe
 	if (!_typeSqueueComponentsHeadMap[targetComponent->_type]->HaveNode())
 	{
 		_typeSqueueComponentsHeadMap.erase(targetComponent->_type);
+	}
+
+	if (Core::Instance::_validComponentInIteration.count(targetComponent))
+	{
+		Core::Instance::_validComponentInIteration.erase(targetComponent);
 	}
 }
 
@@ -299,31 +305,36 @@ std::vector<Core::Component::Component*> Core::Object::GameObject::_GetComponent
 	return GetComponents(targetTypeName);
 }
 
-
 bool Core::Object::GameObject::HaveParent()
 {
 	return _chain.IsParentValid();
 }
+
 bool Core::Object::GameObject::HaveChild()
 {
 	return _chain.IsChildValid();
 }
+
 bool Core::Object::GameObject::HaveBrother()
 {
 	return _chain.IsBrotherValid();
 }
+
 Core::Object::GameObject* Core::Object::GameObject::Parent()
 {
 	return _chain.IsParentValid() ? _chain.Parent()->Object() : nullptr;
 }
+
 Core::Object::GameObject* Core::Object::GameObject::Child()
 {
 	return  _chain.IsChildValid() ? _chain.Child()->Object() : nullptr;
 }
+
 Core::Object::GameObject* Core::Object::GameObject::Brother()
 {
 	return  _chain.IsBrotherValid() ? _chain.Brother()->Object() : nullptr;
 }
+
 void Core::Object::GameObject::AddChild(Core::Object::GameObject* child)
 {
 	this->_chain.AddChild(child->_chain);
@@ -340,4 +351,8 @@ void Core::Object::GameObject::RemoveChild(Core::Object::GameObject* child)
 void Core::Object::GameObject::RemoveSelf()
 {
 	_chain.Remove();
+	if (Core::Instance::_validGameObjectInIteration.count(this))
+	{
+		Core::Instance::_validGameObjectInIteration.erase(this);
+	}
 }

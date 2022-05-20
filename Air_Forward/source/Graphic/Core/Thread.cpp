@@ -314,6 +314,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		presentCommandBuffer->WaitForFinish();
 
+		std::this_thread::yield();
 	}
 }
 

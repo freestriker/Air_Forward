@@ -22,8 +22,6 @@ void Core::Manager::ObjectFactory::Destroy(Component::Component* component)
 
 void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 {
-	gameObject->RemoveSelf();
-
 	Object::GameObject* child = gameObject->Child();
 	while (child)
 	{
@@ -31,16 +29,12 @@ void Core::Manager::ObjectFactory::Destroy(Object::GameObject* gameObject)
 		child = gameObject->Child();
 	}
 	
-	auto itertor = gameObject->_timeSqueueComponentsHead.GetIterator();
-	while (itertor.IsValid())
+	for (auto iterator = gameObject->_timeSqueueComponentsHead.GetIterator(); iterator.IsValid(); iterator = gameObject->_timeSqueueComponentsHead.GetIterator())
 	{
-		auto component = static_cast<Core::Component::Component*>(itertor.Node());
-		itertor++;
-
-		gameObject->RemoveComponent(component);
-		component->OnDestroy();
-		delete component;
+		Destroy(static_cast<Core::Component::Component*>(iterator.Node()));
 	}
+
+	gameObject->RemoveSelf();
 
 	delete gameObject;
 }

@@ -76,20 +76,39 @@ void Core::Thread::LogicThread::OnRun()
 		auto f4 = go0->GetComponents("Test::TestCppBehaviour");
 		auto r2 = go0->RemoveComponents<Test::TestCppBehaviour>();
 	}
+	//{
+	//	go0->AddComponent(new Test::TestCppBehaviour());
+	//	go0->AddComponent(new Test::TestCppBehaviour());
+	//	go0->AddComponent(new Test::TestCppBehaviour());
+	//	for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Test::TestCppBehaviour"))
+	//	{
+	//		Core::Manager::ObjectFactory::Destroy(foundTransform);
+	//	}
+	//}
+	//{
+	//	go0->AddComponent(new Test::TestCppBehaviour());
+	//	go00->AddComponent(new Test::TestCppBehaviour());
+	//	go01->AddComponent(new Test::TestCppBehaviour());
+	//	Core::Manager::ObjectFactory::Destroy(go0);
+	//}
 	{
-		go0->AddComponent(new Test::TestCppBehaviour());
-		go0->AddComponent(new Test::TestCppBehaviour());
-		go0->AddComponent(new Test::TestCppBehaviour());
-		for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Test::TestCppBehaviour"))
-		{
-			Core::Manager::ObjectFactory::Destroy(foundTransform);
-		}
-	}
-	{
-		go0->AddComponent(new Test::TestCppBehaviour());
-		go00->AddComponent(new Test::TestCppBehaviour());
-		go01->AddComponent(new Test::TestCppBehaviour());
-		Core::Manager::ObjectFactory::Destroy(go0);
+		go0->AddComponent(new Test::TestCppBehaviour("go0:1"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:2"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:3"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:4"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:5"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:6"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:7"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:8"));
+		go0->AddComponent(new Test::TestCppBehaviour("go0:9"));
+
+		go1->AddComponent(new Test::TestCppBehaviour("go1:1"));
+		go2->AddComponent(new Test::TestCppBehaviour("go2:1"));
+		go00->AddComponent(new Test::TestCppBehaviour("go00:1"));
+		go01->AddComponent(new Test::TestCppBehaviour("go01:1"));
+		go10->AddComponent(new Test::TestCppBehaviour("go10:1"));
+		go11->AddComponent(new Test::TestCppBehaviour("go11:1"));
+		go20->AddComponent(new Test::TestCppBehaviour("go20:1"));
 	}
 
 	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
@@ -144,7 +163,7 @@ void Core::Thread::LogicThread::OnRun()
 						std::vector< Component::Component*> components = std::vector< Component::Component*>();
 						for (auto iterator = curGenGameObject->_typeSqueueComponentsHeadMap[targetComponentType]->GetIterator(); iterator.IsValid(); iterator++)
 						{
-							auto component = dynamic_cast<Component::Component*>(iterator.Node());
+							auto component = static_cast<Component::Component*>(iterator.Node());
 
 							validComponentInIteration.insert(component);
 							components.emplace_back(component);
@@ -170,6 +189,8 @@ void Core::Thread::LogicThread::OnRun()
 			curGenGameObjectHeads.clear();
 			std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 		}
+
+		std::this_thread::yield();
 	}
 }
 
