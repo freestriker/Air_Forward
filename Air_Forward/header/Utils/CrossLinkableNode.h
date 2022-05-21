@@ -26,19 +26,20 @@ namespace Utils
 		CrossLinkableNode _head;
 		CrossLinkableNode* _end;
 	public:
-		class Itertor final
+		class Iterator final
 		{
 			friend class CrossLinkableColHead;
 		private:
 			CrossLinkableNode* _node;
-			Itertor(CrossLinkableNode* node);
+			Iterator(CrossLinkableNode* node);
+			Iterator();
 		public:
-			~Itertor();
+			~Iterator();
 			bool IsValid();
-			Itertor operator++();
-			Itertor operator++(int);
-			Itertor operator--();
-			Itertor operator--(int);
+			Iterator operator++();
+			Iterator operator++(int);
+			Iterator operator--();
+			Iterator operator--(int);
 			CrossLinkableNode* Node();
 		};
 		CrossLinkableColHead();
@@ -46,8 +47,9 @@ namespace Utils
 
 		void Add(CrossLinkableNode* node);
 		void Remove(CrossLinkableNode* node);
+		Iterator Remove(Iterator iterator);
 		bool HaveNode();
-		Itertor GetItertor();
+		Iterator GetIterator();
 	};
 	class CrossLinkableRowHead final
 	{
@@ -55,19 +57,20 @@ namespace Utils
 		CrossLinkableNode _head;
 		CrossLinkableNode* _end;
 	public:
-		class Itertor final
+		class Iterator final
 		{
 			friend class CrossLinkableRowHead;
 		private:
 			CrossLinkableNode* _node;
-			Itertor(CrossLinkableNode* node);
+			Iterator(CrossLinkableNode* node);
 		public:
-			~Itertor();
+			Iterator();
+			~Iterator();
 			bool IsValid();
-			Itertor operator++();
-			Itertor operator++(int);
-			Itertor operator--();
-			Itertor operator--(int);
+			Iterator operator++();
+			Iterator operator++(int);
+			Iterator operator--();
+			Iterator operator--(int);
 			CrossLinkableNode* Node();
 		};
 		CrossLinkableRowHead();
@@ -76,6 +79,7 @@ namespace Utils
 		bool HaveNode();
 		void Add(CrossLinkableNode* node);
 		void Remove(CrossLinkableNode* node);
-		Itertor GetItertor();
+		Iterator Remove(Iterator iterator);
+		Iterator GetIterator();
 	};
 }

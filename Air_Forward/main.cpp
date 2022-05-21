@@ -21,11 +21,11 @@ int main()
 	IO::Core::Thread::Start();
 	IO::Core::Thread::WaitForStartFinish();
 
+	Graphic::Core::Thread::StartRender();
+
 	Core::Thread::Init();
 	Core::Thread::Start();
 	Core::Thread::WaitForStartFinish();
-
-	Graphic::Core::Thread::StartRender();
 
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 

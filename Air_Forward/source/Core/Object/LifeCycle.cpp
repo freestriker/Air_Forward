@@ -3,7 +3,11 @@
 void Core::Object::LifeCycle::Awake()
 {
 	_neverStarted = true;
-	OnAwake();
+	if (_neverAwaked)
+	{
+		_neverAwaked = false;
+		OnAwake();
+	}
 }
 
 void Core::Object::LifeCycle::Update()
@@ -18,6 +22,7 @@ void Core::Object::LifeCycle::Update()
 
 Core::Object::LifeCycle::LifeCycle()
 	: _neverStarted(true)
+	, _neverAwaked(true)
 {
 }
 
@@ -37,6 +42,6 @@ void Core::Object::LifeCycle::OnUpdate()
 {
 }
 
-void Core::Object::LifeCycle::OnDestory()
+void Core::Object::LifeCycle::OnDestroy()
 {
 }

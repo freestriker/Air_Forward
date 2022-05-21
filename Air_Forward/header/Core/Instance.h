@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Object/GameObject.h>
+#include <unordered_set>
 
 namespace Core
 {
@@ -7,14 +8,20 @@ namespace Core
 	{
 		class GameObject;
 	}
+	namespace Component
+	{
+		class Component;
+	}
 	class Thread;
 	class Instance final
 	{
 		friend class Core::Thread;
+		friend class Core::Object::GameObject;
 	public:
 		class RootGameObject final
 		{
 			friend class Core::Instance;
+			friend class Core::Thread;
 		private:
 			Object::GameObject _gameObject;
 			RootGameObject();
@@ -27,6 +34,8 @@ namespace Core
 		};
 		static RootGameObject rootObject;
 	private:
+		static std::unordered_set< Object::GameObject*> _validGameObjectInIteration;
+		static std::unordered_set< Component::Component*> _validComponentInIteration;
 		Instance();
 		~Instance();
 	};

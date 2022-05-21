@@ -11,6 +11,8 @@ Graphic::Command::CommandPool* Graphic::Core::Instance::renderCommandPool = null
 Graphic::Command::CommandBuffer* Graphic::Core::Instance::renderCommandBuffer = nullptr;
 Graphic::Command::CommandPool* Graphic::Core::Instance::presentCommandPool = nullptr;
 Graphic::Command::CommandBuffer* Graphic::Core::Instance::presentCommandBuffer = nullptr;
+Utils::Condition* Graphic::Core::Instance::_renderStartCondition = new Utils::Condition();
+Utils::Condition* Graphic::Core::Instance::_renderEndCondition = new Utils::Condition();
 
 Graphic::Core::Instance::InstanceCreator::InstanceCreator()
 	: applicationName("Vulkan Application")
@@ -129,6 +131,11 @@ void Graphic::Core::Instance::_AddWindowExtension(InstanceCreator& creator)
 	}
 }
 
+VkInstance Graphic::Core::Instance::VkInstance_()
+{
+	return _vkInstance;
+}
+
 #ifdef _USE_GRAPHIC_DEBUG
 VKAPI_ATTR VkBool32 VKAPI_CALL Graphic::Core::Instance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -165,3 +172,13 @@ void Graphic::Core::Instance::_CreateDebugMessenger(InstanceCreator& creator)
 	Log::Exception("Failed to set up debug messenger.", result);
 }
 #endif
+
+Utils::Condition& Graphic::Core::Instance::RenderStartCondition()
+{
+	return *_renderStartCondition;
+}
+
+Utils::Condition& Graphic::Core::Instance::RenderEndCondition()
+{
+	return *_renderEndCondition;
+}

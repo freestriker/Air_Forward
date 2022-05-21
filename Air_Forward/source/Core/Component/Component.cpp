@@ -1,6 +1,7 @@
 #include "Core/Component/Component.h"
 #include <rttr/registration>
 #include "Core/Object/GameObject.h"
+#include "Core/Component/Behaviour/Behaviour.h"
 
 RTTR_REGISTRATION
 {
@@ -12,6 +13,7 @@ const std::map<rttr::type, Core::Component::Component::ComponentType> Core::Comp
 std::map<rttr::type, Core::Component::Component::ComponentType>
 ({
 	{rttr::type::get<Core::Component::Transform::Transform>(), Core::Component::Component::ComponentType::TRANSFORM},
+	{rttr::type::get<Core::Component::Behaviour::Behaviour>(), Core::Component::Component::ComponentType::BEHAVIOUR},
 });
 
 const rttr::type Core::Component::Component::COMPONENT_TYPE = rttr::type::get< Core::Component::Component>();

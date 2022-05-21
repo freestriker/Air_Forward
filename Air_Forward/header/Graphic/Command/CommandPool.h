@@ -15,7 +15,6 @@ namespace Graphic
 			VkCommandPool  _vkCommandPool;
 			std::map<std::string, CommandBuffer*> _commandBuffers;
 			std::string _queueName;
-
 		public:
 			CommandPool(VkCommandPoolCreateFlags flag, std::string queueName);
 			~CommandPool();
@@ -26,6 +25,7 @@ namespace Graphic
 			CommandPool& operator=(CommandPool&&) = delete;
 
 			VkCommandPool VkCommandPool_();
+
 
 			CommandBuffer* CreateCommandBuffer(std::string name, VkCommandBufferLevel level);
 			CommandBuffer* GetCommandBuffer(std::string name);

@@ -25,10 +25,12 @@ RTTR_REGISTRATION
 Core::Component::Transform::Transform::Transform()
     : Component(Component::ComponentType::TRANSFORM)
     , _translation(glm::vec3(0, 0, 0))
-    , _rotation(glm::quat(1, 0, 0, 0))
+    , _rotation(glm::vec3(0, 0, 0))
     , _scale(glm::vec3(1, 1, 1))
+    , _relativeModelMatrix(TranslationMatrix()* RotationMatrix()* ScaleMatrix())
+    , _modelMatrix(_relativeModelMatrix)
 {
-
+    
 }
 
 Core::Component::Transform::Transform::~Transform()
@@ -44,26 +46,50 @@ void Core::Component::Transform::Transform::SetActive()
 {
 }
 
+void Core::Component::Transform::Transform::UpdateModelMatrix(glm::mat4& parentModelMatrix)
+{
+    _modelMatrix = parentModelMatrix * _relativeModelMatrix;
+    auto child = _gameObject->Child();
+    while (child)
+    {
+        child->transform.UpdateModelMatrix(_modelMatrix);
+
+        child = child->Brother();
+    }
+}
+
 void Core::Component::Transform::Transform::SetTranslation(glm::vec3 translation)
 {
     this->_translation = translation;
+
+    _relativeModelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
+    UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
 }
 
-void Core::Component::Transform::Transform::SetRotation(glm::quat rotation)
+void Core::Component::Transform::Transform::SetRotation(glm::vec3 rotation)
 {
     this->_rotation = rotation;
+
+    _relativeModelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
+    UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
 }
 
 void Core::Component::Transform::Transform::SetScale(glm::vec3 scale)
 {
     this->_scale = scale;
+
+    _relativeModelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
+    UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
 }
 
-void Core::Component::Transform::Transform::SetTranslationRotationScale(glm::vec3 translation, glm::quat rotation, glm::vec3 scale)
+void Core::Component::Transform::Transform::SetTranslationRotationScale(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 {
     this->_translation = translation;
     this->_rotation = rotation;
     this->_scale = scale;
+
+    _relativeModelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
+    UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
 }
 
 glm::mat4 Core::Component::Transform::Transform::TranslationMatrix()
@@ -78,7 +104,7 @@ glm::mat4 Core::Component::Transform::Transform::TranslationMatrix()
 
 glm::mat4 Core::Component::Transform::Transform::RotationMatrix()
 {
-    return glm::mat4_cast(_rotation);
+    return glm::mat4_cast(glm::quat(_rotation));
 }
 
 glm::mat4 Core::Component::Transform::Transform::ScaleMatrix()
@@ -91,7 +117,7 @@ glm::mat4 Core::Component::Transform::Transform::ScaleMatrix()
     );
 }
 
-glm::quat Core::Component::Transform::Transform::Rotation()
+glm::vec3 Core::Component::Transform::Transform::Rotation()
 {
     return _rotation;
 }
