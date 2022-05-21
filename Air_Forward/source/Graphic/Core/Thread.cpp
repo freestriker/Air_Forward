@@ -174,8 +174,6 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	material2->SetTexture2D("testTexture2D", texture2d);
 	material2->SetUniformBuffer("matrix", matrixBuffer);
 
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	Command::Semaphore attachmentAvailableSemaphore = Command::Semaphore();
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
@@ -186,7 +184,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
 		Instance::RenderStartCondition().Wait();
-		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.\n");
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.");
 
 		glfwPollEvents();
 
@@ -315,7 +313,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
 
-		Utils::Log::Message("Graphic::Core::Thread::RenderThread awake render finish.\n");
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread awake render finish.");
 		Instance::RenderEndCondition().Awake();
 
 		presentCommandBuffer->WaitForFinish();

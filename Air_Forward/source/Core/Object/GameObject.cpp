@@ -35,6 +35,7 @@ Core::Object::GameObject::GameObject(std::string name)
 	, _chain()
 {
 	_chain.SetObject(this);
+	transform._gameObject = this;
 }
 
 Core::Object::GameObject::GameObject()
