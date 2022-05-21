@@ -27,8 +27,10 @@ Core::Component::Transform::Transform::Transform()
     , _translation(glm::vec3(0, 0, 0))
     , _rotation(glm::vec3(0, 0, 0))
     , _scale(glm::vec3(1, 1, 1))
+    , _relativeModelMatrix(TranslationMatrix()* RotationMatrix()* ScaleMatrix())
+    , _modelMatrix(_relativeModelMatrix)
 {
-
+    
 }
 
 Core::Component::Transform::Transform::~Transform()
@@ -46,7 +48,14 @@ void Core::Component::Transform::Transform::SetActive()
 
 void Core::Component::Transform::Transform::UpdateModelMatrix(glm::mat4& parentModelMatrix)
 {
-    this->_modelMatrix = parentModelMatrix * this->_relativeModelMatrix;
+    _modelMatrix = parentModelMatrix * _relativeModelMatrix;
+    auto child = _gameObject->Child();
+    while (child)
+    {
+        child->transform.UpdateModelMatrix(_modelMatrix);
+
+        child = child->Brother();
+    }
 }
 
 void Core::Component::Transform::Transform::SetTranslation(glm::vec3 translation)

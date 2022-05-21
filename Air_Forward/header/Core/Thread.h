@@ -1,6 +1,8 @@
 #pragma once
 #include <Utils/ThreadBase.h>
 #include <mutex>
+#include <Core/Component/Component.h>
+#include <vector>
 
 namespace Core
 {
@@ -9,6 +11,10 @@ namespace Core
 	private:
 		class LogicThread final : public Utils::ThreadBase
 		{
+		private:
+			void IterateByDynamicBFS(Core::Component::Component::ComponentType targetComponentType);
+			void IterateByStaticBFS(Core::Component::Component::ComponentType targetComponentType);
+			std::vector<Component::Component*> IterateByStaticBFSWithRecord(Core::Component::Component::ComponentType targetComponentType);
 		public:
 			bool _stopped;
 
