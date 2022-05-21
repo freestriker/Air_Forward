@@ -185,6 +185,9 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
+		Instance::RenderStartCondition().Wait();
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.\n");
+
 		glfwPollEvents();
 
 		Core::Instance::renderCommandBuffer->Reset();
@@ -312,9 +315,11 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
 
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread awake render finish.\n");
+		Instance::RenderEndCondition().Awake();
+
 		presentCommandBuffer->WaitForFinish();
 
-		std::this_thread::yield();
 	}
 }
 

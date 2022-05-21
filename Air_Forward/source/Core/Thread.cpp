@@ -6,6 +6,7 @@
 #include "Core/Manager/ObjectFactory.h"
 #include <list>
 #include "Test/TestCppBehaviour.h"
+#include "Graphic/Core/Instance.h"
 
 Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
@@ -119,7 +120,7 @@ void Core::Thread::LogicThread::OnRun()
 	auto& validComponentInIteration = Instance::_validComponentInIteration;
 
 	while (!_stopped)
-	{
+	{	
 		auto targetComponentType = Core::Component::Component::ComponentType::BEHAVIOUR;
 		//Clear
 		validGameObjectInIteration.clear();
@@ -192,8 +193,13 @@ void Core::Thread::LogicThread::OnRun()
 			std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 		}
 
-		Utils::Log::Message("Core::Thread::LogicThread finish iterate GameObjects.\n");
-		std::this_thread::sleep_for(std::chrono::seconds(2));
+		Utils::Log::Message("Core::Thread::LogicThread finish iterate GameObjects.");
+
+		Utils::Log::Message("Core::Thread::LogicThread awake render start.");
+		Graphic::Core::Instance::RenderStartCondition().Awake();
+
+		Graphic::Core::Instance::RenderEndCondition().Wait();
+		Utils::Log::Message("Core::Thread::LogicThread finish wait render finish.\n");
 	}
 }
 

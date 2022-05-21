@@ -2,6 +2,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <string>
+#include <Utils/Condition.h>
 namespace Graphic
 {
 	namespace Command
@@ -52,12 +53,17 @@ namespace Graphic
 			};
 
 			static void Create(InstanceCreator& creator);
-			static inline VkInstance VkInstance_();
+			static VkInstance VkInstance_();
+
+			static Utils::Condition& RenderStartCondition();
+			static Utils::Condition& RenderEndCondition();
 		private:
 			static Command::CommandPool* renderCommandPool;
 			static Command::CommandBuffer* renderCommandBuffer;
 			static Command::CommandPool* presentCommandPool;
 			static Command::CommandBuffer* presentCommandBuffer;
+			static Utils::Condition* _renderStartCondition;
+			static Utils::Condition* _renderEndCondition;
 
 			static VkInstance _vkInstance;
 			static void _AddWindowExtension(InstanceCreator& creator);
@@ -70,9 +76,3 @@ namespace Graphic
 		};
 	}
 }
-
-VkInstance Graphic::Core::Instance::VkInstance_()
-{
-	return _vkInstance;
-}
-

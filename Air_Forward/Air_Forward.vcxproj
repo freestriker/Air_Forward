@@ -61,6 +61,7 @@
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
     <ClInclude Include="header\Utils\ChildBrotherTree.h" />
+    <ClInclude Include="header\Utils\Condition.h" />
     <ClInclude Include="header\Utils\CrossLinkableNode.h" />
     <ClInclude Include="header\Utils\Log.h" />
     <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
@@ -72,6 +73,7 @@
     <ClCompile Include="source\Core\Component\Behaviour\CppBehaviour.cpp" />
     <ClCompile Include="source\Core\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Core\Manager\ObjectFactory.cpp" />
+    <ClCompile Include="source\Graphic\Utils\Condition.cpp" />
     <ClCompile Include="source\IO\Core\Instance.cpp" />
     <ClCompile Include="source\IO\Manager\AssetManager.cpp" />
     <ClCompile Include="source\IO\Asset\AssetBase.cpp" />
