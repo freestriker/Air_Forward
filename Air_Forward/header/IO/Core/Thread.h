@@ -59,6 +59,9 @@ namespace IO
 			{
 				friend class LoadThread;
 				friend class Thread;
+			private:
+				Graphic::Command::CommandPool* _transferCommandPool;
+				Graphic::Command::CommandBuffer* _transferCommandBuffer;
 			public:
 				SubLoadThread();
 				~SubLoadThread();

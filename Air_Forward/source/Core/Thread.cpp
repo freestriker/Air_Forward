@@ -319,6 +319,7 @@ void Core::Thread::LogicThread::OnRun()
 
 	while (!_stopped)
 	{	
+		Utils::Log::Message("----------------------------------------------------");
 		IterateByDynamicBFS(Component::Component::ComponentType::BEHAVIOUR);
 
 		auto cameras = IterateByStaticBFSWithRecord(Component::Component::ComponentType::CAMERA);
@@ -331,7 +332,7 @@ void Core::Thread::LogicThread::OnRun()
 
 		Graphic::Core::Instance::RenderEndCondition().Wait();
 		Utils::Log::Message("Core::Thread::LogicThread finish wait render finish.");
-		Utils::Log::Message("----------------------------------------------------");
+		Utils::Log::Message("----------------------------------------------------\n");
 	}
 }
 

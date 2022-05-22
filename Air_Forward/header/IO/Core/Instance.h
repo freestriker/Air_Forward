@@ -21,8 +21,6 @@ namespace IO
 		private:
 			Instance();
 			~Instance();
-			static Graphic::Command::CommandPool* _transferCommandPool;
-			static Graphic::Command::CommandBuffer* _transferCommandBuffer;
 		public:
 			static IO::Manager::AssetManager assetManager;
 		public:
