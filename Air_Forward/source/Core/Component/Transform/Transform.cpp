@@ -117,6 +117,11 @@ glm::mat4 Core::Component::Transform::Transform::ScaleMatrix()
     );
 }
 
+glm::mat4 Core::Component::Transform::Transform::ModelMatrix()
+{
+    return _modelMatrix;
+}
+
 glm::vec3 Core::Component::Transform::Transform::Rotation()
 {
     return _rotation;

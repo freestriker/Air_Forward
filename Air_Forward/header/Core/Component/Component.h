@@ -30,7 +30,8 @@ namespace Core
 			{
 				DEFAULT,
 				TRANSFORM,
-				BEHAVIOUR
+				BEHAVIOUR,
+				CAMERA
 			};
 		private:
 			Component(const Component&) = delete;

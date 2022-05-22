@@ -23,7 +23,6 @@ namespace Core
 				void SetActive();
 
 				void UpdateModelMatrix(glm::mat4& parentModelMatrix);
-			public:
 				glm::vec3 _rotation;
 				glm::vec3 _translation;
 				glm::vec3 _scale;
@@ -31,7 +30,7 @@ namespace Core
 				glm::mat4 _modelMatrix;
 				glm::mat4 _relativeModelMatrix;
 
-
+			public:
 				void SetTranslation(glm::vec3 translation);
 				void SetRotation(glm::vec3 rotation);
 				void SetScale(glm::vec3 scale);
@@ -40,6 +39,7 @@ namespace Core
 				glm::mat4 TranslationMatrix();
 				glm::mat4 RotationMatrix();
 				glm::mat4 ScaleMatrix();
+				glm::mat4 ModelMatrix();
 
 				glm::vec3 Rotation();
 				glm::vec3 Translation();
