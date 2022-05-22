@@ -31,7 +31,8 @@ namespace Core
 				DEFAULT,
 				TRANSFORM,
 				BEHAVIOUR,
-				CAMERA
+				CAMERA,
+				RENDERER
 			};
 		private:
 			Component(const Component&) = delete;
