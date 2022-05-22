@@ -1,17 +1,19 @@
 #include "Core/Component/Camera/Camera.h"
 #include "Core/Object/GameObject.h"
 #include <glm/vec4.hpp>
+#include "Utils/Log.h"
 
 void Core::Component::Camera::Camera::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
+	Utils::Log::Message("Core::Component::Camera::Camera::OnUpdate()");
 }
 
 Core::Component::Camera::Camera::Camera()
 	: Component(ComponentType::CAMERA)
 	, nearFlat(0.1f)
 	, farFlat(100.0f)
-	, aspectRatio(16.0 / 9.0)
+	, aspectRatio(16.0f / 9.0f)
 	, _modelMatrix(glm::mat4(1.0f))
 {
 }

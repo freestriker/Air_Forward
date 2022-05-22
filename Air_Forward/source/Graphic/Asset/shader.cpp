@@ -183,7 +183,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulateVertexInputState(_Pipelin
 			attr_desc.format = static_cast<VkFormat>(refl_var.format);
 			attr_desc.offset = offsetof(Graphic::Asset::VertexData, Graphic::Asset::VertexData::tangent);
 		}
-		else if (strcmp(refl_var.name, "vertexTangent") == 0)
+		else if (strcmp(refl_var.name, "vertexBitangent") == 0)
 		{
 			attr_desc.location = refl_var.location;
 			attr_desc.binding = 0;

@@ -15,6 +15,8 @@ namespace Core
 				virtual ~OrthographicCamera();
 				glm::mat4 ProjectionMatrix() override;
 				std::array<glm::vec4, 6> ClipPlanes() override;
+
+				RTTR_ENABLE(Core::Component::Camera::Camera)
 			};
 		}
 	}

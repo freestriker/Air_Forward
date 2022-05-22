@@ -21,6 +21,11 @@
   <ItemGroup>
     <ClInclude Include="header\Core\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Core\Component\Behaviour\CppBehaviour.h" />
+    <ClInclude Include="header\Core\Component\Camera\Camera.h" />
+    <ClInclude Include="header\Core\Component\Camera\OrthographicCamera.h" />
+    <ClInclude Include="header\Core\Component\Camera\PerspectiveCamera.h" />
+    <ClInclude Include="header\Core\Component\Renderer\MeshRenderer.h" />
+    <ClInclude Include="header\Core\Component\Renderer\Renderer.h" />
     <ClInclude Include="header\Core\Component\Transform\Transform.h" />
     <ClInclude Include="header\Core\Manager\ObjectFactory.h" />
     <ClInclude Include="header\IO\Core\Instance.h" />
@@ -58,6 +63,7 @@
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
+    <ClInclude Include="header\Test\RenderTestBehaviour.h" />
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
     <ClInclude Include="header\Utils\ChildBrotherTree.h" />
@@ -71,6 +77,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\Core\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Core\Component\Behaviour\CppBehaviour.cpp" />
+    <ClCompile Include="source\Core\Component\Camera\Camera.cpp" />
+    <ClCompile Include="source\Core\Component\Camera\OrthographicCamera.cpp" />
+    <ClCompile Include="source\Core\Component\Camera\PerspectiveCamera.cpp" />
+    <ClCompile Include="source\Core\Component\Renderer\MeshRenderer.cpp" />
+    <ClCompile Include="source\Core\Component\Renderer\Renderer.cpp" />
     <ClCompile Include="source\Core\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Core\Manager\ObjectFactory.cpp" />
     <ClCompile Include="source\Graphic\Utils\Condition.cpp" />
@@ -109,6 +120,7 @@
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
+    <ClCompile Include="source\Test\RenderTestBehaviour.cpp" />
     <ClCompile Include="source\Test\TestCppBehaviour.cpp" />
     <ClCompile Include="source\Utils\ActivableBase.cpp" />
     <ClCompile Include="source\Utils\ChildBrotherTree.cpp" />

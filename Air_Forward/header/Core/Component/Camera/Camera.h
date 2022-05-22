@@ -23,6 +23,8 @@ namespace Core
 				glm::mat4 ViewMatrix();
 				virtual glm::mat4 ProjectionMatrix() = 0;
 				virtual std::array<glm::vec4, 6> ClipPlanes() = 0;
+
+				RTTR_ENABLE(Core::Component::Component)
 			};
 		}
 	}

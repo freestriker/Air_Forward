@@ -26,4 +26,5 @@ std::array<glm::vec4, 6> Core::Component::Camera::PerspectiveCamera::ClipPlanes(
     planes[3] = glm::vec4(nearFlat, 0, -aspectRatio * nearFlat * std::tan(halfFov), 0);
     planes[4] = glm::vec4(0, 0, -1, -nearFlat);
     planes[5] = glm::vec4(0, 0, 1, farFlat);
+    return planes;
 }

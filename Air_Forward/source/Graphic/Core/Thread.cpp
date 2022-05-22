@@ -318,6 +318,9 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		presentCommandBuffer->WaitForFinish();
 
+		renderCommandBuffer->Reset();
+		presentCommandBuffer->Reset();
+
 	}
 }
 

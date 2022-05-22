@@ -30,9 +30,8 @@ Graphic::Instance::Buffer::Buffer(size_t size, VkBufferUsageFlags usage, VkMemor
 
 void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 {
-	
+	std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
 	{
-		std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
 		void* transferData;
 		vkMapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
 		memcpy(transferData, data, dataSize);

@@ -2,11 +2,13 @@
 #include "Graphic/Instance/Buffer.h"
 #include "Core/Object/GameObject.h"
 #include "Graphic/Material.h"
+#include <Utils/Log.h>
 
 
 void Core::Component::Renderer::Renderer::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
+	Utils::Log::Message("Core::Component::Renderer::Renderer::OnUpdate()");
 }
 
 Core::Component::Renderer::Renderer::Renderer()

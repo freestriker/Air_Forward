@@ -40,6 +40,8 @@ namespace Core
 			public:
 				Graphic::Asset::Mesh* mesh;
 				Graphic::Material* material;
+
+				RTTR_ENABLE(Core::Component::Component)
 			};
 		}
 	}
