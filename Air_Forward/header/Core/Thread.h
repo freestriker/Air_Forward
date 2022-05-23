@@ -12,9 +12,11 @@ namespace Core
 		class LogicThread final : public Utils::ThreadBase
 		{
 		private:
-			void IterateByDynamicBFS(Core::Component::Component::ComponentType targetComponentType);
-			void IterateByStaticBFS(Core::Component::Component::ComponentType targetComponentType);
-			std::vector<Component::Component*> IterateByStaticBFSWithRecord(Core::Component::Component::ComponentType targetComponentType);
+			void IterateByDynamicBfs(Core::Component::Component::ComponentType targetComponentType);
+			void IterateByStaticBfs(Core::Component::Component::ComponentType targetComponentType);
+			void IterateByStaticBfs(Core::Component::Component::ComponentType targetComponentType, std::vector<Component::Component*>& targetComponents);
+			void IterateByStaticBfs(std::vector<Core::Component::Component::ComponentType> targetComponentTypes);
+			void IterateByStaticBfs(std::vector<Core::Component::Component::ComponentType> targetComponentTypes, std::vector < std::vector<Component::Component*>>& targetComponents);
 		public:
 			bool _stopped;
 

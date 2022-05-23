@@ -13,7 +13,7 @@
 
 Core::Thread::LogicThread Core::Thread::_logicThread = Core::Thread::LogicThread();
 
-void Core::Thread::LogicThread::IterateByDynamicBFS(Core::Component::Component::ComponentType targetComponentType)
+void Core::Thread::LogicThread::IterateByDynamicBfs(Core::Component::Component::ComponentType targetComponentType)
 {
 	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by dynamic BFS.");
 	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
@@ -96,7 +96,7 @@ void Core::Thread::LogicThread::IterateByDynamicBFS(Core::Component::Component::
 
 }
 
-void Core::Thread::LogicThread::IterateByStaticBFS(Core::Component::Component::ComponentType targetComponentType)
+void Core::Thread::LogicThread::IterateByStaticBfs(Core::Component::Component::ComponentType targetComponentType)
 {
 	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS.");
 
@@ -147,11 +147,9 @@ void Core::Thread::LogicThread::IterateByStaticBFS(Core::Component::Component::C
 	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS.");
 }
 
-std::vector<Core::Component::Component*> Core::Thread::LogicThread::IterateByStaticBFSWithRecord(Core::Component::Component::ComponentType targetComponentType)
+void Core::Thread::LogicThread::IterateByStaticBfs(Core::Component::Component::ComponentType targetComponentType, std::vector<Component::Component*>& targetComponents)
 {
 	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS with record.");
-
-	std::vector<Core::Component::Component*> targetComponents = std::vector<Core::Component::Component*>();
 
 	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
 	std::list< Core::Object::GameObject*> nextGenGameObjectHeads = std::list<Core::Object::GameObject*>();
@@ -200,7 +198,129 @@ std::vector<Core::Component::Component*> Core::Thread::LogicThread::IterateBySta
 	}
 
 	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS with record.");
-	return targetComponents;
+}
+
+void Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Core::Component::Component::ComponentType> targetComponentTypes)
+{
+	std::string targetComponentTypeString = "";
+	for (const auto& type : targetComponentTypes)
+	{
+		targetComponentTypeString += std::to_string(static_cast<int>(type)) + " ";
+	}
+	Utils::Log::Message("Core::Thread::LogicThread start iterate " + targetComponentTypeString + "by static BFS with record.");
+
+	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
+	std::list< Core::Object::GameObject*> nextGenGameObjectHeads = std::list<Core::Object::GameObject*>();
+
+	//Init
+	if (Instance::rootObject._gameObject.HaveChild())
+	{
+		curGenGameObjectHeads.emplace_back(Instance::rootObject._gameObject.Child());
+	}
+
+	while (!curGenGameObjectHeads.empty())
+	{
+		for (const auto& curGenGameObjectHead : curGenGameObjectHeads)
+		{
+			Object::GameObject* curGenGameObject = curGenGameObjectHead;
+			while (curGenGameObject)
+			{
+				//Update components
+				for (uint32_t i = 0; i < targetComponentTypes.size(); i++)
+				{
+					if (curGenGameObject->_typeSqueueComponentsHeadMap.count(targetComponentTypes[i]))
+					{
+						for (auto iterator = curGenGameObject->_typeSqueueComponentsHeadMap[targetComponentTypes[i]]->GetIterator(); iterator.IsValid(); iterator++)
+						{
+							auto component = static_cast<Component::Component*>(iterator.Node());
+
+							component->Update();
+
+						}
+					}
+				}
+
+				//Add next gen GameObject
+				if (curGenGameObject->HaveChild())
+				{
+					auto childHead = curGenGameObject->Child();
+
+					nextGenGameObjectHeads.emplace_back(childHead);
+				}
+
+				curGenGameObject = curGenGameObject->Brother();
+			}
+
+		}
+
+		curGenGameObjectHeads.clear();
+		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
+	}
+
+	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + targetComponentTypeString + "by static BFS with record.");
+}
+
+void Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Core::Component::Component::ComponentType> targetComponentTypes, std::vector<std::vector<Component::Component*>>& targetComponents)
+{
+	std::string targetComponentTypeString = "";
+	for (const auto& type : targetComponentTypes)
+	{
+		targetComponentTypeString += std::to_string(static_cast<int>(type)) + " ";
+	}
+	Utils::Log::Message("Core::Thread::LogicThread start iterate " + targetComponentTypeString + "by static BFS with record.");
+
+	std::list< Core::Object::GameObject*> curGenGameObjectHeads = std::list<Core::Object::GameObject*>();
+	std::list< Core::Object::GameObject*> nextGenGameObjectHeads = std::list<Core::Object::GameObject*>();
+	targetComponents.clear();
+	targetComponents.resize(targetComponentTypes.size());
+
+	//Init
+	if (Instance::rootObject._gameObject.HaveChild())
+	{
+		curGenGameObjectHeads.emplace_back(Instance::rootObject._gameObject.Child());
+	}
+
+	while (!curGenGameObjectHeads.empty())
+	{
+		for (const auto& curGenGameObjectHead : curGenGameObjectHeads)
+		{
+			Object::GameObject* curGenGameObject = curGenGameObjectHead;
+			while (curGenGameObject)
+			{
+				//Update components
+				for (uint32_t i = 0; i < targetComponentTypes.size(); i++)
+				{
+					if (curGenGameObject->_typeSqueueComponentsHeadMap.count(targetComponentTypes[i]))
+					{
+						for (auto iterator = curGenGameObject->_typeSqueueComponentsHeadMap[targetComponentTypes[i]]->GetIterator(); iterator.IsValid(); iterator++)
+						{
+							auto component = static_cast<Component::Component*>(iterator.Node());
+
+							component->Update();
+
+							targetComponents[i].emplace_back(component);
+						}
+					}
+				}
+
+				//Add next gen GameObject
+				if (curGenGameObject->HaveChild())
+				{
+					auto childHead = curGenGameObject->Child();
+
+					nextGenGameObjectHeads.emplace_back(childHead);
+				}
+
+				curGenGameObject = curGenGameObject->Brother();
+			}
+
+		}
+
+		curGenGameObjectHeads.clear();
+		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
+	}
+
+	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + targetComponentTypeString + "by static BFS with record.");
 }
 
 Core::Thread::LogicThread::LogicThread()
@@ -320,12 +440,18 @@ void Core::Thread::LogicThread::OnRun()
 	while (!_stopped)
 	{	
 		Utils::Log::Message("----------------------------------------------------");
-		IterateByDynamicBFS(Component::Component::ComponentType::BEHAVIOUR);
-
-		auto cameras = IterateByStaticBFSWithRecord(Component::Component::ComponentType::CAMERA);
+		IterateByDynamicBfs(Component::Component::ComponentType::BEHAVIOUR);
+		auto cameras = std::vector<Core::Component::Component*>();
+		IterateByStaticBfs(Component::Component::ComponentType::CAMERA, cameras);
 		Utils::Log::Message("Get " + std::to_string(cameras.size()) + " camera.");
-		auto renderers = IterateByStaticBFSWithRecord(Component::Component::ComponentType::RENDERER);
+		auto renderers = std::vector<Core::Component::Component*>();
+		IterateByStaticBfs(Component::Component::ComponentType::RENDERER, renderers);
 		Utils::Log::Message("Get " + std::to_string(renderers.size()) + " renderer.");
+
+		auto targetComponents = std::vector<std::vector<Core::Component::Component*>>();
+		IterateByStaticBfs({ Component::Component::ComponentType::CAMERA, Component::Component::ComponentType::RENDERER }, targetComponents);
+		Utils::Log::Message("Get " + std::to_string(targetComponents[0].size()) + " camera.");
+		Utils::Log::Message("Get " + std::to_string(targetComponents[1].size()) + " renderer.");
 
 		Utils::Log::Message("Core::Thread::LogicThread awake render start.");
 		Graphic::Core::Instance::RenderStartCondition().Awake();
