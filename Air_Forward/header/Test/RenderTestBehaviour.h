@@ -20,6 +20,8 @@ namespace Test
 		Graphic::Asset::Texture2D* texture2d;
 		Graphic::Material* material;
 
+		float rotationSpeed;
+
 		RenderTestBehaviour();
 		~RenderTestBehaviour();
 		void OnAwake()override;

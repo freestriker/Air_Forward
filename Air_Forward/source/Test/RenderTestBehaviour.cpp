@@ -1,6 +1,8 @@
 #include "Test/RenderTestBehaviour.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Object/GameObject.h"
+#include "Logic/Core/Instance.h"
+#include <algorithm>
 
 Test::RenderTestBehaviour::RenderTestBehaviour()
 	: meshTask()
@@ -11,6 +13,7 @@ Test::RenderTestBehaviour::RenderTestBehaviour()
 	, shader(nullptr)
 	, texture2d(nullptr)
 	, material(nullptr)
+	, rotationSpeed(0.5235987755982988)
 {
 }
 
@@ -47,6 +50,10 @@ void Test::RenderTestBehaviour::OnUpdate()
 		meshRenderer->material = material;
 		meshRenderer->mesh = mesh;
 	}
+
+	auto rotation = GameObject()->transform.Rotation();
+	rotation.z = std::fmod(rotation.z + rotationSpeed * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
+	GameObject()->transform.SetRotation(rotation);
 }
 
 void Test::RenderTestBehaviour::OnDestroy()

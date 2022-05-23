@@ -339,6 +339,7 @@ void Logic::Core::Thread::LogicThread::Init()
 void Logic::Core::Thread::LogicThread::OnStart()
 {
 	_stopped = false;
+	Instance::time.Launch();
 }
 
 void Logic::Core::Thread::LogicThread::OnThreadStart()
@@ -364,7 +365,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererGo2->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererGo2->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererGo2->transform.SetScale(glm::vec3(20, 20, 20));
-	meshRendererGo2->transform.SetTranslation(glm::vec3(0, 0, -30));
+	meshRendererGo2->transform.SetTranslation(glm::vec3(60, 0, -30));
 
 	Logic::Object::GameObject* meshRendererClipGo = new Logic::Object::GameObject("MeshRendererClip");
 	Core::Instance::rootObject.AddChild(meshRendererClipGo);
@@ -378,6 +379,8 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	{	
 		Utils::Log::Message("----------------------------------------------------");
 		
+		Instance::time.Refresh();
+
 		IterateByDynamicBfs(Component::Component::ComponentType::BEHAVIOUR);
 		auto cameras = std::vector<Logic::Component::Component*>();
 

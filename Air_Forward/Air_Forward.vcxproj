@@ -74,6 +74,7 @@
     <ClInclude Include="header\Graphic\Utils\SpirvReflect.h" />
     <ClInclude Include="header\Utils\OrientedBoundingBox.h" />
     <ClInclude Include="header\Utils\ThreadBase.h" />
+    <ClInclude Include="header\Utils\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -132,6 +133,7 @@
     <ClCompile Include="source\Graphic\Utils\SpirvReflect.cpp" />
     <ClCompile Include="source\Utils\OrientedBoundingBox.cpp" />
     <ClCompile Include="source\Utils\ThreadBase.cpp" />
+    <ClCompile Include="source\Utils\Time.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

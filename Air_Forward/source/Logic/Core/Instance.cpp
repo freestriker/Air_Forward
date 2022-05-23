@@ -5,6 +5,7 @@ Logic::Core::Instance::RootGameObject Logic::Core::Instance::rootObject = Logic:
 Utils::Condition* Logic::Core::Instance::_exitCondition = new Utils::Condition();
 std::unordered_set<Logic::Object::GameObject*> Logic::Core::Instance::_validGameObjectInIteration = std::unordered_set<Logic::Object::GameObject*>();
 std::unordered_set<Logic::Component::Component*> Logic::Core::Instance::_validComponentInIteration = std::unordered_set<Logic::Component::Component*>();
+Logic::Core::Instance::Time Logic::Core::Instance::time = Logic::Core::Instance::Time();
 
 void Logic::Core::Instance::Exit()
 {
@@ -30,5 +31,14 @@ Logic::Core::Instance::RootGameObject::RootGameObject()
 }
 
 Logic::Core::Instance::RootGameObject::~RootGameObject()
+{
+}
+
+Logic::Core::Instance::Time::Time()
+	: _time()
+{
+}
+
+Logic::Core::Instance::Time::~Time()
 {
 }

@@ -2,6 +2,7 @@
 #include <Logic/Object/GameObject.h>
 #include <unordered_set>
 #include <Utils/Condition.h>
+#include "Utils/Time.h"
 
 namespace Logic
 {
@@ -33,9 +34,23 @@ namespace Logic
 				inline void AddChild(Object::GameObject* child);
 				inline void RemoveChild(Object::GameObject* child);
 				inline Object::GameObject* Child();
-
+			};
+			class Time
+			{
+				friend class Core::Instance;
+				friend class Core::Thread;
+			private:
+				Utils::Time _time;
+				Time();
+				~Time();
+				inline void Launch();
+				inline void Refresh();
+			public:
+				inline double DeltaDuration();
+				inline double LaunchDuration();
 			};
 			static RootGameObject rootObject;
+			static Time time;
 			static void Exit();
 			static void WaitExit();
 		private:
@@ -61,4 +76,20 @@ inline void Logic::Core::Instance::RootGameObject::RemoveChild(Object::GameObjec
 inline Logic::Object::GameObject* Logic::Core::Instance::RootGameObject::Child()
 {
 	return _gameObject.Child();
+}
+inline void Logic::Core::Instance::Time::Launch()
+{
+	_time.Launch();
+}
+inline void Logic::Core::Instance::Time::Refresh()
+{
+	_time.Refresh();
+}
+inline double Logic::Core::Instance::Time::DeltaDuration()
+{
+	return _time.DeltaDuration();
+}
+inline double Logic::Core::Instance::Time::LaunchDuration()
+{
+	return _time.LaunchDuration();
 }
