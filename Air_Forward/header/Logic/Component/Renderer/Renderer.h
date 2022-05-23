@@ -36,10 +36,10 @@ namespace Logic
 				void OnUpdate() override;
 				Renderer();
 				virtual ~Renderer();
-				void SetMatrixData(glm::mat4& viewMatrix, glm::mat4& projectionMatrix);
 			public:
 				Graphic::Asset::Mesh* mesh;
 				Graphic::Material* material;
+				void SetMatrixData(glm::mat4& viewMatrix, glm::mat4& projectionMatrix);
 				const glm::mat4& ModelMatrix();
 				RTTR_ENABLE(Logic::Component::Component)
 			};

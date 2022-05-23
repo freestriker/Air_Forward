@@ -347,114 +347,39 @@ void Logic::Core::Thread::LogicThread::OnThreadStart()
 
 void Logic::Core::Thread::LogicThread::OnRun()
 {
-	//Core::Object::GameObject* go0 = new Core::Object::GameObject("go0");
-	//Core::Instance::rootObject.AddChild(go0);
-
-	//Core::Object::GameObject* go1 = new Core::Object::GameObject("go1");
-	//Core::Instance::rootObject.AddChild(go1);
-
-	//Core::Object::GameObject* go2 = new Core::Object::GameObject("go2");
-	//Core::Instance::rootObject.AddChild(go2);
-
-	//Core::Object::GameObject* go00 = new Core::Object::GameObject("go00");
-	//go0->AddChild(go00);
-
-	//Core::Object::GameObject* go01 = new Core::Object::GameObject("go01");
-	//go0->AddChild(go01);
-
-	//Core::Object::GameObject* go10 = new Core::Object::GameObject("go10");
-	//go1->AddChild(go10);
-
-	//Core::Object::GameObject* go11 = new Core::Object::GameObject("go11");
-	//go1->AddChild(go11);
-
-	//Core::Object::GameObject* go20 = new Core::Object::GameObject("go20");
-	//go2->AddChild(go20);
-
-	//{
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:1"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:2"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:3"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:4"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:5"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:6"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:7"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:8"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:9"));
-	//	auto f1 = go0->GetComponent<Test::TestCppBehaviour>();
-	//	auto r1 = go0->RemoveComponent<Test::TestCppBehaviour>();
-	//	auto f2 = go0->GetComponent("Test::TestCppBehaviour");
-	//	go0->RemoveComponent(f2);
-	//	auto f3 = go0->GetComponents<Test::TestCppBehaviour>();
-	//	go0->RemoveComponents(std::vector<Component::Component*>({ f3[0], f3[1] }));
-	//	auto f4 = go0->GetComponents("Test::TestCppBehaviour");
-	//	auto r2 = go0->RemoveComponents<Test::TestCppBehaviour>();
-	//}
-	//{
-	//	go0->AddComponent(new Test::TestCppBehaviour());
-	//	go0->AddComponent(new Test::TestCppBehaviour());
-	//	go0->AddComponent(new Test::TestCppBehaviour());
-	//	for (const auto& foundTransform : Core::Instance::rootObject.Child()->GetComponents("Test::TestCppBehaviour"))
-	//	{
-	//		Core::Manager::ObjectFactory::Destroy(foundTransform);
-	//	}
-	//}
-	//{
-	//	go0->AddComponent(new Test::TestCppBehaviour());
-	//	go00->AddComponent(new Test::TestCppBehaviour());
-	//	go01->AddComponent(new Test::TestCppBehaviour());
-	//	Core::Manager::ObjectFactory::Destroy(go0);
-	//}
-	//{
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:1"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:2"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:3"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:4"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:5"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:6"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:7"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:8"));
-	//	go0->AddComponent(new Test::TestCppBehaviour("go0:9"));
-
-	//	go1->AddComponent(new Test::TestCppBehaviour("go1:1"));
-	//	go2->AddComponent(new Test::TestCppBehaviour("go2:1"));
-	//	go00->AddComponent(new Test::TestCppBehaviour("go00:1"));
-	//	go01->AddComponent(new Test::TestCppBehaviour("go01:1"));
-	//	go10->AddComponent(new Test::TestCppBehaviour("go10:1"));
-	//	go10->AddComponent(new Test::TestCppBehaviour("go10:2", go1));
-	//	go11->AddComponent(new Test::TestCppBehaviour("go11:1"));
-	//	go20->AddComponent(new Test::TestCppBehaviour("go20:1", go0));
-	//	go20->AddComponent(new Test::TestCppBehaviour("go20:2"));
-	//}
-
 	Logic::Object::GameObject* cameraGo = new Logic::Object::GameObject("Camera");
 	Core::Instance::rootObject.AddChild(cameraGo);
 	cameraGo->AddComponent(new Component::Camera::OrthographicCamera());
 	cameraGo->transform.SetTranslation(glm::vec3(0, 0, 5));
 
-	Logic::Object::GameObject* meshRendererGo = new Logic::Object::GameObject("MeshRenderer");
-	Core::Instance::rootObject.AddChild(meshRendererGo);
-	meshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
-	meshRendererGo->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererGo->transform.SetTranslation(glm::vec3(0, 0, -2));
+	Logic::Object::GameObject* meshRendererGo1 = new Logic::Object::GameObject("MeshRenderer1");
+	Core::Instance::rootObject.AddChild(meshRendererGo1);
+	meshRendererGo1->AddComponent(new Component::Renderer::MeshRenderer());
+	meshRendererGo1->AddComponent(new Test::RenderTestBehaviour());
+	meshRendererGo1->transform.SetScale(glm::vec3(20, 20, 20));
+	meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, -30));
 
-	Logic::Object::GameObject* meshRendererClipGo = new Logic::Object::GameObject("MeshRenderer");
+	Logic::Object::GameObject* meshRendererGo2 = new Logic::Object::GameObject("MeshRenderer2");
+	Core::Instance::rootObject.AddChild(meshRendererGo2);
+	meshRendererGo2->AddComponent(new Component::Renderer::MeshRenderer());
+	meshRendererGo2->AddComponent(new Test::RenderTestBehaviour());
+	meshRendererGo2->transform.SetScale(glm::vec3(20, 20, 20));
+	meshRendererGo2->transform.SetTranslation(glm::vec3(0, 0, -30));
+
+	Logic::Object::GameObject* meshRendererClipGo = new Logic::Object::GameObject("MeshRendererClip");
 	Core::Instance::rootObject.AddChild(meshRendererClipGo);
 	meshRendererClipGo->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererClipGo->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -2));
+	meshRendererClipGo->transform.SetScale(glm::vec3(20, 20, 20));
+	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
 
 
 	while (!_stopped)
 	{	
 		Utils::Log::Message("----------------------------------------------------");
+		
 		IterateByDynamicBfs(Component::Component::ComponentType::BEHAVIOUR);
 		auto cameras = std::vector<Logic::Component::Component*>();
-		IterateByStaticBfs(Component::Component::ComponentType::CAMERA, cameras);
-		Utils::Log::Message("Get " + std::to_string(cameras.size()) + " camera.");
-		auto renderers = std::vector<Logic::Component::Component*>();
-		IterateByStaticBfs(Component::Component::ComponentType::RENDERER, renderers);
-		Utils::Log::Message("Get " + std::to_string(renderers.size()) + " renderer.");
 
 		auto targetComponents = std::vector<std::vector<Logic::Component::Component*>>();
 		IterateByStaticBfs({ Component::Component::ComponentType::CAMERA, Component::Component::ComponentType::RENDERER }, targetComponents);
@@ -466,9 +391,10 @@ void Logic::Core::Thread::LogicThread::OnRun()
 
 		Utils::Log::Message("Core::Thread::LogicThread awake render start.");
 		Graphic::Core::Instance::RenderStartCondition().Awake();
-
+		//RenderThread render
 		Graphic::Core::Instance::RenderEndCondition().Wait();
 		Utils::Log::Message("Core::Thread::LogicThread finish wait render finish.");
+		
 		Utils::Log::Message("----------------------------------------------------\n");
 	}
 }

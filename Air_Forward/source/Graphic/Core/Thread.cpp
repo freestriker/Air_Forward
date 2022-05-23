@@ -26,6 +26,7 @@
 #include "Logic/Component/Renderer/Renderer.h"
 #include "Utils/IntersectionChecker.h"
 #include "Logic/Object/GameObject.h"
+#include <map>
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -150,42 +151,17 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		}
 	}
 
-
-	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\Test.shader");
-	auto meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\Flat_Wall_Normal.ply");
-	auto texture2dTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\Wall.png");
-
-	struct Matrix
-	{
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 model;
-	};
-	Matrix modelMatrix = { glm::mat4(1), glm::mat4(1), glm::mat4(1) };
-
-	auto matrixBuffer = new Graphic::Instance::Buffer(sizeof(Matrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	matrixBuffer->WriteBuffer(&modelMatrix, sizeof(Matrix));
-
-	auto shader = shaderTask.get();
-
-	auto material1 = new Graphic::Material(shader);
-	auto material2 = new Graphic::Material(shader);
-
-	auto mesh = meshTask.get();
-	auto texture2d = texture2dTask.get();
-
-	material1->SetTexture2D("testTexture2D", texture2d);
-	material1->SetUniformBuffer("matrix", matrixBuffer);
-
-	material2->SetTexture2D("testTexture2D", texture2d);
-	material2->SetUniformBuffer("matrix", matrixBuffer);
-
 	Command::Semaphore attachmentAvailableSemaphore = Command::Semaphore();
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
 
 	auto & renderCommandBuffer = Core::Instance::renderCommandBuffer;
 	auto & presentCommandBuffer = Core::Instance::presentCommandBuffer;
+
+	std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>> rendererDistenceMaps = std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>>
+	({
+		{"OpaqueRenderPass", {}}
+	});
 
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
@@ -195,7 +171,14 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		glfwPollEvents();
 
+		//Clear
+		for (auto& rendererDistenceMapPair : rendererDistenceMaps)
+		{
+			rendererDistenceMapPair.second.clear();
+		}
+
 		Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
+		//Per camera render
 		for (auto& cameraComponent : Instance::_cameras)
 		{
 			auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(cameraComponent);
@@ -206,6 +189,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 			intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
 
+			//Classify renderers
 			for (auto& rendererComponent : Instance::_renderers)
 			{
 				auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
@@ -216,39 +200,40 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 				glm::mat4 mvMatrix = viewMatrix * modelMatrix;
 				glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
 
+				//Frustum Culling
+				auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
+				auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
 				auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
 				if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 				{
-
+					renderer->SetMatrixData(viewMatrix, projectionMatrix);
+					rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
 				}
 				else
 				{
-					Utils::Log::Message("Graphic::Core::Thread::RenderThread clip GameObject called " + renderer->GameObject()->name + ".");
+					Utils::Log::Message("Graphic::Core::Thread::RenderThread cull GameObject called " + renderer->GameObject()->name + ".");
 				}
-
 			}
-		}
 
-		Core::Instance::renderCommandBuffer->Reset();
-		renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-		//Render queue attachment to attachment layout
-		{
-			Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
-			(
-				&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-				0,
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-			);
+			//Render
+			Core::Instance::renderCommandBuffer->Reset();
+			renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+			//Render queue attachment to attachment layout
+			{
+				Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
+				(
+					&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+					VK_IMAGE_LAYOUT_UNDEFINED,
+					VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+					0,
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+				);
 
-			renderCommandBuffer->AddPipelineBarrier(
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				{ &attachmentAcquireBarrier }
-			);
-		}
-		//Render
-		{
+				renderCommandBuffer->AddPipelineBarrier(
+					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					{ &attachmentAcquireBarrier }
+				);
+			}
 			VkClearValue clearValue{};
 			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 			renderCommandBuffer->BeginRenderPass(
@@ -256,37 +241,36 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 				Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer"),
 				{ clearValue }
 			);
-			renderCommandBuffer->BindShader(shader);
-			renderCommandBuffer->BindMesh(mesh);
+			for (const auto& rendererDistencePair : rendererDistenceMaps["OpaqueRenderPass"])
+			{
+				auto& renderer = rendererDistencePair.second;
 
-			material1->RefreshSlotData({ "matrix", "testTexture2D" });
-			renderCommandBuffer->BindMaterial(material1);
-			renderCommandBuffer->Draw();
-
-			material2->RefreshSlotData({ "matrix", "testTexture2D" });
-			renderCommandBuffer->BindMaterial(material2);
-			renderCommandBuffer->Draw();
-
+				renderCommandBuffer->BindShader(&renderer->material->Shader());
+				renderCommandBuffer->BindMesh(renderer->mesh);
+				renderCommandBuffer->BindMaterial(renderer->material);
+				renderCommandBuffer->Draw();
+			}
 			renderCommandBuffer->EndRenderPass();
-		}
-		//Render queue attachment to transfer layout
-		{
-			Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
-			(
-				&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
-				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-				VK_ACCESS_TRANSFER_READ_BIT
-			);
+			//Render queue attachment to transfer layout
+			{
+				Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
+				(
+					&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+					VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_ACCESS_TRANSFER_READ_BIT
+				);
 
-			renderCommandBuffer->AddPipelineBarrier(
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				{ &attachmentReleaseBarrier }
-			);
+				renderCommandBuffer->AddPipelineBarrier(
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					{ &attachmentReleaseBarrier }
+				);
+			}
+			renderCommandBuffer->EndRecord();
+			renderCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+
 		}
-		renderCommandBuffer->EndRecord();
-		renderCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
 
 		uint32_t imageIndex;
 		swapchainImageAvailableFence.Reset();

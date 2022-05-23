@@ -22,8 +22,14 @@ glm::mat4 Logic::Component::Camera::OrthographicCamera::ProjectionMatrix()
 {
 	float halfWidth = aspectRatio * size;
 	float halfHeight = size;
+	float flatDistence = farFlat - nearFlat;
 
-	return glm::ortho(-halfWidth, halfWidth, - halfHeight, halfHeight, -nearFlat, -farFlat);
+	return glm::mat4(
+		1.0 / halfWidth, 0, 0, 0,
+		0, 1.0 / halfHeight, 0, 0,
+		0, 0, -1.0 / flatDistence, 0,
+		0, 0, -nearFlat / flatDistence, 1
+	);
 }
 
 std::array<glm::vec4, 6> Logic::Component::Camera::OrthographicCamera::ClipPlanes()
