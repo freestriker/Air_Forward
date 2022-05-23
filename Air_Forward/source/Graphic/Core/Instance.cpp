@@ -13,6 +13,8 @@ Graphic::Command::CommandPool* Graphic::Core::Instance::presentCommandPool = nul
 Graphic::Command::CommandBuffer* Graphic::Core::Instance::presentCommandBuffer = nullptr;
 Utils::Condition* Graphic::Core::Instance::_renderStartCondition = new Utils::Condition();
 Utils::Condition* Graphic::Core::Instance::_renderEndCondition = new Utils::Condition();
+std::vector<Logic::Component::Component*> Graphic::Core::Instance::_cameras = std::vector<Logic::Component::Component*>();
+std::vector<Logic::Component::Component*> Graphic::Core::Instance::_renderers = std::vector<Logic::Component::Component*>();
 
 Graphic::Core::Instance::InstanceCreator::InstanceCreator()
 	: applicationName("Vulkan Application")
@@ -181,4 +183,14 @@ Utils::Condition& Graphic::Core::Instance::RenderStartCondition()
 Utils::Condition& Graphic::Core::Instance::RenderEndCondition()
 {
 	return *_renderEndCondition;
+}
+
+void Graphic::Core::Instance::AddCamera(std::vector<Logic::Component::Component*>& cameras)
+{
+	_cameras.insert(_cameras.end(), cameras.begin(), cameras.end());
+}
+
+void Graphic::Core::Instance::AddRenderer(std::vector<Logic::Component::Component*>& renderers)
+{
+	_renderers.insert(_renderers.end(), renderers.begin(), renderers.end());
 }

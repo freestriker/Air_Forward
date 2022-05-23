@@ -4,14 +4,14 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FreeImage/FreeImage.h>
-#include "Core/Object/GameObject.h"
-#include "Core/Object/Object.h"
+#include "Logic/Object/GameObject.h"
+#include "Logic/Object/Object.h"
 #include "IO/Core/Thread.h"
 #include "Graphic/Core/Thread.h"
-#include "Core/Component/Transform/Transform.h"
+#include "Logic/Component/Transform/Transform.h"
 #include "utils/Log.h"
-#include "Core/Thread.h"
-#include <Core/Instance.h>
+#include "Logic/Core/Thread.h"
+#include "Logic/Core/Instance.h"
 int main()
 {
 	Graphic::Core::Thread::Init();
@@ -24,13 +24,13 @@ int main()
 
 	Graphic::Core::Thread::StartRender();
 
-	Core::Thread::Init();
-	Core::Thread::Start();
-	Core::Thread::WaitForStartFinish();
+	Logic::Core::Thread::Init();
+	Logic::Core::Thread::Start();
+	Logic::Core::Thread::WaitForStartFinish();
 
-	Core::Instance::WaitExit();
+	Logic::Core::Instance::WaitExit();
 
-	Core::Thread::End();
+	Logic::Core::Thread::End();
 	IO::Core::Thread::End();
 	Graphic::Core::Thread::End();
 }

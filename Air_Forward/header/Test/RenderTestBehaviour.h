@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Component/Behaviour/CppBehaviour.h"
+#include "Logic/Component/Behaviour/CppBehaviour.h"
 #include <string>
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Asset/Shader.h"
@@ -8,7 +8,7 @@
 
 namespace Test
 {
-	class RenderTestBehaviour : public Core::Component::Behaviour::CppBehaviour
+	class RenderTestBehaviour : public Logic::Component::Behaviour::CppBehaviour
 	{
 	public:
 		std::future<Graphic::Asset::Mesh*> meshTask;
@@ -26,6 +26,6 @@ namespace Test
 		void OnStart()override;
 		void OnUpdate()override;
 		void OnDestroy()override;
-		RTTR_ENABLE(Core::Component::Behaviour::CppBehaviour)
+		RTTR_ENABLE(Logic::Component::Behaviour::CppBehaviour)
 	};
 }

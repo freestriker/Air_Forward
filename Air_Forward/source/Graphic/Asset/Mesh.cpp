@@ -10,6 +10,7 @@ using namespace Utils;
 
 Graphic::Asset::Mesh::MeshInstance::MeshInstance(std::string path)
 	: IAssetInstance(path)
+    , _orientedBoundingBox()
     , _vertexBuffer(nullptr)
     , _indexBuffer(nullptr)
 {
@@ -21,14 +22,16 @@ Graphic::Asset::Mesh::MeshInstance::~MeshInstance()
     delete _indexBuffer;
 }
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
+void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)
 {
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    std::vector<glm::vec3> vertexPositions = std::vector<glm::vec3>();
+    
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     Log::Exception(importer.GetErrorString(), !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode);
 
-	// process ASSIMP's root node recursively
+    // process ASSIMP's root node recursively
     aiMesh* mesh = scene->mMeshes[scene->mRootNode->mMeshes[0]];
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -73,6 +76,7 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
         }
 
         _vertices.push_back(vertexData);
+        vertexPositions.emplace_back(vertexData.position);
     }
     // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -83,10 +87,8 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadByteData()
             _indices.push_back(face.mIndices[j]);
     }
     importer.FreeScene();
-}
 
-void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer)
-{
+
     VkDeviceSize vertexBufferSize = sizeof(VertexData) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(uint32_t) * _indices.size();
 
@@ -100,21 +102,16 @@ void Graphic::Asset::Mesh::MeshInstance::_LoadBuffer(Graphic::Command::CommandBu
 
 
     transferCommandBuffer->Reset();
-
     transferCommandBuffer->BeginRecord(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     transferCommandBuffer->CopyBuffer(&stageVertexBuffer, _vertexBuffer);
     transferCommandBuffer->CopyBuffer(&stageIndexBuffer, _indexBuffer);
-
     transferCommandBuffer->EndRecord();
     transferCommandBuffer->Submit({}, {}, {});
+
+    _orientedBoundingBox.BuildBoundingBox(vertexPositions);
+
     transferCommandBuffer->WaitForFinish();
     transferCommandBuffer->Reset();
-}
-
-void Graphic::Asset::Mesh::MeshInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)
-{
-    this->_LoadByteData();
-    this->_LoadBuffer(transferCommandBuffer);
 }
 
 Graphic::Asset::Mesh::Mesh()
@@ -158,4 +155,9 @@ std::vector<Graphic::Asset::VertexData>& Graphic::Asset::Mesh::Vertices()
 std::vector<uint32_t>& Graphic::Asset::Mesh::Indices()
 {
     return dynamic_cast<MeshInstance*>(_assetInstance)->_indices;
+}
+
+Utils::OrientedBoundingBox& Graphic::Asset::Mesh::OrientedBoundingBox()
+{
+    return dynamic_cast<MeshInstance*>(_assetInstance)->_orientedBoundingBox;
 }

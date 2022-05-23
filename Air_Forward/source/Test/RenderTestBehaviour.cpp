@@ -1,4 +1,6 @@
 #include "Test/RenderTestBehaviour.h"
+#include "Logic/Component/Renderer/MeshRenderer.h"
+#include "Logic/Object/GameObject.h"
 
 Test::RenderTestBehaviour::RenderTestBehaviour()
 	: meshTask()
@@ -40,6 +42,10 @@ void Test::RenderTestBehaviour::OnUpdate()
 
 		loaded = true;
 		Utils::Log::Message("Test::RenderTestBehaviour::OnUpdate() finish load.");
+
+		auto meshRenderer = GameObject()->GetComponent<Logic::Component::Renderer::Renderer>();
+		meshRenderer->material = material;
+		meshRenderer->mesh = mesh;
 	}
 }
 

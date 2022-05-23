@@ -22,6 +22,10 @@
 #include "Graphic/Instance/SwapchainImage.h"
 #include "Graphic/Command/Fence.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
+#include "Logic/Component/Camera/Camera.h"
+#include "Logic/Component/Renderer/Renderer.h"
+#include "Utils/IntersectionChecker.h"
+#include "Logic/Object/GameObject.h"
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -131,6 +135,8 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 		Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer");
 	}
 
+	Core::Instance::_cameras.clear();
+	Core::Instance::_renderers.clear();
 
 }
 
@@ -185,8 +191,43 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	{
 		Instance::RenderStartCondition().Wait();
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.");
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
 
 		glfwPollEvents();
+
+		Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
+		for (auto& cameraComponent : Instance::_cameras)
+		{
+			auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(cameraComponent);
+			glm::mat4 viewMatrix = camera->ViewMatrix();
+			glm::mat4 projectionMatrix = camera->ProjectionMatrix();
+			glm::mat4 vpMatrix = projectionMatrix * viewMatrix;
+			auto clipPlanes = camera->ClipPlanes();
+
+			intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
+
+			for (auto& rendererComponent : Instance::_renderers)
+			{
+				auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
+
+				if (!(renderer->material && renderer->mesh)) continue;
+
+				glm::mat4 modelMatrix = renderer->ModelMatrix();
+				glm::mat4 mvMatrix = viewMatrix * modelMatrix;
+				glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
+
+				auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
+				if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
+				{
+
+				}
+				else
+				{
+					Utils::Log::Message("Graphic::Core::Thread::RenderThread clip GameObject called " + renderer->GameObject()->name + ".");
+				}
+
+			}
+		}
 
 		Core::Instance::renderCommandBuffer->Reset();
 		renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
@@ -312,6 +353,9 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
+
+		Core::Instance::_cameras.clear();
+		Core::Instance::_renderers.clear();
 
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread awake render finish.");
 		Instance::RenderEndCondition().Awake();
