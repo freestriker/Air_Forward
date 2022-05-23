@@ -33,6 +33,7 @@ void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 	std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
 	{
 		void* transferData;
+		Utils::Log::Message("Graphic::Instance::Buffer::WriteBuffer id = " + std::to_string(*(unsigned int*)&std::this_thread::get_id()) + " .");
 		vkMapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
 		memcpy(transferData, data, dataSize);
 		vkUnmapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory());

@@ -1,6 +1,7 @@
 #pragma once
 #include <Core/Object/GameObject.h>
 #include <unordered_set>
+#include <Utils/Condition.h>
 
 namespace Core
 {
@@ -33,7 +34,10 @@ namespace Core
 
 		};
 		static RootGameObject rootObject;
+		static void Exit();
+		static void WaitExit();
 	private:
+		static Utils::Condition* _exitCondition;
 		static std::unordered_set< Object::GameObject*> _validGameObjectInIteration;
 		static std::unordered_set< Component::Component*> _validComponentInIteration;
 		Instance();

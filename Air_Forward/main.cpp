@@ -11,6 +11,7 @@
 #include "Core/Component/Transform/Transform.h"
 #include "utils/Log.h"
 #include "Core/Thread.h"
+#include <Core/Instance.h>
 int main()
 {
 	Graphic::Core::Thread::Init();
@@ -27,7 +28,7 @@ int main()
 	Core::Thread::Start();
 	Core::Thread::WaitForStartFinish();
 
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	Core::Instance::WaitExit();
 
 	Core::Thread::End();
 	IO::Core::Thread::End();
