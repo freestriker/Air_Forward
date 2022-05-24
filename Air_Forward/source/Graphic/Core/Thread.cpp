@@ -131,9 +131,9 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 			"VK_SUBPASS_EXTERNAL",
 			"DrawSubpass",
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 			0,
-			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
 		);
 		Core::Device::RenderPassManager().CreateRenderPass(renderPassCreator);
 	}
@@ -337,7 +337,22 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 	renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 	//Render queue attachment to attachment layout
 	{
-		Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
+		Command::ImageMemoryBarrier depthAttachmentAcquireBarrier = Command::ImageMemoryBarrier
+		(
+			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("DepthAttachment")->Image(),
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			0,
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+		);
+
+		renderCommandBuffer->AddPipelineBarrier(
+			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+			{ &depthAttachmentAcquireBarrier }
+		);
+	}
+	{
+		Command::ImageMemoryBarrier colorAttachmentAcquireBarrier = Command::ImageMemoryBarrier
 		(
 			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 			VK_IMAGE_LAYOUT_UNDEFINED,
@@ -347,8 +362,8 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 		);
 
 		renderCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			{ &attachmentAcquireBarrier }
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			{ &colorAttachmentAcquireBarrier }
 		);
 	}
 	VkClearValue colorClearValue{};
