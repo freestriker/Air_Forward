@@ -96,6 +96,13 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
+	Core::Device::FrameBufferManager().AddDepthAttachment(
+		"DepthAttachment",
+		Core::Window::VkExtent2D_(),
+		VkFormat::VK_FORMAT_D32_SFLOAT,
+		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
 	{
 		Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
@@ -106,10 +113,19 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 		);
+		renderPassCreator.AddDepthAttachment(
+			"DepthAttachment",
+			Core::Device::FrameBufferManager().Attachment("DepthAttachment"),
+			VK_ATTACHMENT_LOAD_OP_CLEAR,
+			VK_ATTACHMENT_STORE_OP_STORE,
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+		);
 		renderPassCreator.AddSubpass(
 			"DrawSubpass",
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			{ "ColorAttachment" }
+			{ "ColorAttachment" },
+			"DepthAttachment"
 		);
 		renderPassCreator.AddDependency(
 			"VK_SUBPASS_EXTERNAL",
@@ -132,8 +148,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 	}
 
 	{
-		Core::Device::FrameBufferManager().AddFrameBuffer("OpaqueFrameBuffer", Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"), { "ColorAttachment" });
-		Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer");
+		Core::Device::FrameBufferManager().AddFrameBuffer("OpaqueFrameBuffer", Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"), { "ColorAttachment", "DepthAttachment" });
 	}
 
 	Core::Instance::_cameras.clear();
@@ -336,12 +351,14 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 			{ &attachmentAcquireBarrier }
 		);
 	}
-	VkClearValue clearValue{};
-	clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+	VkClearValue colorClearValue{};
+	colorClearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+	VkClearValue depthClearValue{};
+	depthClearValue.depthStencil.depth = 1.0f;
 	renderCommandBuffer->BeginRenderPass(
 		Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"),
 		Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer"),
-		{ clearValue }
+		{ colorClearValue, depthClearValue }
 	);
 	for (const auto& rendererDistencePair : rendererDistanceMap)
 	{

@@ -23,9 +23,18 @@ void Graphic::Manager::RenderPassManager::RenderPassCreator::AddColorAttachment(
     _attchments.insert({ name, AttachmentDescriptor(name, attachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, loadOp, storeOp, initialLayout, finalLayout, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_NONE) });
 }
 
+void Graphic::Manager::RenderPassManager::RenderPassCreator::AddDepthAttachment(std::string name, Instance::AttachmentHandle attachment, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout initialLayout, VkImageLayout finalLayout)
+{
+    _attchments.insert({ name, AttachmentDescriptor(name, attachment, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, loadOp, storeOp, initialLayout, finalLayout, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_NONE) });
+}
+
 void Graphic::Manager::RenderPassManager::RenderPassCreator::AddSubpass(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames)
 {
     _subpasss.insert({ name, SubpassDescriptor(name, pipelineBindPoint, colorAttachmentNames, false, "") });
+}
+void Graphic::Manager::RenderPassManager::RenderPassCreator::AddSubpass(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames, std::string depthAttachmentName)
+{
+    _subpasss.insert({ name, SubpassDescriptor(name, pipelineBindPoint, colorAttachmentNames, true, depthAttachmentName) });
 }
 void Graphic::Manager::RenderPassManager::RenderPassCreator::AddDependency(std::string srcSubpassName, std::string dstSubpassName, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask)
 {
