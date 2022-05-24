@@ -52,6 +52,8 @@ void Test::RenderTestBehaviour::OnUpdate()
 	}
 
 	auto rotation = GameObject()->transform.Rotation();
+	rotation.x = std::fmod(rotation.x + rotationSpeed * 0.3f * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
+	rotation.y = std::fmod(rotation.y + rotationSpeed * 0.6f * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
 	rotation.z = std::fmod(rotation.z + rotationSpeed * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
 	GameObject()->transform.SetRotation(rotation);
 }

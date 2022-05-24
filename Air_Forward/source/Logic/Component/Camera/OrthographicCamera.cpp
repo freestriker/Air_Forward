@@ -10,7 +10,7 @@ RTTR_REGISTRATION
 
 Logic::Component::Camera::OrthographicCamera::OrthographicCamera()
 	: Camera()
-	, size(225)
+	, size(2.25f)
 {
 }
 

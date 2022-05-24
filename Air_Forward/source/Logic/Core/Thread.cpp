@@ -357,21 +357,18 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Core::Instance::rootObject.AddChild(meshRendererGo1);
 	meshRendererGo1->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererGo1->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererGo1->transform.SetScale(glm::vec3(20, 20, 20));
-	meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, -30));
+	meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, 0));
 
 	Logic::Object::GameObject* meshRendererGo2 = new Logic::Object::GameObject("MeshRenderer2");
 	Core::Instance::rootObject.AddChild(meshRendererGo2);
 	meshRendererGo2->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererGo2->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererGo2->transform.SetScale(glm::vec3(20, 20, 20));
-	meshRendererGo2->transform.SetTranslation(glm::vec3(60, 0, -30));
+	meshRendererGo2->transform.SetTranslation(glm::vec3(20, 0, -15));
 
 	Logic::Object::GameObject* meshRendererClipGo = new Logic::Object::GameObject("MeshRendererClip");
 	Core::Instance::rootObject.AddChild(meshRendererClipGo);
 	meshRendererClipGo->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererClipGo->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererClipGo->transform.SetScale(glm::vec3(20, 20, 20));
 	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
 
 
