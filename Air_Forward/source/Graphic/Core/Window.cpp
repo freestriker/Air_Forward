@@ -19,7 +19,7 @@ std::vector<Graphic::Instance::SwapchainImage*> Graphic::Core::Window::_swapchai
 
 Graphic::Core::Window::WindowCreator::WindowCreator()
 	: width(800)
-	, height(600)
+	, height(450)
 	, title("New Window")
 	, windowImageFormat(VkFormat::VK_FORMAT_B8G8R8A8_SRGB)
 	, windowImageColorSpace(VkColorSpaceKHR::VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)

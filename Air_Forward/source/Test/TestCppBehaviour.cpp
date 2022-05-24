@@ -1,7 +1,7 @@
 #include "Test/TestCppBehaviour.h"
 #include "Utils/Log.h"
 #include <rttr/registration>
-#include "Core/Manager/ObjectFactory.h"
+#include "Logic/Manager/ObjectFactory.h"
 RTTR_REGISTRATION
 {
 	rttr::registration::class_<Test::TestCppBehaviour>("Test::TestCppBehaviour");
@@ -11,7 +11,7 @@ Test::TestCppBehaviour::TestCppBehaviour(std::string name)
 	: TestCppBehaviour(name, nullptr)
 {
 }
-Test::TestCppBehaviour::TestCppBehaviour(std::string name, Core::Object::GameObject* destroyObject)
+Test::TestCppBehaviour::TestCppBehaviour(std::string name, Logic::Object::GameObject* destroyObject)
 	: name(name)
 	, destroyObject(destroyObject)
 {
@@ -41,7 +41,7 @@ void Test::TestCppBehaviour::OnUpdate()
 	Utils::Log::Message(name + " OnUpdate().");
 	if (destroyObject)
 	{
-		Core::Manager::ObjectFactory::Destroy(destroyObject);
+		Logic::Manager::ObjectFactory::Destroy(destroyObject);
 		destroyObject = nullptr;
 	}
 }

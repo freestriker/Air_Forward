@@ -4,13 +4,14 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <FreeImage/FreeImage.h>
-#include "Core/Object/GameObject.h"
-#include "Core/Object/Object.h"
+#include "Logic/Object/GameObject.h"
+#include "Logic/Object/Object.h"
 #include "IO/Core/Thread.h"
 #include "Graphic/Core/Thread.h"
-#include "Core/Component/Transform/Transform.h"
+#include "Logic/Component/Transform/Transform.h"
 #include "utils/Log.h"
-#include "Core/Thread.h"
+#include "Logic/Core/Thread.h"
+#include "Logic/Core/Instance.h"
 int main()
 {
 	Graphic::Core::Thread::Init();
@@ -21,15 +22,13 @@ int main()
 	IO::Core::Thread::Start();
 	IO::Core::Thread::WaitForStartFinish();
 
-	Graphic::Core::Thread::StartRender();
+	Logic::Core::Thread::Init();
+	Logic::Core::Thread::Start();
+	Logic::Core::Thread::WaitForStartFinish();
 
-	Core::Thread::Init();
-	Core::Thread::Start();
-	Core::Thread::WaitForStartFinish();
+	Logic::Core::Instance::WaitExit();
 
-	std::this_thread::sleep_for(std::chrono::seconds(20));
-
-	Core::Thread::End();
+	Logic::Core::Thread::End();
 	IO::Core::Thread::End();
 	Graphic::Core::Thread::End();
 }

@@ -53,3 +53,13 @@ void Graphic::Command::CommandPool::DestoryCommandBuffer(std::string name)
     delete _commandBuffers[name];
     _commandBuffers.erase(name);
 }
+
+void Graphic::Command::CommandPool::Reset()
+{
+    for (const auto& commandBuffer : _commandBuffers)
+    {
+        delete commandBuffer.second;
+    }
+    _commandBuffers.clear();
+    vkResetCommandPool(Core::Device::VkDevice_(), _vkCommandPool, VkCommandPoolResetFlagBits::VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+}

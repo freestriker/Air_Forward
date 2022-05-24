@@ -3,6 +3,14 @@
 #include <vector>
 #include <string>
 #include <Utils/Condition.h>
+#include <Logic/Component/Component.h>
+namespace Logic
+{
+	namespace Component
+	{
+		class Component;
+	}
+}
 namespace Graphic
 {
 	namespace Command
@@ -57,13 +65,17 @@ namespace Graphic
 
 			static Utils::Condition& RenderStartCondition();
 			static Utils::Condition& RenderEndCondition();
+			static void AddCamera(std::vector<Logic::Component::Component*>& cameras);
+			static void AddRenderer(std::vector<Logic::Component::Component*>& renderers);
+
 		private:
-			static Command::CommandPool* renderCommandPool;
-			static Command::CommandBuffer* renderCommandBuffer;
 			static Command::CommandPool* presentCommandPool;
 			static Command::CommandBuffer* presentCommandBuffer;
 			static Utils::Condition* _renderStartCondition;
 			static Utils::Condition* _renderEndCondition;
+
+			static std::vector<Logic::Component::Component*> _cameras;
+			static std::vector<Logic::Component::Component*> _renderers;
 
 			static VkInstance _vkInstance;
 			static void _AddWindowExtension(InstanceCreator& creator);

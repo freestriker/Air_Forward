@@ -144,6 +144,11 @@ std::vector<VkDescriptorSet> Graphic::Material::DescriptorSets()
 	return sets;
 }
 
+Graphic::Asset::Shader& Graphic::Material::Shader()
+{
+	return *_shader;
+}
+
 Graphic::Material::~Material()
 {
 	Asset::Shader::Unload(_shader);

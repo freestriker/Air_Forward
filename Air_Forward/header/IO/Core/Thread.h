@@ -59,6 +59,9 @@ namespace IO
 			{
 				friend class LoadThread;
 				friend class Thread;
+			private:
+				Graphic::Command::CommandPool* _transferCommandPool;
+				Graphic::Command::CommandBuffer* _transferCommandBuffer;
 			public:
 				SubLoadThread();
 				~SubLoadThread();
@@ -95,7 +98,7 @@ inline auto IO::Core::Thread::AddTask(F&& f, Args && ...args) -> std::future<typ
 {
 	using return_type = typename std::invoke_result<F, Graphic::Command::CommandBuffer* const, Args...>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(Graphic::Command::CommandBuffer* const)> >(
+	auto task = std::make_shared<std::packaged_task<return_type(Graphic::Command::CommandBuffer* const)> >(
 		std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)
 		);
 

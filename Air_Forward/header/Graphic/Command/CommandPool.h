@@ -30,6 +30,7 @@ namespace Graphic
 			CommandBuffer* CreateCommandBuffer(std::string name, VkCommandBufferLevel level);
 			CommandBuffer* GetCommandBuffer(std::string name);
 			void DestoryCommandBuffer(std::string name);
+			void Reset();
 		};
 	}
 }

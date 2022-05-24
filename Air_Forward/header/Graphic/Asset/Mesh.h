@@ -5,6 +5,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <memory>
+#include "Utils/OrientedBoundingBox.h"
 namespace Graphic
 {
 	namespace Command
@@ -41,13 +42,12 @@ namespace Graphic
 				std::vector<uint32_t> _indices;
 				Instance::Buffer* _vertexBuffer;
 				Instance::Buffer* _indexBuffer;
+				Utils::OrientedBoundingBox _orientedBoundingBox;
 			public:
 				MeshInstance(std::string path);
 				virtual ~MeshInstance();
 			private:
 				void _LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)override;
-				void _LoadByteData();
-				void _LoadBuffer(Graphic::Command::CommandBuffer* const transferCommandBuffer);
 			};
 
 		public:
@@ -59,6 +59,7 @@ namespace Graphic
 			Instance::Buffer& IndexBuffer();
 			std::vector<VertexData>& Vertices();
 			std::vector<uint32_t>& Indices();
+			Utils::OrientedBoundingBox& OrientedBoundingBox();
 		private:
 			Mesh();
 			virtual ~Mesh();

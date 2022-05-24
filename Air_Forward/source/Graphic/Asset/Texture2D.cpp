@@ -38,6 +38,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 
 	Command::Semaphore semaphore = Command::Semaphore();
 
+	transferCommandBuffer->Reset();
 	//Load bitmap
 	{
 		auto p = _settings.path.c_str();

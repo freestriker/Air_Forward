@@ -72,6 +72,8 @@ IO::Core::Thread::LoadThread::~LoadThread()
 
 
 IO::Core::Thread::SubLoadThread::SubLoadThread()
+	: _transferCommandPool(nullptr)
+	, _transferCommandBuffer(nullptr)
 {
 }
 
@@ -82,8 +84,8 @@ IO::Core::Thread::SubLoadThread::~SubLoadThread()
 
 void IO::Core::Thread::SubLoadThread::Init()
 {
-	IO::Core::Instance::_transferCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "TransferQueue");
-	IO::Core::Instance::_transferCommandBuffer = IO::Core::Instance::_transferCommandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	_transferCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "TransferQueue");
+	_transferCommandBuffer = _transferCommandPool->CreateCommandBuffer("TransferCommandBuffer", VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 }
 void IO::Core::Thread::SubLoadThread::OnStart()
@@ -108,7 +110,7 @@ void IO::Core::Thread::SubLoadThread::OnRun()
 			_tasks.pop();
 		}
 
-		task(IO::Core::Instance::_transferCommandBuffer);
+		task(_transferCommandBuffer);
 	}
 }
 

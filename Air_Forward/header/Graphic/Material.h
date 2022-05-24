@@ -49,6 +49,7 @@ namespace Graphic
 		void RefreshSlotData(std::vector<std::string> slotNames);
 		VkPipelineLayout PipelineLayout();
 		std::vector<VkDescriptorSet> DescriptorSets();
+		Asset::Shader& Shader();
 
 		~Material();
 	};
