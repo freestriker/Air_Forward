@@ -33,9 +33,9 @@ Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graph
 Graphic::Core::Thread::RenderThread::RenderThread()
 	: ThreadBase()
 	, _stopped(true)
-	, _readyToRender(false)
-	, _mutex()
-	, _readyToRenderCondition()
+	, _tasks()
+	, _queueMutex()
+	, _queueVariable()
 {
 }
 
@@ -46,18 +46,20 @@ Graphic::Core::Thread::RenderThread::~RenderThread()
 
 void Graphic::Core::Thread::RenderThread::Init()
 {
-}
+	subRenderThreads.emplace_back(new SubRenderThread(this));
+	subRenderThreads.emplace_back(new SubRenderThread(this));
+	subRenderThreads.emplace_back(new SubRenderThread(this));
+	subRenderThreads.emplace_back(new SubRenderThread(this));
 
-void Graphic::Core::Thread::RenderThread::StartRender()
-{
-	_readyToRender = true;
-	_readyToRenderCondition.notify_all();
+	for (const auto& subRenderThread : subRenderThreads)
+	{
+		subRenderThread->Init();
+	}
 }
 
 void Graphic::Core::Thread::RenderThread::OnStart()
 {
 	_stopped = false;
-	_readyToRender = false;
 }
 
 void Graphic::Core::Thread::RenderThread::OnThreadStart()
@@ -84,10 +86,8 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 	}
 
 
-	Core::Instance::renderCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
-	Core::Instance::renderCommandBuffer = Core::Instance::renderCommandPool->CreateCommandBuffer("RenderCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	Core::Instance::presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
-	Core::Instance::presentCommandBuffer = Core::Instance::renderCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Core::Instance::presentCommandBuffer = Core::Instance::presentCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
@@ -139,29 +139,31 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 	Core::Instance::_cameras.clear();
 	Core::Instance::_renderers.clear();
 
+	for (const auto& subRenderThread : subRenderThreads)
+	{
+		subRenderThread->Start();
+	}
+	for (const auto& subRenderThread : subRenderThreads)
+	{
+		subRenderThread->WaitForStartFinish();
+	}
 }
 
 void Graphic::Core::Thread::RenderThread::OnRun()
 {
-	{
-		std::unique_lock<std::mutex> lock(_mutex);
-		while (!_readyToRender)
-		{
-			_readyToRenderCondition.wait(lock);
-		}
-	}
-
 	Command::Semaphore attachmentAvailableSemaphore = Command::Semaphore();
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
 
-	auto & renderCommandBuffer = Core::Instance::renderCommandBuffer;
 	auto & presentCommandBuffer = Core::Instance::presentCommandBuffer;
 
 	std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>> rendererDistenceMaps = std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>>
 	({
 		{"OpaqueRenderPass", {}}
 	});
+	std::map<std::string, std::future<Graphic::Command::CommandBuffer*>> commandBufferTaskMap = std::map<std::string, std::future<Graphic::Command::CommandBuffer*>>();
+
+	Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
 
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
@@ -171,14 +173,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		glfwPollEvents();
 
-		//Clear
-		for (auto& rendererDistenceMapPair : rendererDistenceMaps)
-		{
-			rendererDistenceMapPair.second.clear();
-		}
-
-		Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
-		//Per camera render
+		//Per camera
 		for (auto& cameraComponent : Instance::_cameras)
 		{
 			auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(cameraComponent);
@@ -215,61 +210,11 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 				}
 			}
 
-			//Render
-			Core::Instance::renderCommandBuffer->Reset();
-			renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-			//Render queue attachment to attachment layout
-			{
-				Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
-				(
-					&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
-					VK_IMAGE_LAYOUT_UNDEFINED,
-					VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-					0,
-					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-				);
+			commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
 
-				renderCommandBuffer->AddPipelineBarrier(
-					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					{ &attachmentAcquireBarrier }
-				);
-			}
-			VkClearValue clearValue{};
-			clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-			renderCommandBuffer->BeginRenderPass(
-				Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"),
-				Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer"),
-				{ clearValue }
-			);
-			for (const auto& rendererDistencePair : rendererDistenceMaps["OpaqueRenderPass"])
-			{
-				auto& renderer = rendererDistencePair.second;
 
-				renderCommandBuffer->BindShader(&renderer->material->Shader());
-				renderCommandBuffer->BindMesh(renderer->mesh);
-				renderCommandBuffer->BindMaterial(renderer->material);
-				renderCommandBuffer->Draw();
-			}
-			renderCommandBuffer->EndRenderPass();
-			//Render queue attachment to transfer layout
-			{
-				Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
-				(
-					&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
-					VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-					VK_ACCESS_TRANSFER_READ_BIT
-				);
-
-				renderCommandBuffer->AddPipelineBarrier(
-					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-					{ &attachmentReleaseBarrier }
-				);
-			}
-			renderCommandBuffer->EndRecord();
-			renderCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
-
+			auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
+			opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
 		}
 
 		uint32_t imageIndex;
@@ -346,8 +291,19 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		presentCommandBuffer->WaitForFinish();
 
-		renderCommandBuffer->Reset();
+		//Clear
+		for (auto& rendererDistenceMapPair : rendererDistenceMaps)
+		{
+			rendererDistenceMapPair.second.clear();
+		}
+		commandBufferTaskMap.clear();
+
+		//Reset
 		presentCommandBuffer->Reset();
+		for (const auto& subRenderThread : subRenderThreads)
+		{
+			subRenderThread->RestCommandPool();
+		}
 
 	}
 }
@@ -355,6 +311,67 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 void Graphic::Core::Thread::RenderThread::OnEnd()
 {
 	_stopped = true;
+}
+
+Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaque(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera, std::multimap<float, Logic::Component::Renderer::Renderer*>& rendererDistanceMap)
+{
+	auto renderCommandBuffer = commandPool->CreateCommandBuffer("OpaqueCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	//Render
+	renderCommandBuffer->Reset();
+	renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+	//Render queue attachment to attachment layout
+	{
+		Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
+		(
+			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+			0,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+		);
+
+		renderCommandBuffer->AddPipelineBarrier(
+			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			{ &attachmentAcquireBarrier }
+		);
+	}
+	VkClearValue clearValue{};
+	clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+	renderCommandBuffer->BeginRenderPass(
+		Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"),
+		Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer"),
+		{ clearValue }
+	);
+	for (const auto& rendererDistencePair : rendererDistanceMap)
+	{
+		auto& renderer = rendererDistencePair.second;
+
+		renderCommandBuffer->BindShader(&renderer->material->Shader());
+		renderCommandBuffer->BindMesh(renderer->mesh);
+		renderCommandBuffer->BindMaterial(renderer->material);
+		renderCommandBuffer->Draw();
+	}
+	renderCommandBuffer->EndRenderPass();
+	//Render queue attachment to transfer layout
+	{
+		Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
+		(
+			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
+			VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_TRANSFER_READ_BIT
+		);
+
+		renderCommandBuffer->AddPipelineBarrier(
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			{ &attachmentReleaseBarrier }
+		);
+	}
+	renderCommandBuffer->EndRecord();
+
+	return renderCommandBuffer;
 }
 
 Graphic::Core::Thread::Thread()
@@ -374,11 +391,6 @@ void Graphic::Core::Thread::Start()
 	_renderThread.Start();
 }
 
-void Graphic::Core::Thread::StartRender()
-{
-	_renderThread.StartRender();
-}
-
 void Graphic::Core::Thread::End()
 {
 	_renderThread.End();
@@ -386,4 +398,58 @@ void Graphic::Core::Thread::End()
 void Graphic::Core::Thread::WaitForStartFinish()
 {
 	_renderThread.WaitForStartFinish();
+}
+
+Graphic::Core::Thread::SubRenderThread::SubRenderThread(RenderThread* renderThread)
+	: _commandPool(nullptr)
+	, _parentRenderThread(renderThread)
+{
+}
+
+Graphic::Core::Thread::SubRenderThread::~SubRenderThread()
+{
+}
+
+void Graphic::Core::Thread::SubRenderThread::RestCommandPool()
+{
+	_commandPool->Reset();
+}
+
+void Graphic::Core::Thread::SubRenderThread::Init()
+{
+}
+
+void Graphic::Core::Thread::SubRenderThread::OnStart()
+{
+	_commandPool = new Command::CommandPool(VkCommandPoolCreateFlagBits::VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "RenderQueue");
+	_commandPool->Reset();
+}
+
+void Graphic::Core::Thread::SubRenderThread::OnThreadStart()
+{
+}
+
+void Graphic::Core::Thread::SubRenderThread::OnRun()
+{
+	while (true)
+	{
+		std::function<void(Graphic::Command::CommandPool* const)> task;
+
+		{
+			std::unique_lock<std::mutex> lock(_parentRenderThread->_queueMutex);
+			_parentRenderThread->_queueVariable.wait(lock, [this] { return _parentRenderThread->_stopped || !_parentRenderThread->_tasks.empty(); });
+			if (_parentRenderThread->_stopped && _parentRenderThread->_tasks.empty())
+			{
+				return;
+			}
+			task = std::move(_parentRenderThread->_tasks.front());
+			_parentRenderThread->_tasks.pop();
+		}
+
+		task(_commandPool);
+	}
+}
+
+void Graphic::Core::Thread::SubRenderThread::OnEnd()
+{
 }

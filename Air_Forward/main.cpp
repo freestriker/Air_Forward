@@ -22,8 +22,6 @@ int main()
 	IO::Core::Thread::Start();
 	IO::Core::Thread::WaitForStartFinish();
 
-	Graphic::Core::Thread::StartRender();
-
 	Logic::Core::Thread::Init();
 	Logic::Core::Thread::Start();
 	Logic::Core::Thread::WaitForStartFinish();

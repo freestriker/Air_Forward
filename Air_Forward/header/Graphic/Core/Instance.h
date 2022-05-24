@@ -69,8 +69,6 @@ namespace Graphic
 			static void AddRenderer(std::vector<Logic::Component::Component*>& renderers);
 
 		private:
-			static Command::CommandPool* renderCommandPool;
-			static Command::CommandBuffer* renderCommandBuffer;
 			static Command::CommandPool* presentCommandPool;
 			static Command::CommandBuffer* presentCommandBuffer;
 			static Utils::Condition* _renderStartCondition;

@@ -7,8 +7,6 @@ using namespace Utils;
 
 VkInstance Graphic::Core::Instance::_vkInstance = VK_NULL_HANDLE;
 VkDebugUtilsMessengerEXT Graphic::Core::Instance::_debugMessenger = VK_NULL_HANDLE;
-Graphic::Command::CommandPool* Graphic::Core::Instance::renderCommandPool = nullptr;
-Graphic::Command::CommandBuffer* Graphic::Core::Instance::renderCommandBuffer = nullptr;
 Graphic::Command::CommandPool* Graphic::Core::Instance::presentCommandPool = nullptr;
 Graphic::Command::CommandBuffer* Graphic::Core::Instance::presentCommandBuffer = nullptr;
 Utils::Condition* Graphic::Core::Instance::_renderStartCondition = new Utils::Condition();

@@ -39,7 +39,7 @@ Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Comman
 
 Graphic::Command::CommandBuffer::~CommandBuffer()
 {
-    vkFreeCommandBuffers(Core::Device::VkDevice_(), _parentCommandPool->_vkCommandPool, 1, nullptr);
+    vkFreeCommandBuffers(Core::Device::VkDevice_(), _parentCommandPool->_vkCommandPool, 1, &_vkCommandBuffer);
 }
 
 void Graphic::Command::CommandBuffer::Reset()
