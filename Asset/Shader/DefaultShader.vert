@@ -1,13 +1,7 @@
 #version 450
-struct Light
-{
-    int type;
-    float intensity;
-    float range;
-    float extraData;
-    vec3 position;
-    vec4 color;
-};
+#extension GL_GOOGLE_include_directive: enable
+#include "Light.glsl"
+
 layout(set = 0, binding = 0) uniform MatrixData{
     mat4 model;
     mat4 view;

@@ -1,13 +1,7 @@
 #version 450
-struct Light
-{
-    int type;
-    float intensity;
-    float range;
-    float extraData;
-    vec3 position;
-    vec4 color;
-};
+#extension GL_GOOGLE_include_directive: enable
+#include "Light.glsl"
+
 layout(set = 1, binding = 0) uniform sampler2D albedo;
 layout(set = 1, binding = 1) uniform AlbedoInfo{
     vec4 size;
