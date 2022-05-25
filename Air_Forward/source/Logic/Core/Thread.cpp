@@ -378,7 +378,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	auto directionalLight = new Component::Light::DirectionalLight();
 	directionalLight->color = { 0, 1, 0, 1 };
 	directionalLightGo->AddComponent(directionalLight);
-	directionalLightGo->transform.SetRotation(glm::vec3(0, 0.5235987755982988, 0));
+	directionalLightGo->transform.SetEulerRotation(glm::vec3(0, 30, 0));
 
 	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight");
 	Core::Instance::rootObject.AddChild(pointLightGo);
