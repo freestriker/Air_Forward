@@ -63,8 +63,8 @@ void Graphic::Manager::LightManager::CopyLightData(Command::CommandBuffer* comma
 	_stageBuffer->WriteBuffer([this](void* pointer) -> void{
 		VkDeviceSize dataSize = sizeof(LightData);
 		memcpy(pointer, &_mainLightData, dataSize);
-		memcpy(pointer, _importantLightData.data(), dataSize * 4);
-		memcpy(pointer, _unimportantLightData.data(), dataSize * 4);
+		memcpy(reinterpret_cast<char*>(pointer) + dataSize, _importantLightData.data(), dataSize * 4);
+		memcpy(reinterpret_cast<char*>(pointer) + dataSize * 5, _unimportantLightData.data(), dataSize * 4);
 	});
 
 	VkDeviceSize dataSize = sizeof(LightData);
@@ -96,4 +96,19 @@ Graphic::Manager::LightManager::LightManager()
 
 Graphic::Manager::LightManager::~LightManager()
 {
+}
+
+Graphic::Instance::Buffer* Graphic::Manager::LightManager::MainLightBuffer()
+{
+	return _mainLightBuffer;
+}
+
+Graphic::Instance::Buffer* Graphic::Manager::LightManager::ImportantLightsBuffer()
+{
+	return _importantLightsBuffer;
+}
+
+Graphic::Instance::Buffer* Graphic::Manager::LightManager::UnimportantLightsBuffer()
+{
+	return _unimportantLightsBuffer;
 }

@@ -48,6 +48,9 @@ namespace Graphic
 			void CopyLightData(Command::CommandBuffer* commandBuffer);
 			LightManager();
 			~LightManager();
+			Instance::Buffer* MainLightBuffer();
+			Instance::Buffer* ImportantLightsBuffer();
+			Instance::Buffer* UnimportantLightsBuffer();
 		private:
 			Instance::Buffer* _stageBuffer;
 			Instance::Buffer* _mainLightBuffer;

@@ -13,7 +13,6 @@ RTTR_REGISTRATION
 void Logic::Component::Renderer::Renderer::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
-	Utils::Log::Message("Core::Component::Renderer::Renderer::OnUpdate()");
 }
 
 Logic::Component::Renderer::Renderer::Renderer()

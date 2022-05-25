@@ -17,7 +17,6 @@ Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core
 
 void Logic::Core::Thread::LogicThread::IterateByDynamicBfs(Logic::Component::Component::ComponentType targetComponentType)
 {
-	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by dynamic BFS.");
 	std::list< Logic::Object::GameObject*> curGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	std::list< Logic::Object::GameObject*> nextGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	auto& validGameObjectInIteration = Instance::_validGameObjectInIteration;
@@ -94,13 +93,12 @@ void Logic::Core::Thread::LogicThread::IterateByDynamicBfs(Logic::Component::Com
 		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 	}
 
-	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by dynamic BFS.");
+	Utils::Log::Message("Core::Thread::LogicThread iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by dynamic BFS.");
 
 }
 
 void Logic::Core::Thread::LogicThread::IterateByStaticBfs(Logic::Component::Component::ComponentType targetComponentType)
 {
-	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS.");
 
 	std::list< Logic::Object::GameObject*> curGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	std::list< Logic::Object::GameObject*> nextGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
@@ -146,12 +144,11 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(Logic::Component::Comp
 		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 	}
 
-	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS.");
+	Utils::Log::Message("Core::Thread::LogicThread iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS.");
 }
 
 void Logic::Core::Thread::LogicThread::IterateByStaticBfs(Logic::Component::Component::ComponentType targetComponentType, std::vector<Component::Component*>& targetComponents)
 {
-	Utils::Log::Message("Core::Thread::LogicThread start iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS with record.");
 
 	std::list< Logic::Object::GameObject*> curGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	std::list< Logic::Object::GameObject*> nextGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
@@ -199,7 +196,7 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(Logic::Component::Comp
 		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 	}
 
-	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS with record.");
+	Utils::Log::Message("Core::Thread::LogicThread iterate " + std::to_string(static_cast<int>(targetComponentType)) + " by static BFS with record.");
 }
 
 void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Component::Component::ComponentType> targetComponentTypes)
@@ -209,7 +206,6 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Com
 	{
 		targetComponentTypeString += std::to_string(static_cast<int>(type)) + " ";
 	}
-	Utils::Log::Message("Core::Thread::LogicThread start iterate " + targetComponentTypeString + "by static BFS with record.");
 
 	std::list< Logic::Object::GameObject*> curGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	std::list< Logic::Object::GameObject*> nextGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
@@ -259,7 +255,7 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Com
 		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 	}
 
-	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + targetComponentTypeString + "by static BFS with record.");
+	Utils::Log::Message("Core::Thread::LogicThread iterate " + targetComponentTypeString + "by static BFS with record.");
 }
 
 void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Component::Component::ComponentType> targetComponentTypes, std::vector<std::vector<Component::Component*>>& targetComponents)
@@ -269,7 +265,6 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Com
 	{
 		targetComponentTypeString += std::to_string(static_cast<int>(type)) + " ";
 	}
-	Utils::Log::Message("Core::Thread::LogicThread start iterate " + targetComponentTypeString + "by static BFS with record.");
 
 	std::list< Logic::Object::GameObject*> curGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
 	std::list< Logic::Object::GameObject*> nextGenGameObjectHeads = std::list<Logic::Object::GameObject*>();
@@ -322,7 +317,7 @@ void Logic::Core::Thread::LogicThread::IterateByStaticBfs(std::vector<Logic::Com
 		std::swap(nextGenGameObjectHeads, curGenGameObjectHeads);
 	}
 
-	Utils::Log::Message("Core::Thread::LogicThread finish iterate " + targetComponentTypeString + "by static BFS with record.");
+	Utils::Log::Message("Core::Thread::LogicThread iterate " + targetComponentTypeString + "by static BFS with record.");
 }
 
 Logic::Core::Thread::LogicThread::LogicThread()
@@ -380,14 +375,16 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	directionalLightGo->AddComponent(directionalLight);
 	directionalLightGo->transform.SetEulerRotation(glm::vec3(0, 30, 0));
 
-	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight");
-	Core::Instance::rootObject.AddChild(pointLightGo);
-	auto pointLight = new Component::Light::PointLight();
-	pointLight->color = { 1, 0, 0, 1 };
-	pointLight->range = 10;
-	pointLightGo->AddComponent(pointLight);
-	pointLightGo->transform.SetTranslation(glm::vec3(5, 5, 5));
-
+	for (int i = 0; i < 10; i++)
+	{
+		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight" + std::to_string(i));
+		Core::Instance::rootObject.AddChild(pointLightGo);
+		auto pointLight = new Component::Light::PointLight();
+		pointLight->color = { 1, 0, 0, 1 };
+		pointLight->range = 10;
+		pointLightGo->AddComponent(pointLight);
+		pointLightGo->transform.SetTranslation(glm::vec3(5, 5, 5));
+	}
 
 	while (!_stopped)
 	{	
@@ -400,9 +397,6 @@ void Logic::Core::Thread::LogicThread::OnRun()
 
 		auto targetComponents = std::vector<std::vector<Logic::Component::Component*>>();
 		IterateByStaticBfs({ Component::Component::ComponentType::LIGHT, Component::Component::ComponentType::CAMERA, Component::Component::ComponentType::RENDERER }, targetComponents);
-		Utils::Log::Message("Get " + std::to_string(targetComponents[0].size()) + " light.");
-		Utils::Log::Message("Get " + std::to_string(targetComponents[1].size()) + " camera.");
-		Utils::Log::Message("Get " + std::to_string(targetComponents[2].size()) + " renderer.");
 
 		Graphic::Core::Instance::AddLight(targetComponents[0]);
 		Graphic::Core::Instance::AddCamera(targetComponents[1]);

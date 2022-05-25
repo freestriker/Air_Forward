@@ -186,9 +186,10 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	{
 		Instance::RenderStartCondition().Wait();
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.");
-		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_lights.size()) + " light and " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
 
 		glfwPollEvents();
+
 		//Lights
 		auto lightCopyTask = AddTask([](Command::CommandPool* commandPool)->Command::CommandBuffer* {
 			Core::Instance::lightManager->SetLightData(Core::Instance::_lights);
@@ -228,6 +229,9 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 				if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 				{
 					renderer->SetMatrixData(viewMatrix, projectionMatrix);
+					renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
+					renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
+					renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());
 					rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
 				}
 				else
@@ -309,6 +313,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
 
+		Core::Instance::_lights.clear();
 		Core::Instance::_cameras.clear();
 		Core::Instance::_renderers.clear();
 

@@ -1,10 +1,21 @@
 #version 450
-
+struct Light
+{
+    int type;
+    float intensity;
+    float range;
+    float extraData;
+    vec3 position;
+    vec4 color;
+};
 layout(set = 0, binding = 0) uniform MatrixData{
     mat4 model;
     mat4 view;
     mat4 projection;
 } matrixData;
+layout(set = 2, binding = 0) uniform UnimportantLight{
+    Light lights[4];
+} unimportantLight;
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec2 vertexTexCoords;

@@ -12,7 +12,6 @@ RTTR_REGISTRATION
 void Logic::Component::Camera::Camera::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
-	Utils::Log::Message("Logic::Component::Camera::Camera::OnUpdate()");
 }
 
 Logic::Component::Camera::Camera::Camera()
