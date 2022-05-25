@@ -40,6 +40,7 @@ Graphic::Command::CommandBuffer::CommandBuffer(std::string name, Graphic::Comman
 Graphic::Command::CommandBuffer::~CommandBuffer()
 {
     vkFreeCommandBuffers(Core::Device::VkDevice_(), _parentCommandPool->_vkCommandPool, 1, &_vkCommandBuffer);
+    vkDestroyFence(Core::Device::VkDevice_(), _vkFence, nullptr);
 }
 
 void Graphic::Command::CommandBuffer::Reset()
