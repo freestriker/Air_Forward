@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive: enable
+
 #include "Light.glsl"
 #include "Common.glsl"
 
@@ -16,6 +17,8 @@ layout(location = 2) in vec3 vertexNormal;
 layout(location = 0) out vec2 outTexCoords;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec4 outColor;
+layout(location = 3) out vec3 outWorldPosition;
+layout(location = 4) out vec3 outWorldNormal;
 //layout(location = 2) out vec2 outTangent;
 //layout(location = 3) out vec2 outBitangent;
 
@@ -32,4 +35,6 @@ void main() {
 
     outTexCoords = vertexTexCoords;
     outColor = vec4(diffuse.xyz, 1);
+    outWorldPosition = worldPosition;
+    outWorldNormal = worldNormal;
 }

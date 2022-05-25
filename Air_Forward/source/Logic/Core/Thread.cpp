@@ -387,7 +387,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 		pointLight->minRange = 1;
 		pointLight->maxRange = 10;
 		pointLightGo->AddComponent(pointLight);
-		pointLightGo->transform.SetTranslation(glm::vec3(5 * std::cosf(pi_5), 5 * std::sinf(pi_5), 0));
+		pointLightGo->transform.SetTranslation(glm::vec3(std::cosf(i * pi_5), std::sinf(i * pi_5), -2));
 	}
 
 	while (!_stopped)
