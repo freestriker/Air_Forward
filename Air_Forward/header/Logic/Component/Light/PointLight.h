@@ -10,7 +10,8 @@ namespace Logic
 			class PointLight final : public Logic::Component::Light::Light
 			{
 			public:
-				float range;
+				float minRange;
+				float maxRange;
 				LightData GetLightData() override;
 				PointLight();
 				~PointLight();

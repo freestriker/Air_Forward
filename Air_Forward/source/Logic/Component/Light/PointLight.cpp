@@ -13,8 +13,8 @@ Logic::Component::Light::Light::LightData Logic::Component::Light::PointLight::G
 	LightData lightDate{};
 	lightDate.type = 2;
 	lightDate.intensity = intensity;
-	lightDate.range = range;
-	lightDate.extraParamter = 0;
+	lightDate.range = minRange;
+	lightDate.extraParamter = maxRange;
 	lightDate.position = _worldPosition;
 	lightDate.color = color;
 	return lightDate;
@@ -22,7 +22,8 @@ Logic::Component::Light::Light::LightData Logic::Component::Light::PointLight::G
 
 Logic::Component::Light::PointLight::PointLight()
 	: Light(Light::LightType::POINT)
-	, range(10.0f)
+	, minRange(1.0f)
+	, maxRange(10.0f)
 {
 }
 

@@ -11,6 +11,7 @@
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Test/RenderTestBehaviour.h"
 #include "Logic/Component/Light/DirectionalLight.h"
+#include <algorithm>
 #include "Logic/Component/Light/PointLight.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
@@ -375,15 +376,18 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	directionalLightGo->AddComponent(directionalLight);
 	directionalLightGo->transform.SetEulerRotation(glm::vec3(0, 30, 0));
 
+	float pi = std::acos(-1.0);
+	float pi_5 = pi / 5;
 	for (int i = 0; i < 10; i++)
 	{
 		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight" + std::to_string(i));
 		Core::Instance::rootObject.AddChild(pointLightGo);
 		auto pointLight = new Component::Light::PointLight();
 		pointLight->color = { 1, 0, 0, 1 };
-		pointLight->range = 10;
+		pointLight->minRange = 1;
+		pointLight->maxRange = 10;
 		pointLightGo->AddComponent(pointLight);
-		pointLightGo->transform.SetTranslation(glm::vec3(5, 5, 5));
+		pointLightGo->transform.SetTranslation(glm::vec3(5 * std::cosf(pi_5), 5 * std::sinf(pi_5), 0));
 	}
 
 	while (!_stopped)

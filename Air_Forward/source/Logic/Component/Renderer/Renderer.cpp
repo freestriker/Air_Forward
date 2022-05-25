@@ -30,7 +30,7 @@ Logic::Component::Renderer::Renderer::~Renderer()
 
 void Logic::Component::Renderer::Renderer::SetMatrixData(glm::mat4& viewMatrix, glm::mat4& projectionMatrix)
 {
-	MatrixData data = { _modelMatrix , viewMatrix , projectionMatrix };
+	MatrixData data = { _modelMatrix , viewMatrix , projectionMatrix, glm::transpose(glm::inverse(_modelMatrix))};
 	_matrixBuffer->WriteBuffer(&data, sizeof(MatrixData));
 	material->SetUniformBuffer("matrixData", _matrixBuffer);
 }

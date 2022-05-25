@@ -31,5 +31,5 @@ Logic::Component::Light::DirectionalLight::~DirectionalLight()
 
 void Logic::Component::Light::DirectionalLight::OnUpdate()
 {
-	_worldPosition = glm::normalize(glm::vec3(GameObject()->transform.ModelMatrix() * glm::vec4(0, 0, -1, 1)));
+	_worldPosition = glm::normalize(glm::vec3(GameObject()->transform.ModelMatrix() * glm::vec4(0, 0, -1, 0)));
 }
