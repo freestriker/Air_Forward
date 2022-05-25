@@ -107,6 +107,15 @@ void Graphic::Command::CommandBuffer::CopyBuffer(Instance::Buffer* srcBuffer, In
     vkCmdCopyBuffer(_vkCommandBuffer, srcBuffer->VkBuffer_(), dstBuffer->VkBuffer_(), 1, &copyRegion);
 }
 
+void Graphic::Command::CommandBuffer::CopyBuffer(Instance::Buffer* srcBuffer, VkDeviceSize srcOffset, Instance::Buffer* dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size)
+{
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = srcOffset;
+    copyRegion.dstOffset = dstOffset;
+    copyRegion.size = size;
+    vkCmdCopyBuffer(_vkCommandBuffer, srcBuffer->VkBuffer_(), dstBuffer->VkBuffer_(), 1, &copyRegion);
+}
+
 void Graphic::Command::CommandBuffer::EndRecord()
 {
     vkEndCommandBuffer(_vkCommandBuffer);

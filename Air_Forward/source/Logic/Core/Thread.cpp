@@ -10,6 +10,8 @@
 #include "Logic/Component/Camera/OrthographicCamera.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Test/RenderTestBehaviour.h"
+#include "Logic/Component/Light/DirectionalLight.h"
+#include "Logic/Component/Light/PointLight.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
 
@@ -371,6 +373,21 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererClipGo->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
 
+	Logic::Object::GameObject* directionalLightGo = new Logic::Object::GameObject("DirectionalLight");
+	Core::Instance::rootObject.AddChild(directionalLightGo);
+	auto directionalLight = new Component::Light::DirectionalLight();
+	directionalLight->color = { 0, 1, 0, 1 };
+	directionalLightGo->AddComponent(directionalLight);
+	directionalLightGo->transform.SetRotation(glm::vec3(0, 0.5235987755982988, 0));
+
+	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight");
+	Core::Instance::rootObject.AddChild(pointLightGo);
+	auto pointLight = new Component::Light::PointLight();
+	pointLight->color = { 1, 0, 0, 1 };
+	pointLight->range = 10;
+	pointLightGo->AddComponent(pointLight);
+	pointLightGo->transform.SetTranslation(glm::vec3(5, 5, 5));
+
 
 	while (!_stopped)
 	{	
@@ -382,12 +399,14 @@ void Logic::Core::Thread::LogicThread::OnRun()
 		auto cameras = std::vector<Logic::Component::Component*>();
 
 		auto targetComponents = std::vector<std::vector<Logic::Component::Component*>>();
-		IterateByStaticBfs({ Component::Component::ComponentType::CAMERA, Component::Component::ComponentType::RENDERER }, targetComponents);
-		Utils::Log::Message("Get " + std::to_string(targetComponents[0].size()) + " camera.");
-		Utils::Log::Message("Get " + std::to_string(targetComponents[1].size()) + " renderer.");
+		IterateByStaticBfs({ Component::Component::ComponentType::LIGHT, Component::Component::ComponentType::CAMERA, Component::Component::ComponentType::RENDERER }, targetComponents);
+		Utils::Log::Message("Get " + std::to_string(targetComponents[0].size()) + " light.");
+		Utils::Log::Message("Get " + std::to_string(targetComponents[1].size()) + " camera.");
+		Utils::Log::Message("Get " + std::to_string(targetComponents[2].size()) + " renderer.");
 
-		Graphic::Core::Instance::AddCamera(targetComponents[0]);
-		Graphic::Core::Instance::AddRenderer(targetComponents[1]);
+		Graphic::Core::Instance::AddLight(targetComponents[0]);
+		Graphic::Core::Instance::AddCamera(targetComponents[1]);
+		Graphic::Core::Instance::AddRenderer(targetComponents[2]);
 
 		Utils::Log::Message("Core::Thread::LogicThread awake render start.");
 		Graphic::Core::Instance::RenderStartCondition().Awake();

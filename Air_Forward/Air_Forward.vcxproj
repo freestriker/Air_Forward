@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\Graphic\Manager\LightManager.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\CppBehaviour.h" />
     <ClInclude Include="header\Logic\Component\Camera\Camera.h" />
@@ -81,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\Graphic\Manager\LightManager.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\CppBehaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Camera\Camera.cpp" />

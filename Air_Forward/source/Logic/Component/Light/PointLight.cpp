@@ -11,9 +11,10 @@ RTTR_REGISTRATION
 Logic::Component::Light::Light::LightData Logic::Component::Light::PointLight::GetLightData()
 {
 	LightData lightDate{};
-	lightDate.type.x = 2;
-	lightDate.type.y = intensity;
-	lightDate.type.z = range;
+	lightDate.type = 2;
+	lightDate.intensity = intensity;
+	lightDate.range = range;
+	lightDate.extraParamter = 0;
 	lightDate.position = _worldPosition;
 	lightDate.color = color;
 	return lightDate;

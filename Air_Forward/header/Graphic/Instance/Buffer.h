@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 #include "Graphic/Instance/Memory.h"
+#include <functional>
 namespace Graphic
 {
 	class CommandBuffer;
@@ -22,6 +23,7 @@ namespace Graphic
 		public:
 			Buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 			void WriteBuffer(const void* data, size_t dataSize);
+			void WriteBuffer(std::function<void(void*)> writeFunction);
 			inline VkBuffer VkBuffer_();
 			inline Memory& Memory();
 			inline size_t Size();

@@ -18,6 +18,10 @@ namespace Graphic
 		class CommandPool;
 		class CommandBuffer;
 	}
+	namespace Manager
+	{
+		class LightManager;
+	}
 	namespace Core
 	{
 		class Window;
@@ -65,15 +69,18 @@ namespace Graphic
 
 			static Utils::Condition& RenderStartCondition();
 			static Utils::Condition& RenderEndCondition();
+			static void AddLight(std::vector<Logic::Component::Component*>& lights);
 			static void AddCamera(std::vector<Logic::Component::Component*>& cameras);
 			static void AddRenderer(std::vector<Logic::Component::Component*>& renderers);
 
 		private:
 			static Command::CommandPool* presentCommandPool;
 			static Command::CommandBuffer* presentCommandBuffer;
+			static Manager::LightManager* lightManager;
 			static Utils::Condition* _renderStartCondition;
 			static Utils::Condition* _renderEndCondition;
 
+			static std::vector<Logic::Component::Component*> _lights;
 			static std::vector<Logic::Component::Component*> _cameras;
 			static std::vector<Logic::Component::Component*> _renderers;
 

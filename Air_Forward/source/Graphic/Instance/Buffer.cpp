@@ -39,6 +39,19 @@ void Graphic::Instance::Buffer::WriteBuffer(const void* data, size_t dataSize)
 		vkUnmapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory());
 	}
 }
+void Graphic::Instance::Buffer::WriteBuffer(std::function<void(void*)> writeFunction)
+{
+	std::unique_lock<std::mutex> lock(_memoryBlock.Mutex());
+	{
+		void* transferData;
+		Utils::Log::Message("Graphic::Instance::Buffer::WriteBuffer id = " + std::to_string(*(unsigned int*)&std::this_thread::get_id()) + " .");
+		vkMapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory(), _memoryBlock.Offset(), _memoryBlock.Size(), 0, &transferData);
+
+		writeFunction(transferData);
+
+		vkUnmapMemory(Core::Device::VkDevice_(), _memoryBlock.VkMemory());
+	}
+}
 
 Graphic::Instance::Buffer::~Buffer()
 {

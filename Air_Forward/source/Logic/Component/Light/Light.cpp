@@ -7,7 +7,8 @@ RTTR_REGISTRATION
 }
 
 Logic::Component::Light::Light::Light(LightType lightType)
-	: lightType(lightType)
+	: Component(Component::ComponentType::LIGHT)
+	, lightType(lightType)
 	, color({1, 1, 1, 1})
 	, _worldPosition({0, 0, 0})
 	, intensity(1.0f)

@@ -27,6 +27,7 @@
 #include "Utils/IntersectionChecker.h"
 #include "Logic/Object/GameObject.h"
 #include <map>
+#include "Graphic/Manager/LightManager.h"
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -88,6 +89,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 
 	Core::Instance::presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	Core::Instance::presentCommandBuffer = Core::Instance::presentCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Core::Instance::lightManager = new Manager::LightManager();
 
 	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
@@ -187,7 +189,16 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
 
 		glfwPollEvents();
-
+		//Lights
+		auto lightCopyTask = AddTask([](Command::CommandPool* commandPool)->Command::CommandBuffer* {
+			Core::Instance::lightManager->SetLightData(Core::Instance::_lights);
+			auto commandBuffer = commandPool->CreateCommandBuffer("LightCopyCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+			Core::Instance::lightManager->CopyLightData(commandBuffer);
+			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
+			return nullptr;
+		});
+		lightCopyTask.get();
+		
 		//Per camera
 		for (auto& cameraComponent : Instance::_cameras)
 		{

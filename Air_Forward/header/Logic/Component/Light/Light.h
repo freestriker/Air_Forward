@@ -13,7 +13,10 @@ namespace Logic
 			public:
 				struct LightData
 				{
-					alignas(16) glm::vec4 type;
+					alignas(4) int type;
+					alignas(4) float intensity;
+					alignas(4) float range;
+					alignas(4) float extraParamter;
 					alignas(16) glm::vec3 position;
 					alignas(16) glm::vec4 color;
 				};
