@@ -15,6 +15,18 @@ struct Light
     vec4 color;
 };
 
+layout(set = 2, binding = 0) uniform UnimportantLight{
+    Light lights[4];
+} unimportantLight;
+
+layout(set = 3, binding = 0) uniform ImportantLight{
+    Light lights[4];
+} importantLight;
+
+layout(set = 4, binding = 0) uniform MainLight {
+    Light light;
+}mainLight;
+
 vec4 DiffuseDirectionalLighting(Light light, vec3 normal)
 {
     vec4 color = light.intensity * light.color * max(0, dot(normal, -normalize(light.position)));

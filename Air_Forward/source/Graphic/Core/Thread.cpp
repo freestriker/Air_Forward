@@ -237,6 +237,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 			{
 				renderer->SetMatrixData(viewMatrix, projectionMatrix);
+				renderer->material->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
 				renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
 				renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
 				renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());

@@ -50,6 +50,7 @@ namespace Logic
 				virtual std::array<glm::vec4, 6> ClipPlanes() = 0;
 				void SetCameraData();
 				void CopyCameraData(Graphic::Command::CommandBuffer* commandBuffer);
+				Graphic::Instance::Buffer* CameraDataBuffer();
 			protected:
 				glm::mat4 _modelMatrix;
 				void OnUpdate() override;

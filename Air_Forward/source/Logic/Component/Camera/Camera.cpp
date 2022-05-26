@@ -37,6 +37,11 @@ void Logic::Component::Camera::Camera::CopyCameraData(Graphic::Command::CommandB
 	commandBuffer->WaitForFinish();
 }
 
+Graphic::Instance::Buffer* Logic::Component::Camera::Camera::CameraDataBuffer()
+{
+	return _buffer;
+}
+
 void Logic::Component::Camera::Camera::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();

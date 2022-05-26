@@ -1,6 +1,8 @@
 #ifndef _COMMON_GLSL_
 #define _COMMON_GLSL_
 
+#define START_SET 5
+
 layout(set = 0, binding = 0) uniform MatrixData{
     mat4 model;
     mat4 view;
