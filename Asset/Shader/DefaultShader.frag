@@ -20,13 +20,16 @@ layout(location = 4) in vec3 inWorldNormal;
 layout(location = 0) out vec4 colorAttachment;
 
 void main() {
+    vec3 viewDirection = CameraViewDirection(inWorldPosition);
+    vec3 worldNormal = normalize(inWorldNormal);
 
-    vec4 diffuse = inColor;
+    vec4 diffuse = DiffuseLighting(mainLight.light, worldNormal, inWorldPosition);
+    vec4 specular = SpecularLighting(mainLight.light, viewDirection, inWorldPosition, worldNormal, 50.0);
     for(int i = 0; i < 4; i++)
     {
-        diffuse += DiffuseLighting(importantLight.lights[i], normalize(inWorldNormal), inWorldPosition);
+        diffuse += DiffuseLighting(importantLight.lights[i], worldNormal, inWorldPosition);
+        specular += SpecularLighting(importantLight.lights[i], viewDirection, inWorldPosition, worldNormal, 50.0);
     }
-    diffuse += DiffuseLighting(mainLight.light, normalize(inWorldNormal), inWorldPosition);
 
-    colorAttachment = texture(albedo, inTexCoords) * diffuse;
+    colorAttachment = texture(albedo, inTexCoords) * vec4(diffuse.xyz + specular.xyz, 1);
 }

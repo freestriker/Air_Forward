@@ -27,24 +27,40 @@ layout(set = 4, binding = 0) uniform MainLight {
     Light light;
 }mainLight;
 
-vec4 DiffuseDirectionalLighting(Light light, vec3 normal)
+vec4 DiffuseDirectionalLighting(Light light, vec3 normalDirection)
 {
-    vec4 color = light.intensity * light.color * max(0, dot(normal, -normalize(light.position)));
+    vec4 color = light.intensity * light.color * max(0, dot(normalDirection, -normalize(light.position)));
     return vec4(color.xyz, 1);
 }
 
-vec4 DiffusePointLighting(Light light, vec3 normal, vec3 lightingPoint)
+vec4 SpecularDirectionalLighting(Light light, vec3 viewDirection, vec3 normalDirection, float gloss)
 {
-    vec3 lightDir = normalize(lightingPoint - light.position);
-    float d = distance(light.position, lightingPoint);
+    vec3 reflectDirection = normalize(reflect(light.position, normalDirection));
+    vec3 inverseViewDirection = normalize(-viewDirection);
+    vec4 color = light.intensity * light.color * pow(max(0, dot(reflectDirection, inverseViewDirection)), gloss);
+    return vec4(color.xyz, 1);
+}
+
+vec4 DiffusePointLighting(Light light, vec3 normalDirection, vec3 illuminatedPosition)
+{
+    vec3 lightDirection = normalize(illuminatedPosition - light.position);
+    float d = distance(light.position, illuminatedPosition);
     float k1 = light.range / max(light.range, d);
     float attenuation = k1 * k1;
     float win = pow(max(1 - pow(d / light.extraData, 4), 0), 2);
-    vec4 color = light.intensity * attenuation * win * light.color * max(0, dot(normal, -lightDir));
+    vec4 color = light.intensity * attenuation * win * light.color * max(0, dot(normalDirection, -lightDirection));
     return vec4(color.xyz, 1);
 }
 
-vec4 DiffuseLighting(Light light, vec3 normal, vec3 lightingPoint)
+vec4 SpecularPointLighting(Light light, vec3 viewDirection, vec3 illuminatedPosition, vec3 normalDirection, float gloss)
+{
+    vec3 reflectDirection = normalize(reflect(illuminatedPosition - light.position, normalDirection));
+    vec3 inverseViewDirection = normalize(-viewDirection);
+    vec4 color = light.intensity * light.color * pow(max(0, dot(reflectDirection, inverseViewDirection)), gloss);
+    return vec4(color.xyz, 1);
+}
+
+vec4 DiffuseLighting(Light light, vec3 normal, vec3 illuminatedPosition)
 {
     switch(light.type)
     {
@@ -58,7 +74,27 @@ vec4 DiffuseLighting(Light light, vec3 normal, vec3 lightingPoint)
         }
         case POINT_LIGHT:
         {
-            return DiffusePointLighting(light, normal, lightingPoint);
+            return DiffusePointLighting(light, normal, illuminatedPosition);
+        }
+    }
+    return vec4(0, 0, 0, 1);
+}
+
+vec4 SpecularLighting(Light light, vec3 viewDirection, vec3 illuminatedPosition, vec3 normalDirection, float gloss)
+{
+    switch(light.type)
+    {
+        case INVALID_LIGHT:
+        {
+            return vec4(0, 0, 0, 1);
+        }
+        case DIRECTIONL_LIGHT:
+        {
+            return SpecularDirectionalLighting(light, viewDirection, normalDirection, gloss);
+        }
+        case POINT_LIGHT:
+        {
+            return SpecularPointLighting(light, viewDirection, illuminatedPosition, normalDirection, gloss);
         }
     }
     return vec4(0, 0, 0, 1);

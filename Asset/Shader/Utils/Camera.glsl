@@ -16,4 +16,30 @@ layout(set = 1, binding = 0) uniform CameraData{
     vec4 clipPlanes[6];
 } cameraData;
 
+vec3 OrthographicCameraViewDirection()
+{
+    return normalize(cameraData.forward);
+}
+
+vec3 PerspectiveCameraViewDirection(vec3 viewedPosition)
+{
+    return normalize(viewedPosition - cameraData.position);
+}
+
+vec3 CameraViewDirection(vec3 viewedPosition)
+{
+    switch(cameraData.type)
+    {
+        case ORTHOGRAPHIC_CAMERA:
+        {
+            return OrthographicCameraViewDirection();
+        }
+        case PERSPECTIVE_CAMERA:
+        {
+            return PerspectiveCameraViewDirection(viewedPosition);
+        }
+    }
+    return vec3(0, 0, -1);
+}
+
 #endif
