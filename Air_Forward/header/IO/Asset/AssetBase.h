@@ -40,7 +40,7 @@ namespace IO
 			virtual ~IAsset();
 
 			template<typename TAsset, typename TAssetInstance>
-			inline static std::future<TAsset*> _LoadAsync(const char* path);
+			inline static std::future<TAsset*> _LoadAsync(std::string path);
 
 			template<typename TAsset, typename TAssetInstance>
 			inline static TAsset* _Load(const char* path);
@@ -75,7 +75,7 @@ inline void IO::Asset::IAssetInstance::_Wait()
 }
 
 template<typename TAsset, typename TAssetInstance>
-inline std::future<TAsset*> IO::Asset::IAsset::_LoadAsync(const char* path)
+inline std::future<TAsset*> IO::Asset::IAsset::_LoadAsync(std::string path)
 {
 	TAssetInstance* assetInstance = nullptr;
 	TAsset* newAsset = new TAsset();

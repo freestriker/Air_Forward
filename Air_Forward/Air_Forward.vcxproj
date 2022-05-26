@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\Graphic\Asset\TextureCube.h" />
     <ClInclude Include="header\Graphic\Manager\LightManager.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\CppBehaviour.h" />
@@ -82,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\Graphic\Asset\TextureCube.cpp" />
     <ClCompile Include="source\Graphic\Manager\LightManager.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\CppBehaviour.cpp" />
