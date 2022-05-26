@@ -8,8 +8,13 @@ RTTR_REGISTRATION
 	registration::class_<Logic::Component::Camera::OrthographicCamera>("Logic::Component::Camera::OrthographicCamera");
 }
 
+glm::vec4 Logic::Component::Camera::OrthographicCamera::GetParameter()
+{
+	return glm::vec4(size, 0, 0, 0);
+}
+
 Logic::Component::Camera::OrthographicCamera::OrthographicCamera()
-	: Camera()
+	: Camera(CameraType::ORTHOGRAPHIC)
 	, size(2.25f)
 {
 }

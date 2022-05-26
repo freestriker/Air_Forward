@@ -198,54 +198,65 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
 			return nullptr;
 		});
+
+		//Camera
+		auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(Instance::_cameras[0]);
+		glm::mat4 viewMatrix = camera->ViewMatrix();
+		glm::mat4 projectionMatrix = camera->ProjectionMatrix();
+		glm::mat4 vpMatrix = projectionMatrix * viewMatrix;
+
+		auto cameraCopyTask = AddTask([](Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera)->Command::CommandBuffer* {
+			camera->SetCameraData();
+			auto commandBuffer = commandPool->CreateCommandBuffer("CameraCopyCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+			camera->CopyCameraData(commandBuffer);
+			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
+			return nullptr;
+			}, camera);
+
+		//Wait task
 		lightCopyTask.get();
-		
-		//Per camera
-		for (auto& cameraComponent : Instance::_cameras)
+		cameraCopyTask.get();
+
+		//Classify renderers
+		auto clipPlanes = camera->ClipPlanes();
+		intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
+		for (auto& rendererComponent : Instance::_renderers)
 		{
-			auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(cameraComponent);
-			glm::mat4 viewMatrix = camera->ViewMatrix();
-			glm::mat4 projectionMatrix = camera->ProjectionMatrix();
-			glm::mat4 vpMatrix = projectionMatrix * viewMatrix;
-			auto clipPlanes = camera->ClipPlanes();
+			auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
 
-			intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
+			if (!(renderer->material && renderer->mesh)) continue;
 
-			//Classify renderers
-			for (auto& rendererComponent : Instance::_renderers)
+			glm::mat4 modelMatrix = renderer->ModelMatrix();
+			glm::mat4 mvMatrix = viewMatrix * modelMatrix;
+			glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
+
+			//Frustum Culling
+			auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
+			auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
+			auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
+			if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 			{
-				auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
-
-				if (!(renderer->material && renderer->mesh)) continue;
-
-				glm::mat4 modelMatrix = renderer->ModelMatrix();
-				glm::mat4 mvMatrix = viewMatrix * modelMatrix;
-				glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
-
-				//Frustum Culling
-				auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
-				auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
-				auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
-				if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
-				{
-					renderer->SetMatrixData(viewMatrix, projectionMatrix);
-					renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
-					renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
-					renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());
-					rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
-				}
-				else
-				{
-					Utils::Log::Message("Graphic::Core::Thread::RenderThread cull GameObject called " + renderer->GameObject()->name + ".");
-				}
+				renderer->SetMatrixData(viewMatrix, projectionMatrix);
+				renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
+				renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
+				renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());
+				rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
 			}
-
-			commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
-
-
-			auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
-			opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+			else
+			{
+				Utils::Log::Message("Graphic::Core::Thread::RenderThread cull GameObject called " + renderer->GameObject()->name + ".");
+			}
 		}
+
+		//Add build command buffer task
+		commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
+
+		//Wait build command buffer task
+		auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
+
+		//Submit command buffer
+		opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+
 
 		uint32_t imageIndex;
 		swapchainImageAvailableFence.Reset();

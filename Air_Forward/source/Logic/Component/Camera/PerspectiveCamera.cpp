@@ -6,8 +6,13 @@ RTTR_REGISTRATION
     registration::class_<Logic::Component::Camera::PerspectiveCamera>("Logic::Component::Camera::PerspectiveCamera");
 }
 
+glm::vec4 Logic::Component::Camera::PerspectiveCamera::GetParameter()
+{
+    return glm::vec4(fovAngle, 0, 0, 0);
+}
+
 Logic::Component::Camera::PerspectiveCamera::PerspectiveCamera()
-	: Camera()
+	: Camera(CameraType::PERSPECTIVE)
 	, fovAngle(60)
 {
 }
