@@ -5,6 +5,11 @@ using namespace Utils;
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Manager/MemoryManager.h"
 
+Graphic::Instance::Image::Image()
+{
+
+}
+
 Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage, uint32_t mipLevels, VkSampleCountFlagBits sampleCount, VkMemoryPropertyFlagBits memoryProperty, VkImageViewType imageViewType, VkImageAspectFlagBits imageAspect)
 	: _vkImageType(VkImageType::VK_IMAGE_TYPE_2D)
 	, _extent({ extent .width, extent .height, 1})
@@ -32,6 +37,7 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	imageInfo.usage = _vkImageUsage;
 	imageInfo.samples = _vkSampleCount;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.flags = 0;
 
 	Log::Exception("Failed to create image.", vkCreateImage(Core::Device::VkDevice_(), &imageInfo, nullptr, &_vkImage));
 
@@ -117,4 +123,62 @@ VkImageSubresourceLayers Graphic::Instance::Image::VkImageSubresourceLayers_()
 	layer.layerCount = 1;
 
 	return layer;
+}
+
+Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D extent, VkFormat format, VkImageUsageFlagBits imageUsage, VkMemoryPropertyFlagBits memoryProperty)
+{
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VkImageType::VK_IMAGE_TYPE_2D;
+	imageInfo.extent = { extent.width, extent.height, 1 };
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 6;
+	imageInfo.format = format;
+	imageInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = imageUsage;
+	imageInfo.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.flags = VkImageCreateFlagBits::VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+
+	VkImage newVkImage = VK_NULL_HANDLE;
+	Log::Exception("Failed to create image.", vkCreateImage(Core::Device::VkDevice_(), &imageInfo, nullptr, &newVkImage));
+
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(Core::Device::VkDevice_(), newVkImage, &memRequirements);
+
+	auto newMemory = new Instance::Memory();
+	*newMemory = Core::Device::MemoryManager().AcquireMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	vkBindImageMemory(Core::Device::VkDevice_(), newVkImage, newMemory->VkMemory(), newMemory->Offset());
+
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = newVkImage;
+	viewInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
+	viewInfo.format = format;
+	viewInfo.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 6;
+
+	VkImageView newImageView = VK_NULL_HANDLE;
+	Log::Exception("Failed to create image view.", vkCreateImageView(Core::Device::VkDevice_(), &viewInfo, nullptr, &newImageView));
+
+	Graphic::Instance::Image* newImage = new Graphic::Instance::Image();
+	newImage->_vkImageType = VkImageType::VK_IMAGE_TYPE_2D;
+	newImage->_extent = { extent.width, extent.height, 1 };
+	newImage->_vkFormat = format;
+	newImage->_vkImageTiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
+	newImage->_vkImageUsage = imageUsage;
+	newImage->_mipLevels = 1;
+	newImage->_vkSampleCount = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	newImage->_vkMemoryProperty = memoryProperty;
+	newImage->_vkImageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
+	newImage->_vkImageAspect = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+	newImage->_vkImage = newVkImage;
+	newImage->_vkImageView = newImageView;
+	newImage->_memory = newMemory;
+
+	return newImage;
 }

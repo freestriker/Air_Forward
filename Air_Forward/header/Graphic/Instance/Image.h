@@ -28,6 +28,13 @@ namespace Graphic
 			VkSampleCountFlagBits VkSampleCountFlagBits_();
 			VkImageSubresourceRange VkImageSubresourceRange_();
 			VkImageSubresourceLayers VkImageSubresourceLayers_();
+
+			static Image* CreateCubeImage(
+				VkExtent2D extent,
+				VkFormat format,
+				VkImageUsageFlagBits imageUsage,
+				VkMemoryPropertyFlagBits memoryProperty
+				);
 		private:
 			VkImageType _vkImageType;
 			VkExtent3D _extent;
@@ -44,6 +51,7 @@ namespace Graphic
 			VkImageView _vkImageView;
 			Memory* _memory;
 
+			Image();
 			Image(const Image&) = delete;
 			Image& operator=(const Image&) = delete;
 			Image(Image&&) = delete;
