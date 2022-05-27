@@ -35,8 +35,8 @@ namespace Graphic
 			static Image* CreateCubeImage(
 				VkExtent2D extent,
 				VkFormat format,
-				VkImageUsageFlagBits imageUsage,
-				VkMemoryPropertyFlagBits memoryProperty
+				VkImageUsageFlags imageUsage,
+				VkMemoryPropertyFlags memoryProperty
 				);
 		private:
 			VkImageType _vkImageType;

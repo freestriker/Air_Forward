@@ -113,7 +113,7 @@ std::vector<VkImageSubresourceRange> Graphic::Instance::Image::VkImageSubresourc
 		range.baseMipLevel = 0;
 		range.levelCount = _mipLevels;
 		range.baseArrayLayer = static_cast<uint32_t>(i);
-		range.layerCount = _layerCount;
+		range.layerCount = 1;
 	}
 
 	return targets;
@@ -129,7 +129,7 @@ std::vector<VkImageSubresourceLayers> Graphic::Instance::Image::VkImageSubresour
 		layer.aspectMask = _vkImageAspect;
 		layer.mipLevel = 0;
 		layer.baseArrayLayer = static_cast<uint32_t>(i);
-		layer.layerCount = _layerCount;
+		layer.layerCount = 1;
 	}
 	return targets;
 }
@@ -144,7 +144,7 @@ size_t Graphic::Instance::Image::PerLayerSize()
 	return _perLayerSize;
 }
 
-Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D extent, VkFormat format, VkImageUsageFlagBits imageUsage, VkMemoryPropertyFlagBits memoryProperty)
+Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D extent, VkFormat format, VkImageUsageFlags imageUsage, VkMemoryPropertyFlags memoryProperty)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -167,7 +167,7 @@ Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D e
 	vkGetImageMemoryRequirements(Core::Device::VkDevice_(), newVkImage, &memRequirements);
 
 	auto newMemory = new Instance::Memory();
-	*newMemory = Core::Device::MemoryManager().AcquireMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	*newMemory = Core::Device::MemoryManager().AcquireMemory(memRequirements, memoryProperty);
 	vkBindImageMemory(Core::Device::VkDevice_(), newVkImage, newMemory->VkMemory(), newMemory->Offset());
 
 	VkImageViewCreateInfo viewInfo{};
@@ -189,10 +189,10 @@ Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D e
 	newImage->_extent = { extent.width, extent.height, 1 };
 	newImage->_vkFormat = format;
 	newImage->_vkImageTiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
-	newImage->_vkImageUsage = imageUsage;
+	newImage->_vkImageUsage = static_cast<VkImageUsageFlagBits>(imageUsage);
 	newImage->_mipLevels = 1;
 	newImage->_vkSampleCount = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
-	newImage->_vkMemoryProperty = memoryProperty;
+	newImage->_vkMemoryProperty = static_cast<VkMemoryPropertyFlagBits>(memoryProperty);
 	newImage->_vkImageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
 	newImage->_vkImageAspect = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
 	newImage->_vkImage = newVkImage;

@@ -38,6 +38,7 @@ void Graphic::Asset::TextureCube::TextureCubeInstance::_LoadAssetInstance(Graphi
 	std::string text = std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 	nlohmann::json j = nlohmann::json::parse(text);
 	_settings = j.get<Graphic::Asset::TextureCube::TextureCubeSetting>();
+	input_file.close();
 
 	//Load bitmap
 	size_t perFaceSize = -1;
@@ -69,7 +70,7 @@ void Graphic::Asset::TextureCube::TextureCubeInstance::_LoadAssetInstance(Graphi
 	_image = Instance::Image::CreateCubeImage(
 		_extent,
 		_settings.format,
-		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT),
+		VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT,
 		VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
 
@@ -121,7 +122,6 @@ void Graphic::Asset::TextureCube::TextureCubeInstance::_LoadAssetInstance(Graphi
 	transferCommandBuffer->Submit({}, {}, {});
 	transferCommandBuffer->WaitForFinish();
 	transferCommandBuffer->Reset();
-
 }
 
 std::future<Graphic::Asset::TextureCube*> Graphic::Asset::TextureCube::LoadAsync(std::string path)

@@ -13,6 +13,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include <Graphic/Asset/Texture2D.h>
+#include <Graphic/Asset/TextureCube.h>
 #include "Graphic/Instance/Buffer.h"
 #include <glm/glm.hpp>
 #include "Graphic/Material.h"
