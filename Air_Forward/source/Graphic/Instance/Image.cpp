@@ -24,6 +24,8 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	, _vkImageViewType(imageViewType)
 	, _vkImageView(VK_NULL_HANDLE)
 	, _memory(nullptr)
+	, _layerCount(1)
+	, _perLayerSize(extent.width * extent.height * 4)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -57,7 +59,7 @@ Graphic::Instance::Image::Image(VkExtent2D extent, VkFormat format, VkImageTilin
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = _mipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
+	viewInfo.subresourceRange.layerCount = _layerCount;
 
 	Log::Exception("Failed to create image view.", vkCreateImageView(Core::Device::VkDevice_(), &viewInfo, nullptr, &_vkImageView));
 }
@@ -100,29 +102,46 @@ VkSampleCountFlagBits Graphic::Instance::Image::VkSampleCountFlagBits_()
 	return _vkSampleCount;
 }
 
-VkImageSubresourceRange Graphic::Instance::Image::VkImageSubresourceRange_()
+std::vector<VkImageSubresourceRange> Graphic::Instance::Image::VkImageSubresourceRanges_()
 {
-	VkImageSubresourceRange range{};
+	std::vector<VkImageSubresourceRange> targets = std::vector<VkImageSubresourceRange>(_layerCount);
+	for (uint32_t i = 0; i < _layerCount; i++)
+	{
+		auto& range = targets[i];
 
-	range.aspectMask = _vkImageAspect;
-	range.baseMipLevel = 0;
-	range.levelCount = _mipLevels;
-	range.baseArrayLayer = 0;
-	range.layerCount = 1;
+		range.aspectMask = _vkImageAspect;
+		range.baseMipLevel = 0;
+		range.levelCount = _mipLevels;
+		range.baseArrayLayer = static_cast<uint32_t>(i);
+		range.layerCount = _layerCount;
+	}
 
-	return range;
+	return targets;
 }
 
-VkImageSubresourceLayers Graphic::Instance::Image::VkImageSubresourceLayers_()
+std::vector<VkImageSubresourceLayers> Graphic::Instance::Image::VkImageSubresourceLayers_()
 {
-	VkImageSubresourceLayers layer{};
+	std::vector<VkImageSubresourceLayers> targets = std::vector<VkImageSubresourceLayers>(_layerCount);
+	for (uint32_t i = 0; i < _layerCount; i++)
+	{
+		auto& layer = targets[i];
 
-	layer.aspectMask = _vkImageAspect;
-	layer.mipLevel = 0;
-	layer.baseArrayLayer = 0;
-	layer.layerCount = 1;
+		layer.aspectMask = _vkImageAspect;
+		layer.mipLevel = 0;
+		layer.baseArrayLayer = static_cast<uint32_t>(i);
+		layer.layerCount = _layerCount;
+	}
+	return targets;
+}
 
-	return layer;
+uint32_t Graphic::Instance::Image::LayerCount()
+{
+	return _layerCount;
+}
+
+size_t Graphic::Instance::Image::PerLayerSize()
+{
+	return _perLayerSize;
 }
 
 Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D extent, VkFormat format, VkImageUsageFlagBits imageUsage, VkMemoryPropertyFlagBits memoryProperty)
@@ -179,6 +198,8 @@ Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D e
 	newImage->_vkImage = newVkImage;
 	newImage->_vkImageView = newImageView;
 	newImage->_memory = newMemory;
+	newImage->_layerCount = 6;
+	newImage->_perLayerSize = extent.width * extent.height * 4;
 
 	return newImage;
 }

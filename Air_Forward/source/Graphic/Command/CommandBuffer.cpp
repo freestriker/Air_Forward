@@ -60,10 +60,10 @@ void Graphic::Command::CommandBuffer::BeginRecord(VkCommandBufferUsageFlags flag
 
 void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<ImageMemoryBarrier*> imageMemoryBarriers)
 {
-    std::vector< VkImageMemoryBarrier> vkBarriers = std::vector< VkImageMemoryBarrier>(imageMemoryBarriers.size());
-    for (uint32_t i = 0; i < imageMemoryBarriers.size(); i++)
+    std::vector< VkImageMemoryBarrier> vkBarriers = std::vector< VkImageMemoryBarrier>();
+    for (const auto& imageMemoryBarrier : imageMemoryBarriers)
     {
-        vkBarriers[i] = imageMemoryBarriers[i]->VkImageMemoryBarrier_();
+        vkBarriers.insert(vkBarriers.end(), imageMemoryBarrier->VkImageMemoryBarriers().begin(), imageMemoryBarrier->VkImageMemoryBarriers().end());
     }
     vkCmdPipelineBarrier(
         _vkCommandBuffer,
@@ -89,14 +89,23 @@ void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags sr
 
 void Graphic::Command::CommandBuffer::CopyBufferToImage(Instance::Buffer* srcBuffer, Instance::Image* dstImage, VkImageLayout dstImageLayout)
 {
-    VkBufferImageCopy region{};
-    region.bufferOffset = 0;
-    region.bufferRowLength = 0;
-    region.bufferImageHeight = 0;
-    region.imageSubresource = dstImage->VkImageSubresourceLayers_();
-    region.imageOffset = { 0, 0, 0 };
-    region.imageExtent = dstImage->VkExtent3D_();
-    vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer->VkBuffer_(), dstImage->VkImage_(), dstImageLayout, 1, &region);
+    auto layerCount = dstImage->LayerCount();
+    auto layerSize = dstImage->PerLayerSize();
+    auto subresources = dstImage->VkImageSubresourceLayers_();
+    std::vector< VkBufferImageCopy> infos = std::vector<VkBufferImageCopy>(layerCount);
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        auto& region = infos[i];
+
+        region.bufferOffset = layerSize * i;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource = subresources[i];
+        region.imageOffset = { 0, 0, 0 };
+        region.imageExtent = dstImage->VkExtent3D_();
+    }
+
+    vkCmdCopyBufferToImage(_vkCommandBuffer, srcBuffer->VkBuffer_(), dstImage->VkImage_(), dstImageLayout, static_cast<uint32_t>(layerCount), infos.data());
 }
 
 void Graphic::Command::CommandBuffer::CopyBuffer(Instance::Buffer* srcBuffer, Instance::Buffer* dstBuffer)
@@ -197,13 +206,21 @@ void Graphic::Command::CommandBuffer::BindMaterial(Material* material)
 
 void Graphic::Command::CommandBuffer::CopyImage(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout)
 {
-    VkImageCopy copy{};
-    copy.srcSubresource = srcImage->VkImageSubresourceLayers_();
-    copy.srcOffset = { 0, 0, 0 };
-    copy.dstSubresource = dstImage->VkImageSubresourceLayers_();
-    copy.srcOffset = { 0, 0, 0 };
-    copy.extent = dstImage->VkExtent3D_();
-    vkCmdCopyImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, 1, &copy);
+    auto layerCount = dstImage->LayerCount();
+    auto subresources = dstImage->VkImageSubresourceLayers_();
+    std::vector< VkImageCopy> infos = std::vector<VkImageCopy>(layerCount);
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        auto& copy = infos[i];
+
+        copy.srcSubresource = subresources[i];
+        copy.srcOffset = { 0, 0, 0 };
+        copy.dstSubresource = subresources[i];
+        copy.srcOffset = { 0, 0, 0 };
+        copy.extent = dstImage->VkExtent3D_();
+    }
+
+    vkCmdCopyImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, static_cast<uint32_t>(layerCount), infos.data());
 }
 
 void Graphic::Command::CommandBuffer::Draw()
@@ -216,7 +233,7 @@ void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLay
     auto src = srcImage->VkExtent3D_();
     auto dst = dstImage->VkExtent3D_();
     VkImageBlit blit{};
-    blit.srcSubresource = srcImage->VkImageSubresourceLayers_();
+    blit.srcSubresource = srcImage->VkImageSubresourceLayers_()[0];
     blit.srcOffsets[0] = {0, 0, 0};
     blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
     blit.dstSubresource = dstImage->VkImageSubresourceLayers_();
@@ -230,13 +247,21 @@ void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLay
 {
     auto src = srcImage->VkExtent3D_();
     auto dst = dstImage->VkExtent3D_();
-    VkImageBlit blit{};
-    blit.srcSubresource = srcImage->VkImageSubresourceLayers_();
-    blit.srcOffsets[0] = { 0, 0, 0 };
-    blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
-    blit.dstSubresource = dstImage->VkImageSubresourceLayers_();
-    blit.dstOffsets[0] = { 0, 0, 0 };
-    blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+    auto layerCount = dstImage->LayerCount();
+    auto srcSubresources = srcImage->VkImageSubresourceLayers_();
+    auto dstSubresources = dstImage->VkImageSubresourceLayers_();
+    std::vector< VkImageBlit> infos = std::vector< VkImageBlit>(layerCount);
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        auto& blit = infos[i];
 
-    vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, 1, &blit, VkFilter::VK_FILTER_LINEAR);
+        blit.srcSubresource = srcSubresources[i];
+        blit.srcOffsets[0] = { 0, 0, 0 };
+        blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
+        blit.dstSubresource = dstSubresources[i];
+        blit.dstOffsets[0] = { 0, 0, 0 };
+        blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+    }
+
+    vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, static_cast<uint32_t>(layerCount), infos.data(), VkFilter::VK_FILTER_LINEAR);
 }
