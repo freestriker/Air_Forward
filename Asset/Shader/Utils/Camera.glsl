@@ -42,4 +42,9 @@ vec3 CameraViewDirection(vec3 viewedPosition)
     return vec3(0, 0, -1);
 }
 
+vec3 CameraPositionDirection(vec3 viewedPosition)
+{
+    return normalize(viewedPosition - cameraData.position);
+}
+
 #endif

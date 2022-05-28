@@ -15,17 +15,24 @@ struct Light
     vec4 color;
 };
 
-layout(set = 2, binding = 0) uniform UnimportantLight{
-    Light lights[4];
-} unimportantLight;
+layout(set = 2, binding = 0) uniform samplerCube skyBox;
 
-layout(set = 3, binding = 0) uniform ImportantLight{
+layout(set = 3, binding = 0) uniform MainLight {
+    Light light;
+}mainLight;
+
+layout(set = 4, binding = 0) uniform ImportantLight{
     Light lights[4];
 } importantLight;
 
-layout(set = 4, binding = 0) uniform MainLight {
-    Light light;
-}mainLight;
+layout(set = 5, binding = 0) uniform UnimportantLight{
+    Light lights[4];
+} unimportantLight;
+
+vec4 EnvironmentLighting(vec3 direction)
+{
+    return texture(skyBox, direction);
+}
 
 vec4 DiffuseDirectionalLighting(Light light, vec3 normalDirection)
 {

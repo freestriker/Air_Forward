@@ -31,7 +31,6 @@ void Test::RenderTestBehaviour::OnStart()
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\DefaultMesh.ply");
 	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultShader.shader");
 	texture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultTexture.png");
-	auto t = Graphic::Asset::TextureCube::LoadAsync("..\\Asset\\Texture\\DefaultTextureCube.json");
 }
 
 void Test::RenderTestBehaviour::OnUpdate()

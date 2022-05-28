@@ -3,6 +3,7 @@
 #include <string>
 #include <vulkan/vulkan_core.h>
 #include <vector>
+#include <string>
 
 namespace Graphic
 {
@@ -16,6 +17,7 @@ namespace Graphic
 		enum class SlotType;
 		class Shader;
 		class Texture2D;
+		class TextureCube;
 	}
 	namespace Instance
 	{
@@ -42,6 +44,8 @@ namespace Graphic
 		std::map<std::string, _Slot> _slots;
 	public:
 		Material(Asset::Shader* shader);
+		const Asset::TextureCube* GetTextureCube(std::string name);
+		void SetTextureCube(std::string name, Asset::TextureCube* textureCube);
 		const Asset::Texture2D* GetTexture2D(const char* name);
 		void SetTexture2D(const char* name, Asset::Texture2D* texture2d);
 		const Instance::Buffer* GetUniformBuffer(const char* name);

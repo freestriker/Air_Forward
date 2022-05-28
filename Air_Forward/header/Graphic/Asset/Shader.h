@@ -21,7 +21,8 @@ namespace Graphic
 		{
 			UNIFORM_BUFFER,
 			TEXTURE2D,
-			TEXTURE2D_WITH_INFO
+			TEXTURE2D_WITH_INFO,
+			TEXTURE_CUBE
 		};
 		class Shader:public IO::Asset::IAsset
 		{

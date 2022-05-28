@@ -23,13 +23,18 @@ void main() {
     vec3 viewDirection = CameraViewDirection(inWorldPosition);
     vec3 worldNormal = normalize(inWorldNormal);
 
-    vec4 diffuse = DiffuseLighting(mainLight.light, worldNormal, inWorldPosition);
-    vec4 specular = SpecularLighting(mainLight.light, viewDirection, inWorldPosition, worldNormal, 50.0);
+    vec4 environment = EnvironmentLighting(normalize(reflect(viewDirection, worldNormal)));
+
+    vec4 diffuse = vec4(0, 0, 0, 1);
+    vec4 specular = vec4(0, 0, 0, 1);
+
+    diffuse += DiffuseLighting(mainLight.light, worldNormal, inWorldPosition);
+    specular += SpecularLighting(mainLight.light, viewDirection, inWorldPosition, worldNormal, 50.0);
     for(int i = 0; i < 4; i++)
     {
         diffuse += DiffuseLighting(importantLight.lights[i], worldNormal, inWorldPosition);
         specular += SpecularLighting(importantLight.lights[i], viewDirection, inWorldPosition, worldNormal, 50.0);
     }
 
-    colorAttachment = texture(albedo, inTexCoords) * vec4(diffuse.xyz + specular.xyz, 1);
+    colorAttachment = texture(albedo, inTexCoords) * vec4(diffuse.xyz + specular.xyz + environment.xyz, 1);
 }
