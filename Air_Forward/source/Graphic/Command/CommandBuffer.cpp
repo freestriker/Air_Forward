@@ -186,7 +186,7 @@ void Graphic::Command::CommandBuffer::EndRenderPass()
 
 void Graphic::Command::CommandBuffer::BindShader(Asset::Shader* shader)
 {
-    vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->VkPipeline());
+    vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->VkPipeline_());
 }
 
 void Graphic::Command::CommandBuffer::BindMesh(Asset::Mesh* mesh)

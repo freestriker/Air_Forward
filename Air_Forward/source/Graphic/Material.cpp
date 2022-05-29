@@ -162,7 +162,7 @@ void Graphic::Material::RefreshSlotData(std::vector<std::string> slotNames)
 
 VkPipelineLayout Graphic::Material::PipelineLayout()
 {
-	return this->_shader->VkPipelineLayout();
+	return this->_shader->VkPipelineLayout_();
 }
 
 std::vector<VkDescriptorSet> Graphic::Material::DescriptorSets()
