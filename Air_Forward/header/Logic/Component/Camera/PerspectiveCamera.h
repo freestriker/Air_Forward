@@ -11,6 +11,8 @@ namespace Logic
 		{
 			class PerspectiveCamera final : public Logic::Component::Camera::Camera
 			{
+			private:
+				glm::vec4 GetParameter()override;
 			public:
 				float fovAngle;
 				PerspectiveCamera();

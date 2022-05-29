@@ -11,6 +11,8 @@ Graphic::Command::CommandPool* Graphic::Core::Instance::presentCommandPool = nul
 Graphic::Command::CommandBuffer* Graphic::Core::Instance::presentCommandBuffer = nullptr;
 Utils::Condition* Graphic::Core::Instance::_renderStartCondition = new Utils::Condition();
 Utils::Condition* Graphic::Core::Instance::_renderEndCondition = new Utils::Condition();
+Graphic::Manager::LightManager* Graphic::Core::Instance::lightManager  = nullptr;
+std::vector<Logic::Component::Component*> Graphic::Core::Instance::_lights = std::vector<Logic::Component::Component*>();
 std::vector<Logic::Component::Component*> Graphic::Core::Instance::_cameras = std::vector<Logic::Component::Component*>();
 std::vector<Logic::Component::Component*> Graphic::Core::Instance::_renderers = std::vector<Logic::Component::Component*>();
 
@@ -181,6 +183,11 @@ Utils::Condition& Graphic::Core::Instance::RenderStartCondition()
 Utils::Condition& Graphic::Core::Instance::RenderEndCondition()
 {
 	return *_renderEndCondition;
+}
+
+void Graphic::Core::Instance::AddLight(std::vector<Logic::Component::Component*>& lights)
+{
+	_lights.insert(_lights.end(), lights.begin(), lights.end());
 }
 
 void Graphic::Core::Instance::AddCamera(std::vector<Logic::Component::Component*>& cameras)

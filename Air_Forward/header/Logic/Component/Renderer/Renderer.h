@@ -30,6 +30,7 @@ namespace Logic
 					alignas(16) glm::mat4 model;
 					alignas(16) glm::mat4 view;
 					alignas(16) glm::mat4 projection;
+					alignas(16) glm::mat4 itModel;
 				};
 				Graphic::Instance::Buffer* _matrixBuffer;
 				glm::mat4 _modelMatrix;

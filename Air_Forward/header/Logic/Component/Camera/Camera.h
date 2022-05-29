@@ -2,7 +2,18 @@
 #include "Logic/Component/Component.h"
 #include <glm/mat4x4.hpp>
 #include <array>
-
+#include <glm/vec4.hpp>
+namespace Graphic
+{
+	namespace Instance
+	{
+		class Buffer;
+	}
+	namespace Command
+	{
+		class CommandBuffer;
+	}
+}
 namespace Logic
 {
 	namespace Component
@@ -11,19 +22,45 @@ namespace Logic
 		{
 			class Camera: public Logic::Component::Component
 			{
-			protected:
-				glm::mat4 _modelMatrix;
-				void OnUpdate() override;
-				Camera();
-				virtual ~Camera();
 			public:
+				enum class CameraType
+				{
+					ORTHOGRAPHIC = 1,
+					PERSPECTIVE = 2
+				};
+				struct CameraData
+				{
+					alignas(4)	int type;
+					alignas(4)	float nearFlat;
+					alignas(4)	float farFlat;
+					alignas(4)	float aspectRatio;
+					alignas(16)	glm::vec3 position;
+					alignas(16)	glm::vec4 parameter;
+					alignas(16)	glm::vec3 forward;
+					alignas(16)	glm::vec3 right;
+					alignas(16)	glm::vec4 clipPlanes[6];
+				};
 				float nearFlat;
 				float farFlat;
 				float aspectRatio;
+				const CameraType cameraType;
 				glm::mat4 ViewMatrix();
 				const glm::mat4& ModelMatrix();
 				virtual glm::mat4 ProjectionMatrix() = 0;
 				virtual std::array<glm::vec4, 6> ClipPlanes() = 0;
+				void SetCameraData();
+				void CopyCameraData(Graphic::Command::CommandBuffer* commandBuffer);
+				Graphic::Instance::Buffer* CameraDataBuffer();
+			protected:
+				glm::mat4 _modelMatrix;
+				void OnUpdate() override;
+				Camera(CameraType cameraType);
+				virtual ~Camera();
+				virtual glm::vec4 GetParameter() = 0;
+			private:
+				Graphic::Instance::Buffer* _stageBuffer;
+				Graphic::Instance::Buffer* _buffer;
+				CameraData _cameraData;
 
 				RTTR_ENABLE(Logic::Component::Component)
 			};

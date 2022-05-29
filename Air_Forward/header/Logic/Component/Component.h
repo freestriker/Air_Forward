@@ -35,7 +35,8 @@ namespace Logic
 				TRANSFORM,
 				BEHAVIOUR,
 				CAMERA,
-				RENDERER
+				RENDERER,
+				LIGHT
 			};
 		private:
 			Component(const Component&) = delete;

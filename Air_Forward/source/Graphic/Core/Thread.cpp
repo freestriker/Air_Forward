@@ -13,6 +13,7 @@
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include <Graphic/Asset/Texture2D.h>
+#include <Graphic/Asset/TextureCube.h>
 #include "Graphic/Instance/Buffer.h"
 #include <glm/glm.hpp>
 #include "Graphic/Material.h"
@@ -27,6 +28,8 @@
 #include "Utils/IntersectionChecker.h"
 #include "Logic/Object/GameObject.h"
 #include <map>
+#include "Graphic/Manager/LightManager.h"
+#include "Logic/Component/Light/SkyBox.h"
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -88,6 +91,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 
 	Core::Instance::presentCommandPool = new Graphic::Command::CommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, "PresentQueue");
 	Core::Instance::presentCommandBuffer = Core::Instance::presentCommandPool->CreateCommandBuffer("PresentCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	Core::Instance::lightManager = new Manager::LightManager();
 
 	Core::Device::FrameBufferManager().AddColorAttachment(
 		"ColorAttachment",
@@ -131,15 +135,16 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 			"VK_SUBPASS_EXTERNAL",
 			"DrawSubpass",
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 			0,
-			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
 		);
 		Core::Device::RenderPassManager().CreateRenderPass(renderPassCreator);
 	}
 
 	{
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
+		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE_CUBE, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }, 10);
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE2D, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }, 10);
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE2D_WITH_INFO, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
 
@@ -179,58 +184,84 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	std::map<std::string, std::future<Graphic::Command::CommandBuffer*>> commandBufferTaskMap = std::map<std::string, std::future<Graphic::Command::CommandBuffer*>>();
 
 	Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
-
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
 		Instance::RenderStartCondition().Wait();
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread wait render start.");
-		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
+		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_lights.size()) + " light and " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
 
 		glfwPollEvents();
 
-		//Per camera
-		for (auto& cameraComponent : Instance::_cameras)
+		//Lights
+		auto lightCopyTask = AddTask([](Command::CommandPool* commandPool)->Command::CommandBuffer* {
+			Core::Instance::lightManager->SetLightData(Core::Instance::_lights);
+			auto commandBuffer = commandPool->CreateCommandBuffer("LightCopyCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+			Core::Instance::lightManager->CopyLightData(commandBuffer);
+			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
+			return nullptr;
+		});
+
+		//Camera
+		auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(Instance::_cameras[0]);
+		glm::mat4 viewMatrix = camera->ViewMatrix();
+		glm::mat4 projectionMatrix = camera->ProjectionMatrix();
+		glm::mat4 vpMatrix = projectionMatrix * viewMatrix;
+
+		auto cameraCopyTask = AddTask([](Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera)->Command::CommandBuffer* {
+			camera->SetCameraData();
+			auto commandBuffer = commandPool->CreateCommandBuffer("CameraCopyCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+			camera->CopyCameraData(commandBuffer);
+			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
+			return nullptr;
+			}, camera);
+
+		//Wait task
+		lightCopyTask.get();
+		cameraCopyTask.get();
+
+		//Classify renderers
+		auto clipPlanes = camera->ClipPlanes();
+		intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
+		for (auto& rendererComponent : Instance::_renderers)
 		{
-			auto camera = dynamic_cast<Logic::Component::Camera::Camera*>(cameraComponent);
-			glm::mat4 viewMatrix = camera->ViewMatrix();
-			glm::mat4 projectionMatrix = camera->ProjectionMatrix();
-			glm::mat4 vpMatrix = projectionMatrix * viewMatrix;
-			auto clipPlanes = camera->ClipPlanes();
+			auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
 
-			intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
+			if (!(renderer->material && renderer->mesh)) continue;
 
-			//Classify renderers
-			for (auto& rendererComponent : Instance::_renderers)
+			glm::mat4 modelMatrix = renderer->ModelMatrix();
+			glm::mat4 mvMatrix = viewMatrix * modelMatrix;
+			glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
+
+			//Frustum Culling
+			auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
+			auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
+			auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
+			if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 			{
-				auto renderer = dynamic_cast<Logic::Component::Renderer::Renderer*>(rendererComponent);
-
-				if (!(renderer->material && renderer->mesh)) continue;
-
-				glm::mat4 modelMatrix = renderer->ModelMatrix();
-				glm::mat4 mvMatrix = viewMatrix * modelMatrix;
-				glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
-
-				//Frustum Culling
-				auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
-				auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
-				auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
-				if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
-				{
-					renderer->SetMatrixData(viewMatrix, projectionMatrix);
-					rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
-				}
-				else
-				{
-					Utils::Log::Message("Graphic::Core::Thread::RenderThread cull GameObject called " + renderer->GameObject()->name + ".");
-				}
+				renderer->SetMatrixData(viewMatrix, projectionMatrix);
+				renderer->material->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
+				renderer->material->SetTextureCube("skyBoxTexture", Instance::lightManager->SkyBoxTexture());
+				renderer->material->SetUniformBuffer("skyBox", Instance::lightManager->SkyBoxBuffer());
+				renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
+				renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
+				renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());
+				rendererDistenceMaps[renderer->material->Shader().Settings().renderPass].insert({ obbMvCenter.z, renderer });
 			}
-
-			commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
-
-
-			auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
-			opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+			else
+			{
+				Utils::Log::Message("Graphic::Core::Thread::RenderThread cull GameObject called " + renderer->GameObject()->name + ".");
+			}
 		}
+
+		//Add build command buffer task
+		commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
+
+		//Wait build command buffer task
+		auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
+
+		//Submit command buffer
+		opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+
 
 		uint32_t imageIndex;
 		swapchainImageAvailableFence.Reset();
@@ -298,6 +329,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			result = vkQueuePresentKHR(Core::Device::Queue_("PresentQueue").VkQueue_(), &presentInfo);
 		}
 
+		Core::Instance::_lights.clear();
 		Core::Instance::_cameras.clear();
 		Core::Instance::_renderers.clear();
 
@@ -337,7 +369,22 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 	renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 	//Render queue attachment to attachment layout
 	{
-		Command::ImageMemoryBarrier attachmentAcquireBarrier = Command::ImageMemoryBarrier
+		Command::ImageMemoryBarrier depthAttachmentAcquireBarrier = Command::ImageMemoryBarrier
+		(
+			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("DepthAttachment")->Image(),
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			0,
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+		);
+
+		renderCommandBuffer->AddPipelineBarrier(
+			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+			{ &depthAttachmentAcquireBarrier }
+		);
+	}
+	{
+		Command::ImageMemoryBarrier colorAttachmentAcquireBarrier = Command::ImageMemoryBarrier
 		(
 			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
 			VK_IMAGE_LAYOUT_UNDEFINED,
@@ -347,8 +394,8 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 		);
 
 		renderCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			{ &attachmentAcquireBarrier }
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			{ &colorAttachmentAcquireBarrier }
 		);
 	}
 	VkClearValue colorClearValue{};

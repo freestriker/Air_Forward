@@ -1,9 +1,9 @@
 #include "Logic/Component/Component.h"
-#include <rttr/registration>
 #include "Logic/Object/GameObject.h"
 #include "Logic/Component/Behaviour/Behaviour.h"
 #include "Logic/Component/Camera/Camera.h"
 #include "Logic/Component/Renderer/Renderer.h"
+#include <rttr/registration>
 
 RTTR_REGISTRATION
 {

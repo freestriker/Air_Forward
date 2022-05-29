@@ -13,7 +13,6 @@ RTTR_REGISTRATION
 void Logic::Component::Renderer::Renderer::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
-	Utils::Log::Message("Core::Component::Renderer::Renderer::OnUpdate()");
 }
 
 Logic::Component::Renderer::Renderer::Renderer()
@@ -31,7 +30,7 @@ Logic::Component::Renderer::Renderer::~Renderer()
 
 void Logic::Component::Renderer::Renderer::SetMatrixData(glm::mat4& viewMatrix, glm::mat4& projectionMatrix)
 {
-	MatrixData data = { _modelMatrix , viewMatrix , projectionMatrix };
+	MatrixData data = { _modelMatrix , viewMatrix , projectionMatrix, glm::transpose(glm::inverse(_modelMatrix))};
 	_matrixBuffer->WriteBuffer(&data, sizeof(MatrixData));
 	material->SetUniformBuffer("matrixData", _matrixBuffer);
 }

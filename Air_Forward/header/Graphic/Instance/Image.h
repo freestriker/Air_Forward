@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
+#include <vector>
 namespace Graphic
 {
 	namespace Instance
@@ -26,8 +27,17 @@ namespace Graphic
 			Memory& Memory_();
 			VkFormat VkFormat_();
 			VkSampleCountFlagBits VkSampleCountFlagBits_();
-			VkImageSubresourceRange VkImageSubresourceRange_();
-			VkImageSubresourceLayers VkImageSubresourceLayers_();
+			std::vector<VkImageSubresourceRange> VkImageSubresourceRanges_();
+			std::vector<VkImageSubresourceLayers> VkImageSubresourceLayers_();
+			uint32_t LayerCount();
+			size_t PerLayerSize();
+
+			static Image* CreateCubeImage(
+				VkExtent2D extent,
+				VkFormat format,
+				VkImageUsageFlags imageUsage,
+				VkMemoryPropertyFlags memoryProperty
+				);
 		private:
 			VkImageType _vkImageType;
 			VkExtent3D _extent;
@@ -39,11 +49,14 @@ namespace Graphic
 			VkMemoryPropertyFlagBits _vkMemoryProperty;
 			VkImageViewType _vkImageViewType;
 			VkImageAspectFlagBits _vkImageAspect;
+			uint32_t _layerCount;
+			size_t _perLayerSize;
 
 			VkImage _vkImage;
 			VkImageView _vkImageView;
 			Memory* _memory;
 
+			Image();
 			Image(const Image&) = delete;
 			Image& operator=(const Image&) = delete;
 			Image(Image&&) = delete;

@@ -74,6 +74,15 @@ void Logic::Component::Transform::Transform::SetRotation(glm::vec3 rotation)
     UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
 }
 
+void Logic::Component::Transform::Transform::SetEulerRotation(glm::vec3 rotation)
+{
+    double k = std::acos(-1.0) / 180.0;
+    this->_rotation = rotation * static_cast<float>(k);
+
+    _relativeModelMatrix = TranslationMatrix() * RotationMatrix() * ScaleMatrix();
+    UpdateModelMatrix(this->_gameObject->Parent()->transform._modelMatrix);
+}
+
 void Logic::Component::Transform::Transform::SetScale(glm::vec3 scale)
 {
     this->_scale = scale;
@@ -125,6 +134,12 @@ glm::mat4 Logic::Component::Transform::Transform::ModelMatrix()
 glm::vec3 Logic::Component::Transform::Transform::Rotation()
 {
     return _rotation;
+}
+
+glm::vec3 Logic::Component::Transform::Transform::EulerRotation()
+{
+    double k = 180.0 / std::acos(-1.0);
+    return _rotation * static_cast<float>(k);
 }
 
 glm::vec3 Logic::Component::Transform::Transform::Translation()

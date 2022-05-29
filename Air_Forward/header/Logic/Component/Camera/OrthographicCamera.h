@@ -9,6 +9,8 @@ namespace Logic
 		{
 			class OrthographicCamera final : public Logic::Component::Camera::Camera
 			{
+			private:
+				glm::vec4 GetParameter()override;
 			public:
 				float size;
 				OrthographicCamera();

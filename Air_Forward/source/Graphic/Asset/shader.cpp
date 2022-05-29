@@ -362,6 +362,10 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 						{
 							newSlotLayout.slotType = SlotType::TEXTURE2D;
 						}
+						else if (refl_binding.descriptor_type == SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && refl_binding.image.dim == SpvDim::SpvDimCube)
+						{
+							newSlotLayout.slotType = SlotType::TEXTURE_CUBE;
+						}
 						else
 						{
 							Log::Exception("Failed to parse this type.");
@@ -411,9 +415,12 @@ void Graphic::Asset::Shader::_ShaderInstance::_CreateDescriptorLayouts(_Pipeline
 			{
 				slotLayout.slotType = SlotType::TEXTURE2D_WITH_INFO;
 			}
+			else if (binding.descriptorType == VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && slotLayout.slotType == Asset::SlotType::TEXTURE_CUBE && setBindingPair.second.size() == 1)
+			{
+				slotLayout.slotType = SlotType::TEXTURE_CUBE;
+			}
 		}
 		_slotLayouts.emplace(slotLayout.slotName, slotLayout);
-
 	}
 }
 

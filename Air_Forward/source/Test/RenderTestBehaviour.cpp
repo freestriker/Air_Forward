@@ -3,6 +3,7 @@
 #include "Logic/Object/GameObject.h"
 #include "Logic/Core/Instance.h"
 #include <algorithm>
+#include <Graphic/Asset/TextureCube.h>
 
 Test::RenderTestBehaviour::RenderTestBehaviour()
 	: meshTask()
@@ -30,7 +31,6 @@ void Test::RenderTestBehaviour::OnStart()
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\DefaultMesh.ply");
 	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultShader.shader");
 	texture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultTexture.png");
-	Utils::Log::Message("Test::RenderTestBehaviour::OnUpdate() start load.");
 }
 
 void Test::RenderTestBehaviour::OnUpdate()
@@ -44,7 +44,6 @@ void Test::RenderTestBehaviour::OnUpdate()
 		material->SetTexture2D("albedo", texture2d);
 
 		loaded = true;
-		Utils::Log::Message("Test::RenderTestBehaviour::OnUpdate() finish load.");
 
 		auto meshRenderer = GameObject()->GetComponent<Logic::Component::Renderer::Renderer>();
 		meshRenderer->material = material;

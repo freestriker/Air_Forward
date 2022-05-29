@@ -1,6 +1,7 @@
 #include "Graphic/Material.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Texture2D.h"
+#include "Graphic/Asset/TextureCube.h"
 #include "Graphic/Manager/DescriptorSetManager.h"
 #include "Graphic/Core/Device.h"
 #include "Graphic/Instance/Buffer.h"
@@ -23,6 +24,37 @@ Graphic::Material::Material(Asset::Shader* shader)
 		newSlot.set = pair.second.set;
 		_slots.emplace(newSlot.name, newSlot);
 	}
+}
+
+const Graphic::Asset::TextureCube* Graphic::Material::GetTextureCube(std::string name)
+{
+	if (_slots.count(name) && (_slots[name].slotType == Asset::SlotType::TEXTURE_CUBE))
+	{
+		return static_cast<const Graphic::Asset::TextureCube*>(_slots[name].asset);
+	}
+	else
+	{
+		Utils::Log::Exception("Failed to get textureCube.");
+	}
+}
+
+void Graphic::Material::SetTextureCube(std::string name, Asset::TextureCube* textureCube)
+{
+	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::TEXTURE_CUBE)
+	{
+		_slots[name].asset = textureCube;
+		_slots[name].descriptorSet->UpdateBindingData(
+			{ 0 },
+			{
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textureCube->ImageSampler().VkSampler_(), textureCube->Image().VkImageView_(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}
+			}
+			);
+	}
+	else
+	{
+		Utils::Log::Exception("Failed to set textureCube.");
+	}
+
 }
 
 const Graphic::Asset::Texture2D* Graphic::Material::GetTexture2D(const char* name)

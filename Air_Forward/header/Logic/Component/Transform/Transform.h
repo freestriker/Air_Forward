@@ -33,6 +33,7 @@ namespace Logic
 			public:
 				void SetTranslation(glm::vec3 translation);
 				void SetRotation(glm::vec3 rotation);
+				void SetEulerRotation(glm::vec3 rotation);
 				void SetScale(glm::vec3 scale);
 				void SetTranslationRotationScale(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale);
 
@@ -42,6 +43,7 @@ namespace Logic
 				glm::mat4 ModelMatrix();
 
 				glm::vec3 Rotation();
+				glm::vec3 EulerRotation();
 				glm::vec3 Translation();
 				glm::vec3 Scale();
 
