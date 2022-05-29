@@ -13,6 +13,7 @@
 #include "Logic/Component/Light/DirectionalLight.h"
 #include <algorithm>
 #include "Logic/Component/Light/PointLight.h"
+#include "Logic/Component/Light/SkyBox.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
 
@@ -368,6 +369,13 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererClipGo->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererClipGo->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
+
+	Logic::Object::GameObject* skyBoxGo = new Logic::Object::GameObject("SkyBox");
+	Core::Instance::rootObject.AddChild(skyBoxGo);
+	auto skyBox = new Component::Light::SkyBox();
+	skyBox->color = { 1, 1, 1, 1 };
+	skyBox->intensity = 0.8f;
+	skyBoxGo->AddComponent(skyBox);
 
 	Logic::Object::GameObject* directionalLightGo = new Logic::Object::GameObject("DirectionalLight");
 	Core::Instance::rootObject.AddChild(directionalLightGo);

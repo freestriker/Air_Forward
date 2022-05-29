@@ -29,6 +29,7 @@
     <ClInclude Include="header\Logic\Component\Light\DirectionalLight.h" />
     <ClInclude Include="header\Logic\Component\Light\Light.h" />
     <ClInclude Include="header\Logic\Component\Light\PointLight.h" />
+    <ClInclude Include="header\Logic\Component\Light\SkyBox.h" />
     <ClInclude Include="header\Logic\Component\Renderer\MeshRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\Renderer.h" />
     <ClInclude Include="header\Logic\Component\Transform\Transform.h" />
@@ -93,6 +94,7 @@
     <ClCompile Include="source\Logic\Component\Light\DirectionalLight.cpp" />
     <ClCompile Include="source\Logic\Component\Light\Light.cpp" />
     <ClCompile Include="source\Logic\Component\Light\PointLight.cpp" />
+    <ClCompile Include="source\Logic\Component\Light\SkyBox.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\MeshRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\Renderer.cpp" />
     <ClCompile Include="source\Logic\Component\Transform\Transform.cpp" />

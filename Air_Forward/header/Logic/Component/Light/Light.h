@@ -23,7 +23,8 @@ namespace Logic
 				enum class LightType
 				{
 					DIRECTIONAL = 1,
-					POINT = 2
+					POINT = 2,
+					SKY_BOX = 3
 				};
 				virtual LightData GetLightData() = 0;
 				glm::vec4 color;

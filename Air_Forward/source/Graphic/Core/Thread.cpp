@@ -29,6 +29,7 @@
 #include "Logic/Object/GameObject.h"
 #include <map>
 #include "Graphic/Manager/LightManager.h"
+#include "Logic/Component/Light/SkyBox.h"
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -183,7 +184,6 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 	std::map<std::string, std::future<Graphic::Command::CommandBuffer*>> commandBufferTaskMap = std::map<std::string, std::future<Graphic::Command::CommandBuffer*>>();
 
 	Utils::IntersectionChecker intersectionChecker = Utils::IntersectionChecker();
-	Graphic::Asset::TextureCube* cubeTexture = nullptr;
 	while (!_stopped && !glfwWindowShouldClose(Core::Window::GLFWwindow_()))
 	{
 		Instance::RenderStartCondition().Wait();
@@ -191,10 +191,6 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		Utils::Log::Message("Graphic::Core::Thread::RenderThread start with " + std::to_string(Instance::_lights.size()) + " light and " + std::to_string(Instance::_cameras.size()) + " camera and " + std::to_string(Instance::_renderers.size()) + " renderer.");
 
 		glfwPollEvents();
-		if (!cubeTexture)
-		{
-			cubeTexture = Graphic::Asset::TextureCube::Load("..\\Asset\\Texture\\DefaultTextureCube.json");
-		}
 
 		//Lights
 		auto lightCopyTask = AddTask([](Command::CommandPool* commandPool)->Command::CommandBuffer* {
@@ -244,7 +240,8 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			{
 				renderer->SetMatrixData(viewMatrix, projectionMatrix);
 				renderer->material->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
-				renderer->material->SetTextureCube("skyBox", cubeTexture);
+				renderer->material->SetTextureCube("skyBoxTexture", Instance::lightManager->SkyBoxTexture());
+				renderer->material->SetUniformBuffer("skyBox", Instance::lightManager->SkyBoxBuffer());
 				renderer->material->SetUniformBuffer("mainLight", Instance::lightManager->MainLightBuffer());
 				renderer->material->SetUniformBuffer("importantLight", Instance::lightManager->ImportantLightsBuffer());
 				renderer->material->SetUniformBuffer("unimportantLight", Instance::lightManager->UnimportantLightsBuffer());

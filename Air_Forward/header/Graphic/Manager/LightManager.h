@@ -30,6 +30,10 @@ namespace Graphic
 		class CommandPool;
 		class CommandBuffer;
 	}
+	namespace Asset
+	{
+		class TextureCube;
+	}
 	namespace Manager
 	{
 		class LightManager final
@@ -48,14 +52,19 @@ namespace Graphic
 			void CopyLightData(Command::CommandBuffer* commandBuffer);
 			LightManager();
 			~LightManager();
+			Asset::TextureCube* SkyBoxTexture();
+			Instance::Buffer* SkyBoxBuffer();
 			Instance::Buffer* MainLightBuffer();
 			Instance::Buffer* ImportantLightsBuffer();
 			Instance::Buffer* UnimportantLightsBuffer();
 		private:
+			Asset::TextureCube* _skyBoxTexture;
 			Instance::Buffer* _stageBuffer;
+			Instance::Buffer* _skyBoxBuffer;
 			Instance::Buffer* _mainLightBuffer;
 			Instance::Buffer* _importantLightsBuffer;
 			Instance::Buffer* _unimportantLightsBuffer;
+			LightData _skyBoxData;
 			LightData _mainLightData;
 			std::array<LightData, 4> _importantLightData;
 			std::array<LightData, 4> _unimportantLightData;
