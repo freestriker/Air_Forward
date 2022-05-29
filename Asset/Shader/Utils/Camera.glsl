@@ -16,6 +16,13 @@ layout(set = 1, binding = 0) uniform CameraData{
     vec4 clipPlanes[6];
 } cameraData;
 
+vec3 GetCameraViewDirectionByNdcNearFlatPosition(vec2 ndcPosition)
+{
+    float halfWidth = cameraData.parameter.y;
+    float halfHeight = cameraData.parameter.z;
+    return normalize(cameraData.position + normalize(cameraData.forward) * cameraData.nearFlat + vec3(halfWidth * ndcPosition.x, halfHeight * ndcPosition.y, 0));
+}
+
 vec3 OrthographicCameraViewDirection()
 {
     return normalize(cameraData.forward);

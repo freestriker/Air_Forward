@@ -10,7 +10,9 @@ RTTR_REGISTRATION
 
 glm::vec4 Logic::Component::Camera::OrthographicCamera::GetParameter()
 {
-	return glm::vec4(size, 0, 0, 0);
+	float halfWidth = aspectRatio * size;
+	float halfHeight = size;
+	return glm::vec4(size, halfWidth, halfHeight, 0);
 }
 
 Logic::Component::Camera::OrthographicCamera::OrthographicCamera()

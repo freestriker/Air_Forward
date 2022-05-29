@@ -96,6 +96,12 @@ void Graphic::Material::SetTexture2D(const char* name, Asset::Texture2D* texture
 	}
 }
 
+void Graphic::Material::SetSlotData(std::string name, std::vector<uint32_t> bindingIndex, std::vector<Graphic::Instance::DescriptorSet::DescriptorSetWriteData> data)
+{
+	_slots[name].asset = nullptr;
+	_slots[name].descriptorSet->UpdateBindingData(bindingIndex, data);
+}
+
 const Graphic::Instance::Buffer* Graphic::Material::GetUniformBuffer(const char* name)
 {
 	if (_slots.count(name) && _slots[name].slotType == Asset::SlotType::UNIFORM_BUFFER)
