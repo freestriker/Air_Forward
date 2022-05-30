@@ -206,16 +206,17 @@ void Graphic::Command::CommandBuffer::BindMaterial(Material* material)
 
 void Graphic::Command::CommandBuffer::CopyImage(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout)
 {
-    auto layerCount = dstImage->LayerCount();
-    auto subresources = dstImage->VkImageSubresourceLayers_();
+    auto layerCount = std::min(srcImage->LayerCount(), dstImage->LayerCount());
+    auto srcSubresources = srcImage->VkImageSubresourceLayers_();
+    auto dstSubresources = dstImage->VkImageSubresourceLayers_();
     std::vector< VkImageCopy> infos = std::vector<VkImageCopy>(layerCount);
     for (uint32_t i = 0; i < layerCount; i++)
     {
         auto& copy = infos[i];
 
-        copy.srcSubresource = subresources[i];
+        copy.srcSubresource = srcSubresources[i];
         copy.srcOffset = { 0, 0, 0 };
-        copy.dstSubresource = subresources[i];
+        copy.dstSubresource = dstSubresources[i];
         copy.srcOffset = { 0, 0, 0 };
         copy.extent = dstImage->VkExtent3D_();
     }
@@ -247,7 +248,7 @@ void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLay
 {
     auto src = srcImage->VkExtent3D_();
     auto dst = dstImage->VkExtent3D_();
-    auto layerCount = dstImage->LayerCount();
+    auto layerCount = std::min(srcImage->LayerCount(), dstImage->LayerCount());
     auto srcSubresources = srcImage->VkImageSubresourceLayers_();
     auto dstSubresources = dstImage->VkImageSubresourceLayers_();
     std::vector< VkImageBlit> infos = std::vector< VkImageBlit>(layerCount);
@@ -264,4 +265,26 @@ void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLay
     }
 
     vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, static_cast<uint32_t>(layerCount), infos.data(), VkFilter::VK_FILTER_LINEAR);
+}
+void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout, VkFilter filter)
+{
+    auto src = srcImage->VkExtent3D_();
+    auto dst = dstImage->VkExtent3D_();
+    auto layerCount = std::min(srcImage->LayerCount(), dstImage->LayerCount());
+    auto srcSubresources = srcImage->VkImageSubresourceLayers_();
+    auto dstSubresources = dstImage->VkImageSubresourceLayers_();
+    std::vector< VkImageBlit> infos = std::vector< VkImageBlit>(layerCount);
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        auto& blit = infos[i];
+
+        blit.srcSubresource = srcSubresources[i];
+        blit.srcOffsets[0] = { 0, 0, 0 };
+        blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
+        blit.dstSubresource = dstSubresources[i];
+        blit.dstOffsets[0] = { 0, 0, 0 };
+        blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+    }
+
+    vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, static_cast<uint32_t>(layerCount), infos.data(), filter);
 }

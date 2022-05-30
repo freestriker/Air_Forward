@@ -38,6 +38,13 @@ namespace Graphic
 				VkImageUsageFlags imageUsage,
 				VkMemoryPropertyFlags memoryProperty
 				);
+			static Image* Create2DImage(
+				VkExtent2D extent,
+				VkFormat format,
+				VkImageUsageFlags imageUsage,
+				VkMemoryPropertyFlags memoryProperty,
+				VkImageAspectFlags aspect
+				);
 		private:
 			VkImageType _vkImageType;
 			VkExtent3D _extent;

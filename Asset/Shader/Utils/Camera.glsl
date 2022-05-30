@@ -20,7 +20,9 @@ vec3 GetCameraViewDirectionByNdcNearFlatPosition(vec2 ndcPosition)
 {
     float halfWidth = cameraData.parameter.y;
     float halfHeight = cameraData.parameter.z;
-    return normalize(cameraData.position + normalize(cameraData.forward) * cameraData.nearFlat + vec3(halfWidth * ndcPosition.x, halfHeight * ndcPosition.y, 0));
+    vec2 uv = (ndcPosition - vec2(0.5, 0.5)) * 2;
+    vec3 up = cross(cameraData.right, cameraData.forward);
+    return normalize(cameraData.forward * cameraData.nearFlat + cameraData.right * halfWidth * uv.x + up * halfHeight * uv.y);
 }
 
 vec3 OrthographicCameraViewDirection()

@@ -104,9 +104,11 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 		"DepthAttachment",
 		Core::Window::VkExtent2D_(),
 		VkFormat::VK_FORMAT_D32_SFLOAT,
-		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT),
+		static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT),
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
+
+	//Create opaque render pass
 	{
 		Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator("OpaqueRenderPass");
 		renderPassCreator.AddColorAttachment(
@@ -142,6 +144,33 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 		Core::Device::RenderPassManager().CreateRenderPass(renderPassCreator);
 	}
 
+	//Create background render pass
+	{
+		Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator("BackgroundRenderPass");
+		renderPassCreator.AddColorAttachment(
+			"ColorAttachment",
+			Core::Device::FrameBufferManager().Attachment("ColorAttachment"),
+			VK_ATTACHMENT_LOAD_OP_LOAD,
+			VK_ATTACHMENT_STORE_OP_STORE,
+			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		);
+		renderPassCreator.AddSubpass(
+			"DrawSubpass",
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			{ "ColorAttachment" }
+		);
+		renderPassCreator.AddDependency(
+			"VK_SUBPASS_EXTERNAL",
+			"DrawSubpass",
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+		);
+		Core::Device::RenderPassManager().CreateRenderPass(renderPassCreator);
+	}
+
 	{
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::TEXTURE_CUBE, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }, 10);
@@ -154,6 +183,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 
 	{
 		Core::Device::FrameBufferManager().AddFrameBuffer("OpaqueFrameBuffer", Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass"), { "ColorAttachment", "DepthAttachment" });
+		Core::Device::FrameBufferManager().AddFrameBuffer("BackgroundFrameBuffer", Core::Device::RenderPassManager().RenderPass("BackgroundRenderPass"), { "ColorAttachment" });
 	}
 
 	Core::Instance::_cameras.clear();
@@ -171,7 +201,8 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 
 void Graphic::Core::Thread::RenderThread::OnRun()
 {
-	Command::Semaphore attachmentAvailableSemaphore = Command::Semaphore();
+	Command::Semaphore opaqueAvailableSemaphore = Command::Semaphore();
+	Command::Semaphore backgroundAvailableSemaphore = Command::Semaphore();
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
 	Command::Fence swapchainImageAvailableFence = Command::Fence();
 
@@ -179,7 +210,8 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 	std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>> rendererDistenceMaps = std::map<std::string, std::multimap<float, Logic::Component::Renderer::Renderer*>>
 	({
-		{"OpaqueRenderPass", {}}
+		{"OpaqueRenderPass", {}},
+		{"BackgroundRenderPass", {}}
 	});
 	std::map<std::string, std::future<Graphic::Command::CommandBuffer*>> commandBufferTaskMap = std::map<std::string, std::future<Graphic::Command::CommandBuffer*>>();
 
@@ -211,13 +243,15 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			camera->SetCameraData();
 			auto commandBuffer = commandPool->CreateCommandBuffer("CameraCopyCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 			camera->CopyCameraData(commandBuffer);
-			commandPool->DestoryCommandBuffer("LightCopyCommandBuffer");
+			commandPool->DestoryCommandBuffer("CameraCopyCommandBuffer");
 			return nullptr;
 			}, camera);
 
 		//Wait task
 		lightCopyTask.get();
 		cameraCopyTask.get();
+
+		camera->_skyBoxMaterial->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
 
 		//Classify renderers
 		auto clipPlanes = camera->ClipPlanes();
@@ -255,12 +289,16 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		//Add build command buffer task
 		commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
+		commandBufferTaskMap["BackgroundRenderPass"] = AddTask(RenderBackground, camera);
 
-		//Wait build command buffer task
+		//Submit opaque command buffer
 		auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
+		opaqueCommandBuffer->Submit({}, {}, { &opaqueAvailableSemaphore });
 
-		//Submit command buffer
-		opaqueCommandBuffer->Submit({}, {}, { &attachmentAvailableSemaphore });
+		//Submit background command buffer
+		auto backgroundCommandBuffer = commandBufferTaskMap["BackgroundRenderPass"].get();
+		backgroundCommandBuffer->Submit({&opaqueAvailableSemaphore }, {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, { &backgroundAvailableSemaphore });
+
 
 
 		uint32_t imageIndex;
@@ -270,6 +308,22 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		presentCommandBuffer->Reset();
 		presentCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		//Present queue attachment to transfer layout
+		{
+			Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
+			(
+				&Core::Device::FrameBufferManager().Attachment("ColorAttachment")->Image(),
+				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+				VK_ACCESS_TRANSFER_READ_BIT
+			);
+
+			presentCommandBuffer->AddPipelineBarrier(
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				{ &attachmentReleaseBarrier }
+			);
+		}
 		//Present queue swapchain image to transfer layout
 		{
 			Command::ImageMemoryBarrier transferDstBarrier = Command::ImageMemoryBarrier
@@ -312,7 +366,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			);
 		}
 		presentCommandBuffer->EndRecord();
-		presentCommandBuffer->Submit({ &attachmentAvailableSemaphore }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
+		presentCommandBuffer->Submit({ &backgroundAvailableSemaphore }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
 
 		//Present
 		{
@@ -417,24 +471,98 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 		renderCommandBuffer->Draw();
 	}
 	renderCommandBuffer->EndRenderPass();
-	//Render queue attachment to transfer layout
+	renderCommandBuffer->EndRecord();
+
+	return renderCommandBuffer;
+}
+
+Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderBackground(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera)
+{
+	auto renderCommandBuffer = commandPool->CreateCommandBuffer("BackgroundCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	//Render
+	renderCommandBuffer->Reset();
+	renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	//Change layout
 	{
-		Command::ImageMemoryBarrier attachmentReleaseBarrier = Command::ImageMemoryBarrier
+		Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
 		(
-			&Core::Device::FrameBufferManager().FrameBuffer("OpaqueFrameBuffer")->Attachment("ColorAttachment")->Image(),
-			VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-			VK_ACCESS_TRANSFER_READ_BIT
+			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT
+		);
+
+		Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
+		(
+			camera->_temporaryImage,
+			VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED,
+			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT
 		);
 
 		renderCommandBuffer->AddPipelineBarrier(
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			{ &attachmentReleaseBarrier }
+			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+			{ &depthAttachmentLayoutBarrier, &temporaryImageLayoutBarrier }
 		);
 	}
-	renderCommandBuffer->EndRecord();
 
+	//Copy depth
+	{
+		renderCommandBuffer->CopyImage
+		(
+			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(), 
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+			camera->_temporaryImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		);
+	}
+
+	//Change layout
+	{
+		Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
+		(
+			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
+			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT,
+			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+		);
+
+		Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
+		(
+			camera->_temporaryImage,
+			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT,
+			VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT
+		);
+
+		renderCommandBuffer->AddPipelineBarrier(
+			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+			{ &depthAttachmentLayoutBarrier }
+		);
+		renderCommandBuffer->AddPipelineBarrier(
+			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			{ &temporaryImageLayoutBarrier }
+		);
+	}
+
+	//Render background
+	renderCommandBuffer->BeginRenderPass(
+		Core::Device::RenderPassManager().RenderPass("BackgroundRenderPass"),
+		Core::Device::FrameBufferManager().FrameBuffer("BackgroundFrameBuffer"),
+		{ }
+	);
+	renderCommandBuffer->BindShader(&camera->_skyBoxMaterial->Shader());
+	renderCommandBuffer->BindMesh(camera->_skyBoxMesh);
+	renderCommandBuffer->BindMaterial(camera->_skyBoxMaterial);
+	renderCommandBuffer->Draw();
+	renderCommandBuffer->EndRenderPass();
+
+	renderCommandBuffer->EndRecord();
 	return renderCommandBuffer;
 }
 

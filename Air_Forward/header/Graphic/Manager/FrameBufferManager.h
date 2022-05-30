@@ -29,6 +29,7 @@ namespace Graphic
 		public:
 			void AddColorAttachment(std::string name, VkExtent2D extent, VkFormat format, VkImageUsageFlagBits extraUsage, VkMemoryPropertyFlagBits properties);
 			void AddDepthAttachment(std::string name, VkExtent2D extent, VkFormat format, VkImageUsageFlagBits extraUsage, VkMemoryPropertyFlagBits properties);
+			void AddDepthAttachment(std::string name, VkExtent2D extent, VkFormat format, VkImageUsageFlagBits extraUsage, VkMemoryPropertyFlagBits properties, VkImageAspectFlags extraAspect);
 			void AddFrameBuffer(std::string name, Instance::RenderPassHandle renderPass, std::vector<std::string> attachments);
 			Instance::FrameBufferHandle FrameBuffer(std::string name);
 			Instance::AttachmentHandle Attachment(std::string name);

@@ -13,7 +13,7 @@ layout(location = 0) in vec2 inTexCoords;
 layout(location = 0) out vec4 colorAttachment;
 
 void main() {
-    if(texture(depthMap, inTexCoords).x >= 0.9999)
+    if(texture(depthMap, inTexCoords).x == 1.0)
     {
         vec3 viewDirection = GetCameraViewDirectionByNdcNearFlatPosition(inTexCoords);
         colorAttachment = vec4(texture(backgroundSkyBox, viewDirection).xyz, 1);
@@ -22,4 +22,5 @@ void main() {
     {
         discard;
     }
+
 }

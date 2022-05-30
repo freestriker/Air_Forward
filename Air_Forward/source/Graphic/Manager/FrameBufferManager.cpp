@@ -27,6 +27,15 @@ void Graphic::Manager::FrameBufferManager::AddDepthAttachment(std::string name, 
     _attachments.emplace(name, new Instance::Attachment(name, extent, newImage));
     _attachmentRefCounts.emplace(name, 0);
 }
+void Graphic::Manager::FrameBufferManager::AddDepthAttachment(std::string name, VkExtent2D extent, VkFormat format, VkImageUsageFlagBits extraUsage, VkMemoryPropertyFlagBits properties, VkImageAspectFlags extraAspect)
+{
+    std::unique_lock<std::shared_mutex> lock(_managerMutex);
+
+    auto newImage = new Instance::Image(extent, format, VK_IMAGE_TILING_OPTIMAL, static_cast<VkImageUsageFlagBits>(VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | extraUsage), 1, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT, properties, VK_IMAGE_VIEW_TYPE_2D, static_cast<VkImageAspectFlagBits>(VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT | static_cast<VkImageAspectFlagBits>(extraAspect)));
+
+    _attachments.emplace(name, new Instance::Attachment(name, extent, newImage));
+    _attachmentRefCounts.emplace(name, 0);
+}
 
 void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Instance::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
 {
