@@ -251,7 +251,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		lightCopyTask.get();
 		cameraCopyTask.get();
 
-		camera->_skyBoxMaterial->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
+		camera->_backgroundMaterial->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
 
 		//Classify renderers
 		auto clipPlanes = camera->ClipPlanes();
@@ -511,12 +511,13 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderBack
 
 	//Copy depth
 	{
-		renderCommandBuffer->CopyImage
+		renderCommandBuffer->Blit
 		(
 			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(), 
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
 			camera->_temporaryImage, 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VkFilter::VK_FILTER_NEAREST
 		);
 	}
 
@@ -556,9 +557,9 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderBack
 		Core::Device::FrameBufferManager().FrameBuffer("BackgroundFrameBuffer"),
 		{ }
 	);
-	renderCommandBuffer->BindShader(&camera->_skyBoxMaterial->Shader());
-	renderCommandBuffer->BindMesh(camera->_skyBoxMesh);
-	renderCommandBuffer->BindMaterial(camera->_skyBoxMaterial);
+	renderCommandBuffer->BindShader(&camera->_backgroundMaterial->Shader());
+	renderCommandBuffer->BindMesh(camera->_backgroundMesh);
+	renderCommandBuffer->BindMaterial(camera->_backgroundMaterial);
 	renderCommandBuffer->Draw();
 	renderCommandBuffer->EndRenderPass();
 

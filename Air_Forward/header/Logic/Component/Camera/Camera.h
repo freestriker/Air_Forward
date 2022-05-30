@@ -76,8 +76,8 @@ namespace Logic
 				Graphic::Instance::Image* _temporaryImage;
 				Graphic::Instance::ImageSampler* _temporaryImageSampler;
 				CameraData _cameraData;
-				Graphic::Material* _skyBoxMaterial;
-				Graphic::Asset::Mesh* _skyBoxMesh;
+				Graphic::Material* _backgroundMaterial;
+				Graphic::Asset::Mesh* _backgroundMesh;
 
 				RTTR_ENABLE(Logic::Component::Component)
 			};

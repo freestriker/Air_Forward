@@ -16,7 +16,7 @@ layout(set = 1, binding = 0) uniform CameraData{
     vec4 clipPlanes[6];
 } cameraData;
 
-vec3 GetCameraViewDirectionByNdcNearFlatPosition(vec2 ndcPosition)
+vec3 GetCameraViewDirectionFromScreenCoordinates(vec2 ndcPosition)
 {
     float halfWidth = cameraData.parameter.y;
     float halfHeight = cameraData.parameter.z;
