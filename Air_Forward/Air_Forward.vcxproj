@@ -30,6 +30,7 @@
     <ClInclude Include="header\Logic\Component\Light\Light.h" />
     <ClInclude Include="header\Logic\Component\Light\PointLight.h" />
     <ClInclude Include="header\Logic\Component\Light\SkyBox.h" />
+    <ClInclude Include="header\Logic\Component\Renderer\BackgroundRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\MeshRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\Renderer.h" />
     <ClInclude Include="header\Logic\Component\Transform\Transform.h" />
@@ -69,6 +70,7 @@
     <ClInclude Include="header\Graphic\Manager\RenderPassManager.h" />
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
+    <ClInclude Include="header\Test\BackgroundRendererBehaviour.h" />
     <ClInclude Include="header\Test\RenderTestBehaviour.h" />
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
@@ -95,10 +97,12 @@
     <ClCompile Include="source\Logic\Component\Light\Light.cpp" />
     <ClCompile Include="source\Logic\Component\Light\PointLight.cpp" />
     <ClCompile Include="source\Logic\Component\Light\SkyBox.cpp" />
+    <ClCompile Include="source\Logic\Component\Renderer\BackgroundRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\MeshRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\Renderer.cpp" />
     <ClCompile Include="source\Logic\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Logic\Manager\ObjectFactory.cpp" />
+    <ClCompile Include="source\Test\BackgroundRendererBehaviour.cpp" />
     <ClCompile Include="source\Utils\Condition.cpp" />
     <ClCompile Include="source\IO\Core\Instance.cpp" />
     <ClCompile Include="source\IO\Manager\AssetManager.cpp" />

@@ -8,7 +8,11 @@ RTTR_REGISTRATION
 
 glm::vec4 Logic::Component::Camera::PerspectiveCamera::GetParameter()
 {
-    return glm::vec4(fovAngle, 0, 0, 0);
+    double pi = std::acos(-1.0);
+    double halfFov = fovAngle * pi / 360.0;
+    float halfHeight = std::tanf(halfFov) * nearFlat;
+    float halfWidth = halfHeight * aspectRatio;
+    return glm::vec4(halfFov * 2, halfWidth, halfHeight, 0);
 }
 
 Logic::Component::Camera::PerspectiveCamera::PerspectiveCamera()

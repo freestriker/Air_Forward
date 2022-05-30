@@ -5,6 +5,13 @@
 #include <rttr/registration>
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Command/CommandBuffer.h"
+#include "Graphic/Asset/Mesh.h"
+#include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/TextureCube.h"
+#include "Graphic/Material.h"
+#include "Graphic/Instance/Image.h"
+#include "Graphic/Instance/ImageSampler.h"
+#include "Graphic/Core/Window.h"
 RTTR_REGISTRATION
 {
 	using namespace rttr;
@@ -42,6 +49,11 @@ Graphic::Instance::Buffer* Logic::Component::Camera::Camera::CameraDataBuffer()
 	return _buffer;
 }
 
+void Logic::Component::Camera::Camera::OnStart()
+{
+
+}
+
 void Logic::Component::Camera::Camera::OnUpdate()
 {
 	_modelMatrix = _gameObject->transform.ModelMatrix();
@@ -50,9 +62,10 @@ void Logic::Component::Camera::Camera::OnUpdate()
 Logic::Component::Camera::Camera::Camera(CameraType cameraType)
 	: Component(ComponentType::CAMERA)
 	, cameraType(cameraType)
-	, nearFlat(0.1f)
+	, nearFlat(3.0f)
 	, farFlat(100.0f)
 	, aspectRatio(16.0f / 9.0f)
+	, _cameraData()
 	, _modelMatrix(glm::mat4(1.0f))
 	, _stageBuffer(new Graphic::Instance::Buffer(sizeof(CameraData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 	, _buffer(new Graphic::Instance::Buffer(sizeof(CameraData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))

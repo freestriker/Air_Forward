@@ -9,7 +9,9 @@
 #include <string>
 #include "Logic/Component/Camera/OrthographicCamera.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
+#include "Logic/Component/Renderer/BackgroundRenderer.h"
 #include "Test/RenderTestBehaviour.h"
+#include "Test/BackgroundRendererBehaviour.h"
 #include "Logic/Component/Light/DirectionalLight.h"
 #include <algorithm>
 #include "Logic/Component/Light/PointLight.h"
@@ -369,6 +371,11 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererClipGo->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererClipGo->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererClipGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
+
+	Logic::Object::GameObject* backgroundRendererGo = new Logic::Object::GameObject("BackgroundRenderer");
+	Core::Instance::rootObject.AddChild(backgroundRendererGo);
+	backgroundRendererGo->AddComponent(new Component::Renderer::BackgroundRenderer());
+	backgroundRendererGo->AddComponent(new Test::BackgroundRendererBehaviour());
 
 	Logic::Object::GameObject* skyBoxGo = new Logic::Object::GameObject("SkyBox");
 	Core::Instance::rootObject.AddChild(skyBoxGo);

@@ -500,12 +500,12 @@ const std::map<std::string, Graphic::Asset::Shader::SlotLayout>& Graphic::Asset:
 	return dynamic_cast<Graphic::Asset::Shader::_ShaderInstance*>(_assetInstance)->_slotLayouts;
 }
 
-VkPipeline Graphic::Asset::Shader::VkPipeline()
+VkPipeline Graphic::Asset::Shader::VkPipeline_()
 {
 	return dynamic_cast<_ShaderInstance*>(_assetInstance)->_vkPipeline;
 }
 
-VkPipelineLayout Graphic::Asset::Shader::VkPipelineLayout()
+VkPipelineLayout Graphic::Asset::Shader::VkPipelineLayout_()
 {
 	return dynamic_cast<_ShaderInstance*>(_assetInstance)->_vkPipelineLayout;
 }

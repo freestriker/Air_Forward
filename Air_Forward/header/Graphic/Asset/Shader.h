@@ -124,8 +124,8 @@ namespace Graphic
 			static Shader* Load(const char* path);
 			static void Unload(Shader* shader);
 			const std::map<std::string, SlotLayout>& SlotLayouts();
-			VkPipeline VkPipeline();
-			VkPipelineLayout VkPipelineLayout();
+			VkPipeline VkPipeline_();
+			VkPipelineLayout VkPipelineLayout_();
 			const ShaderSetting& Settings();
 		private:
 			Shader();

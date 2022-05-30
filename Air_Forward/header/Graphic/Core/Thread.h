@@ -83,6 +83,7 @@ namespace Graphic
 				std::future<Graphic::Command::CommandBuffer*> AddTask(F&& f, Args&&... args);
 
 				static Graphic::Command::CommandBuffer* RenderOpaque(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera, std::multimap<float, Logic::Component::Renderer::Renderer*>& renderers);
+				static Graphic::Command::CommandBuffer* RenderBackground(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera, std::multimap<float, Logic::Component::Renderer::Renderer*>& rendererDistanceMap);
 			};
 		private:
 			static RenderThread _renderThread;

@@ -5,13 +5,24 @@
 #include <glm/vec4.hpp>
 namespace Graphic
 {
+	class Material;
+	namespace Asset
+	{
+		class Mesh;
+	}
 	namespace Instance
 	{
 		class Buffer;
+		class Image;
+		class ImageSampler;
 	}
 	namespace Command
 	{
 		class CommandBuffer;
+	}
+	namespace Core
+	{
+		class Thread;
 	}
 }
 namespace Logic
@@ -22,6 +33,7 @@ namespace Logic
 		{
 			class Camera: public Logic::Component::Component
 			{
+				friend class Graphic::Core::Thread;
 			public:
 				enum class CameraType
 				{
@@ -53,6 +65,7 @@ namespace Logic
 				Graphic::Instance::Buffer* CameraDataBuffer();
 			protected:
 				glm::mat4 _modelMatrix;
+				void OnStart() override;
 				void OnUpdate() override;
 				Camera(CameraType cameraType);
 				virtual ~Camera();

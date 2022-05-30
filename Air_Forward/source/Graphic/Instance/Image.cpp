@@ -203,3 +203,63 @@ Graphic::Instance::Image* Graphic::Instance::Image::CreateCubeImage(VkExtent2D e
 
 	return newImage;
 }
+
+Graphic::Instance::Image* Graphic::Instance::Image::Create2DImage(VkExtent2D extent, VkFormat format, VkImageUsageFlags imageUsage, VkMemoryPropertyFlags memoryProperty, VkImageAspectFlags aspect)
+{
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VkImageType::VK_IMAGE_TYPE_2D;
+	imageInfo.extent = { extent.width, extent.height, 1 };
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = imageUsage;
+	imageInfo.samples = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.flags = 0;
+
+	VkImage newVkImage = VK_NULL_HANDLE;
+	Log::Exception("Failed to create image.", vkCreateImage(Core::Device::VkDevice_(), &imageInfo, nullptr, &newVkImage));
+
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(Core::Device::VkDevice_(), newVkImage, &memRequirements);
+
+	auto newMemory = new Instance::Memory();
+	*newMemory = Core::Device::MemoryManager().AcquireMemory(memRequirements, memoryProperty);
+	vkBindImageMemory(Core::Device::VkDevice_(), newVkImage, newMemory->VkMemory(), newMemory->Offset());
+
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = newVkImage;
+	viewInfo.viewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = format;
+	viewInfo.subresourceRange.aspectMask = aspect;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	VkImageView newImageView = VK_NULL_HANDLE;
+	Log::Exception("Failed to create image view.", vkCreateImageView(Core::Device::VkDevice_(), &viewInfo, nullptr, &newImageView));
+
+	Graphic::Instance::Image* newImage = new Graphic::Instance::Image();
+	newImage->_vkImageType = VkImageType::VK_IMAGE_TYPE_2D;
+	newImage->_extent = { extent.width, extent.height, 1 };
+	newImage->_vkFormat = format;
+	newImage->_vkImageTiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
+	newImage->_vkImageUsage = static_cast<VkImageUsageFlagBits>(imageUsage);
+	newImage->_mipLevels = 1;
+	newImage->_vkSampleCount = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+	newImage->_vkMemoryProperty = static_cast<VkMemoryPropertyFlagBits>(memoryProperty);
+	newImage->_vkImageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+	newImage->_vkImageAspect = static_cast<VkImageAspectFlagBits>(aspect);
+	newImage->_vkImage = newVkImage;
+	newImage->_vkImageView = newImageView;
+	newImage->_memory = newMemory;
+	newImage->_layerCount = 1;
+	newImage->_perLayerSize = extent.width * extent.height * 4;
+
+	return newImage;
+}

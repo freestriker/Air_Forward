@@ -4,6 +4,11 @@
 #include "Logic/Core/Instance.h"
 #include <algorithm>
 #include <Graphic/Asset/TextureCube.h>
+#include <rttr/registration>
+RTTR_REGISTRATION
+{
+	rttr::registration::class_<Test::RenderTestBehaviour>("Test::RenderTestBehaviour");
+}
 
 Test::RenderTestBehaviour::RenderTestBehaviour()
 	: meshTask()

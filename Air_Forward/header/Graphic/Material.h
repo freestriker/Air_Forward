@@ -4,6 +4,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <string>
+#include "Graphic/Instance/DescriptorSet.h"
 
 namespace Graphic
 {
@@ -48,6 +49,7 @@ namespace Graphic
 		void SetTextureCube(std::string name, Asset::TextureCube* textureCube);
 		const Asset::Texture2D* GetTexture2D(const char* name);
 		void SetTexture2D(const char* name, Asset::Texture2D* texture2d);
+		void SetSlotData(std::string name, std::vector<uint32_t> bindingIndex, std::vector< Graphic::Instance::DescriptorSet::DescriptorSetWriteData> data);
 		const Instance::Buffer* GetUniformBuffer(const char* name);
 		void SetUniformBuffer(const char* name, Instance::Buffer* buffer);
 		void RefreshSlotData(std::vector<std::string> slotNames);

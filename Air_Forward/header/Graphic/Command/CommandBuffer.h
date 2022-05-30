@@ -69,6 +69,7 @@ namespace Graphic
 			void Draw();
 			void Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::SwapchainImage* dstImage, VkImageLayout dstImageLayout);
 			void Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout);
+			void Blit(Instance::Image* srcImage, VkImageLayout srcImageLayout, Instance::Image* dstImage, VkImageLayout dstImageLayout, VkFilter filter);
 		};
 	}
 }
