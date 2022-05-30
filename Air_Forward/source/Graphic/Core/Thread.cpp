@@ -25,6 +25,7 @@
 #include "Graphic/Command/ImageMemoryBarrier.h"
 #include "Logic/Component/Camera/Camera.h"
 #include "Logic/Component/Renderer/Renderer.h"
+#include "Logic/Component/Renderer/BackgroundRenderer.h"
 #include "Utils/IntersectionChecker.h"
 #include "Logic/Object/GameObject.h"
 #include <map>
@@ -251,8 +252,6 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		lightCopyTask.get();
 		cameraCopyTask.get();
 
-		camera->_backgroundMaterial->SetUniformBuffer("cameraData", camera->CameraDataBuffer());
-
 		//Classify renderers
 		auto clipPlanes = camera->ClipPlanes();
 		intersectionChecker.SetIntersectPlanes(clipPlanes.data(), clipPlanes.size());
@@ -289,7 +288,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		//Add build command buffer task
 		commandBufferTaskMap["OpaqueRenderPass"] = AddTask(RenderOpaque, camera, rendererDistenceMaps["OpaqueRenderPass"]);
-		commandBufferTaskMap["BackgroundRenderPass"] = AddTask(RenderBackground, camera);
+		commandBufferTaskMap["BackgroundRenderPass"] = AddTask(RenderBackground, camera, rendererDistenceMaps["BackgroundRenderPass"]);
 
 		//Submit opaque command buffer
 		auto opaqueCommandBuffer = commandBufferTaskMap["OpaqueRenderPass"].get();
@@ -476,93 +475,102 @@ Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderOpaq
 	return renderCommandBuffer;
 }
 
-Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderBackground(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera)
+Graphic::Command::CommandBuffer* Graphic::Core::Thread::RenderThread::RenderBackground(Graphic::Command::CommandPool* commandPool, Logic::Component::Camera::Camera* camera, std::multimap<float, Logic::Component::Renderer::Renderer*>& rendererDistanceMap)
 {
 	auto renderCommandBuffer = commandPool->CreateCommandBuffer("BackgroundCommandBuffer", VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	//Render
 	renderCommandBuffer->Reset();
 	renderCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	//Change layout
+	if (rendererDistanceMap.size() >= 1)
 	{
-		Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
-		(
-			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
-			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT
-		);
+		auto renderer = static_cast<Logic::Component::Renderer::BackgroundRenderer*>(rendererDistanceMap.begin()->second);
 
-		Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
-		(
-			camera->_temporaryImage,
-			VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED,
-			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT
-		);
+		//Change layout
+		{
+			Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
+			(
+				&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
+				VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT
+			);
 
-		renderCommandBuffer->AddPipelineBarrier(
-			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
-			{ &depthAttachmentLayoutBarrier, &temporaryImageLayoutBarrier }
+			Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
+			(
+				renderer->_temporaryImage,
+				VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED,
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT
+			);
+
+			renderCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT,
+				{ &depthAttachmentLayoutBarrier, &temporaryImageLayoutBarrier }
+			);
+		}
+
+		//Copy depth
+		{
+			renderCommandBuffer->Blit
+			(
+				&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				renderer->_temporaryImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VkFilter::VK_FILTER_NEAREST
+			);
+		}
+
+		//Change layout
+		{
+			Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
+			(
+				&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT,
+				VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+			);
+
+			Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
+			(
+				renderer->_temporaryImage,
+				VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT,
+				VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT
+			);
+
+			renderCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+				{ &depthAttachmentLayoutBarrier }
+			);
+			renderCommandBuffer->AddPipelineBarrier(
+				VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				{ &temporaryImageLayoutBarrier }
+			);
+		}
+
+		//Render background
+		renderCommandBuffer->BeginRenderPass(
+			Core::Device::RenderPassManager().RenderPass("BackgroundRenderPass"),
+			Core::Device::FrameBufferManager().FrameBuffer("BackgroundFrameBuffer"),
+			{ }
 		);
+		renderCommandBuffer->BindShader(&renderer->material->Shader());
+		renderCommandBuffer->BindMesh(renderer->mesh);
+		renderCommandBuffer->BindMaterial(renderer->material);
+		renderCommandBuffer->Draw();
+		renderCommandBuffer->EndRenderPass();
+
 	}
-
-	//Copy depth
+	else if (rendererDistanceMap.size() > 1)
 	{
-		renderCommandBuffer->Blit
-		(
-			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(), 
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
-			camera->_temporaryImage, 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VkFilter::VK_FILTER_NEAREST
-		);
+		Utils::Log::Exception("Contains multiple background renderer.");
 	}
-
-	//Change layout
-	{
-		Command::ImageMemoryBarrier depthAttachmentLayoutBarrier = Command::ImageMemoryBarrier
-		(
-			&Core::Device::FrameBufferManager().Attachment("DepthAttachment")->Image(),
-			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-			VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT,
-			VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-		);
-
-		Command::ImageMemoryBarrier temporaryImageLayoutBarrier = Command::ImageMemoryBarrier
-		(
-			camera->_temporaryImage,
-			VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT,
-			VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT
-		);
-
-		renderCommandBuffer->AddPipelineBarrier(
-			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-			{ &depthAttachmentLayoutBarrier }
-		);
-		renderCommandBuffer->AddPipelineBarrier(
-			VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT, VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			{ &temporaryImageLayoutBarrier }
-		);
-	}
-
-	//Render background
-	renderCommandBuffer->BeginRenderPass(
-		Core::Device::RenderPassManager().RenderPass("BackgroundRenderPass"),
-		Core::Device::FrameBufferManager().FrameBuffer("BackgroundFrameBuffer"),
-		{ }
-	);
-	renderCommandBuffer->BindShader(&camera->_backgroundMaterial->Shader());
-	renderCommandBuffer->BindMesh(camera->_backgroundMesh);
-	renderCommandBuffer->BindMaterial(camera->_backgroundMaterial);
-	renderCommandBuffer->Draw();
-	renderCommandBuffer->EndRenderPass();
-
 	renderCommandBuffer->EndRecord();
 	return renderCommandBuffer;
 }

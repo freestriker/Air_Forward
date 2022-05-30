@@ -51,30 +51,7 @@ Graphic::Instance::Buffer* Logic::Component::Camera::Camera::CameraDataBuffer()
 
 void Logic::Component::Camera::Camera::OnStart()
 {
-	auto meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\SkyBoxMesh.ply");
-	auto shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DrawSkyBoxShader.shader");
-	auto textureTask = Graphic::Asset::TextureCube::LoadAsync("..\\Asset\\Texture\\DefaultTextureCube.json");
 
-	_temporaryImage = Graphic::Instance::Image::Create2DImage(
-		Graphic::Core::Window::VkExtent2D_()
-		, VkFormat::VK_FORMAT_D32_SFLOAT
-		, VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-		, VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		, VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT
-	);
-	_temporaryImageSampler = new Graphic::Instance::ImageSampler
-	(
-		VkFilter::VK_FILTER_LINEAR, 
-		VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_LINEAR, 
-		VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, 
-		0.0f, 
-		VkBorderColor::VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
-	);
-
-	_backgroundMesh = meshTask.get();
-	_backgroundMaterial = new Graphic::Material(shaderTask.get());
-	_backgroundMaterial->SetTextureCube("backgroundTexture", textureTask.get());
-	_backgroundMaterial->SetSlotData("depthTexture", { 0 }, { {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, _temporaryImageSampler->VkSampler_(), _temporaryImage->VkImageView_(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}});
 }
 
 void Logic::Component::Camera::Camera::OnUpdate()
@@ -92,10 +69,6 @@ Logic::Component::Camera::Camera::Camera(CameraType cameraType)
 	, _modelMatrix(glm::mat4(1.0f))
 	, _stageBuffer(new Graphic::Instance::Buffer(sizeof(CameraData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 	, _buffer(new Graphic::Instance::Buffer(sizeof(CameraData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
-	, _backgroundMaterial(nullptr)
-	, _backgroundMesh(nullptr)
-	, _temporaryImage(nullptr)
-	, _temporaryImageSampler(nullptr)
 {
 }
 

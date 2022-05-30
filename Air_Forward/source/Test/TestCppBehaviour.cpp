@@ -1,7 +1,7 @@
 #include "Test/TestCppBehaviour.h"
 #include "Utils/Log.h"
-#include <rttr/registration>
 #include "Logic/Manager/ObjectFactory.h"
+#include <rttr/registration>
 RTTR_REGISTRATION
 {
 	rttr::registration::class_<Test::TestCppBehaviour>("Test::TestCppBehaviour");

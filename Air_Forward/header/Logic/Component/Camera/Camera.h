@@ -73,11 +73,7 @@ namespace Logic
 			private:
 				Graphic::Instance::Buffer* _stageBuffer;
 				Graphic::Instance::Buffer* _buffer;
-				Graphic::Instance::Image* _temporaryImage;
-				Graphic::Instance::ImageSampler* _temporaryImageSampler;
 				CameraData _cameraData;
-				Graphic::Material* _backgroundMaterial;
-				Graphic::Asset::Mesh* _backgroundMesh;
 
 				RTTR_ENABLE(Logic::Component::Component)
 			};
