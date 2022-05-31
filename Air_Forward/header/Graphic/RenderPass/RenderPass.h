@@ -19,6 +19,7 @@ namespace Graphic
 	namespace Command
 	{
 		class CommandPool;
+		class Semaphore;
 	}
 	namespace Core
 	{
@@ -42,10 +43,11 @@ namespace Graphic
 			std::map<std::string, uint32_t> _subPassMap;
 			std::map<std::string, std::map<std::string, uint32_t>> _colorAttachmentMap;
 			void SetParameters(VkRenderPass vkRenderPass, std::map<std::string, uint32_t>& subPassMap, std::map<std::string, std::map<std::string, uint32_t>>& colorAttachmentMap);
-
+			Command::Semaphore* _semaphore;
 		protected:
 			RenderPass(std::string name, uint32_t renderIndex);
 			virtual ~RenderPass();
+			std::map<std::string, Command::Semaphore*> _customSemaphores;
 
 			virtual void OnCreate(Graphic::Manager::RenderPassManager::RenderPassCreator& creator) = 0;
 			virtual void OnPrepare() = 0;
@@ -56,6 +58,8 @@ namespace Graphic
 			std::string Name();
 			uint32_t RenderIndex();
 			VkRenderPass VkRenderPass_();
+			Command::Semaphore* Semaphore();
+			Command::Semaphore* Semaphore(std::string name);
 			uint32_t SubPassIndex(std::string subPassName);
 			uint32_t ColorAttachmentIndex(std::string subPassName, std::string attachmentName);
 			std::vector<std::string> SubPassNames();

@@ -119,7 +119,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 void Graphic::Core::Thread::RenderThread::OnRun()
 {
 	Command::Semaphore copyAvailableSemaphore = Command::Semaphore();
-	Command::Fence swapchainImageAvailableFence = Command::Fence();
+	Command::Semaphore swapchainImageAvailableSemaphore = Command::Semaphore();
 
 	auto & presentCommandBuffer = Core::Instance::presentCommandBuffer;
 
@@ -212,6 +212,9 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			});
 		}
 
+		std::this_thread::yield();
+
+		//Submit command buffers
 		for (const auto& renderIndexPair : Core::Device::RenderPassManager()._renderIndexMap)
 		{
 			auto& renderPass = Core::Device::RenderPassManager()._renderPasss[renderIndexPair.second];
@@ -220,18 +223,8 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			renderPass->OnRender();
 		}
 
-		for (const auto& renderIndexPair : Core::Device::RenderPassManager()._renderIndexMap)
-		{
-			auto& renderPass = Core::Device::RenderPassManager()._renderPasss[renderIndexPair.second];
-
-			renderPass->OnClear();
-		}
-
 		uint32_t imageIndex;
-		swapchainImageAvailableFence.Reset();
-		VkResult result = vkAcquireNextImageKHR(Core::Device::VkDevice_(), Core::Window::VkSwapchainKHR_(), UINT64_MAX, VK_NULL_HANDLE, swapchainImageAvailableFence.VkFence_(), &imageIndex);
-		swapchainImageAvailableFence.Wait();
-
+		VkResult result = vkAcquireNextImageKHR(Core::Device::VkDevice_(), Core::Window::VkSwapchainKHR_(), UINT64_MAX, swapchainImageAvailableSemaphore.VkSemphore_(), VK_NULL_HANDLE, &imageIndex);
 		presentCommandBuffer->Reset();
 		presentCommandBuffer->BeginRecord(VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 		//Present queue attachment to transfer layout
@@ -292,7 +285,11 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			);
 		}
 		presentCommandBuffer->EndRecord();
-		presentCommandBuffer->Submit({ }, { }, { &copyAvailableSemaphore });
+
+		auto last = Core::Device::RenderPassManager()._renderIndexMap.end();
+		last--;
+		auto s = Core::Device::RenderPassManager()._renderPasss[last->second]->Semaphore();
+		presentCommandBuffer->Submit({ s }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
 
 		//Present
 		{
@@ -318,6 +315,13 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 
 		presentCommandBuffer->WaitForFinish();
 
+		//Clear
+		for (const auto& renderIndexPair : Core::Device::RenderPassManager()._renderIndexMap)
+		{
+			auto& renderPass = Core::Device::RenderPassManager()._renderPasss[renderIndexPair.second];
+
+			renderPass->OnClear();
+		}
 		//Reset
 		presentCommandBuffer->Reset();
 		for (const auto& subRenderThread : subRenderThreads)

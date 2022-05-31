@@ -133,8 +133,7 @@ void Graphic::RenderPass::OpaqueRenderPass::OnPopulateCommandBuffer(Command::Com
 
 void Graphic::RenderPass::OpaqueRenderPass::OnRender()
 {
-	_renderCommandBuffer->Submit({}, {}, {});
-	_renderCommandBuffer->WaitForFinish();
+	_renderCommandBuffer->Submit({}, {}, {Semaphore()});
 }
 
 void Graphic::RenderPass::OpaqueRenderPass::OnClear()

@@ -167,8 +167,8 @@ void Graphic::RenderPass::BackgroundRenderPass::OnPopulateCommandBuffer(Command:
 
 void Graphic::RenderPass::BackgroundRenderPass::OnRender()
 {
-	_renderCommandBuffer->Submit({}, {}, {});
-	_renderCommandBuffer->WaitForFinish();
+	auto opaqueSemaphore = Core::Device::RenderPassManager().RenderPass("OpaqueRenderPass")->Semaphore();
+	_renderCommandBuffer->Submit({ opaqueSemaphore }, {VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, {Semaphore()});
 }
 
 void Graphic::RenderPass::BackgroundRenderPass::OnClear()

@@ -1,6 +1,7 @@
 #include "Graphic/RenderPass/RenderPass.h"
 #include <Graphic/Core/Device.h>
 #include <Utils/Log.h>
+#include "Graphic/Command/Semaphore.h"
 using namespace Utils;
 
 Graphic::RenderPass::RenderPass::RenderPass(std::string name, uint32_t renderIndex)
@@ -10,7 +11,9 @@ Graphic::RenderPass::RenderPass::RenderPass(std::string name, uint32_t renderInd
 	, _subPassMap()
 	, _colorAttachmentMap()
 	, _manager(nullptr)
+	, _customSemaphores()
 {
+	_semaphore = new Command::Semaphore();
 }
 
 Graphic::RenderPass::RenderPass::~RenderPass()
@@ -38,6 +41,16 @@ uint32_t Graphic::RenderPass::RenderPass::RenderIndex()
 VkRenderPass Graphic::RenderPass::RenderPass::VkRenderPass_()
 {
 	return _vkRenderPass;
+}
+
+Graphic::Command::Semaphore* Graphic::RenderPass::RenderPass::Semaphore()
+{
+	return _semaphore;
+}
+
+Graphic::Command::Semaphore* Graphic::RenderPass::RenderPass::Semaphore(std::string name)
+{
+	return _customSemaphores[name];
 }
 
 uint32_t Graphic::RenderPass::RenderPass::SubPassIndex(std::string subPassName)
