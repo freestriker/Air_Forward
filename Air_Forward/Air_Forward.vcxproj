@@ -35,6 +35,7 @@
     <ClInclude Include="header\Logic\Component\Renderer\BackgroundRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\MeshRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\Renderer.h" />
+    <ClInclude Include="header\Logic\Component\Renderer\TransparentRenderer.h" />
     <ClInclude Include="header\Logic\Component\Transform\Transform.h" />
     <ClInclude Include="header\Logic\Manager\ObjectFactory.h" />
     <ClInclude Include="header\IO\Core\Instance.h" />
@@ -104,6 +105,7 @@
     <ClCompile Include="source\Logic\Component\Renderer\BackgroundRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\MeshRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\Renderer.cpp" />
+    <ClCompile Include="source\Logic\Component\Renderer\TransparentRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Logic\Manager\ObjectFactory.cpp" />
     <ClCompile Include="source\Test\BackgroundRendererBehaviour.cpp" />

@@ -6,6 +6,7 @@
 #include <glm/vec4.hpp>
 #include <future>
 #include "IO/Asset/AssetBase.h"
+#include <json.hpp>
 namespace Graphic
 {
 	namespace Command
@@ -32,7 +33,7 @@ namespace Graphic
 			};
 			struct Texture2DSetting
 			{
-				std::string path;
+				std::string imagePath;
 				VkSampleCountFlagBits sampleCount;
 				VkFormat format;
 				VkFilter magFilter;
@@ -41,8 +42,8 @@ namespace Graphic
 				float anisotropy;
 				VkBorderColor borderColor;
 
-				Texture2DSetting(const char* path)
-					: path(path)
+				Texture2DSetting(std::string path)
+					: imagePath(path)
 					, sampleCount(VK_SAMPLE_COUNT_1_BIT)
 					, format(VK_FORMAT_B8G8R8A8_SRGB)
 					, magFilter(VK_FILTER_LINEAR)
@@ -54,7 +55,7 @@ namespace Graphic
 
 				}
 				Texture2DSetting()
-					: path()
+					: imagePath()
 					, sampleCount(VK_SAMPLE_COUNT_1_BIT)
 					, format(VK_FORMAT_B8G8R8A8_SRGB)
 					, magFilter(VK_FILTER_LINEAR)
@@ -65,6 +66,17 @@ namespace Graphic
 				{
 
 				}
+				NLOHMANN_DEFINE_TYPE_INTRUSIVE(
+					Texture2DSetting,
+					imagePath,
+					sampleCount,
+					format,
+					magFilter,
+					minFilter,
+					addressMode,
+					anisotropy,
+					borderColor
+				);
 			};
 		private:
 			class Texture2DInstance : public IO::Asset::IAssetInstance

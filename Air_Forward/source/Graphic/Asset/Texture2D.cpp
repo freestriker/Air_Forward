@@ -9,6 +9,7 @@ using namespace Utils;
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/ImageSampler.h"
 #include "Graphic/Command/ImageMemoryBarrier.h"
+#include <fstream>
 
 Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance(std::string path)
 	: IAssetInstance(path)
@@ -33,15 +34,20 @@ Graphic::Asset::Texture2D::Texture2DInstance::Texture2DInstance::~Texture2DInsta
 
 void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::Command::CommandBuffer* const transferCommandBuffer)
 {
-	_settings = Graphic::Asset::Texture2D::Texture2DSetting(path.c_str());;
-	Graphic::Asset::Texture2D::Texture2DSetting& config = _settings;
+	std::ifstream input_file(path);
+	Log::Exception("Failed to open shader file: " + path + " .", !input_file.is_open());
+	std::string text = std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
+	nlohmann::json j = nlohmann::json::parse(text);
+	_settings = j.get<Graphic::Asset::Texture2D::Texture2DSetting>();
+	input_file.close();
+
 
 	Command::Semaphore semaphore = Command::Semaphore();
 
 	transferCommandBuffer->Reset();
 	//Load bitmap
 	{
-		auto p = _settings.path.c_str();
+		auto p = _settings.imagePath.c_str();
 		auto fileType = FreeImage_GetFileType(p);
 		if (fileType == FREE_IMAGE_FORMAT::FIF_UNKNOWN) fileType = FreeImage_GetFIFFromFilename(p);
 		if ((fileType != FREE_IMAGE_FORMAT::FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fileType))
@@ -78,7 +84,7 @@ void Graphic::Asset::Texture2D::Texture2DInstance::_LoadAssetInstance(Graphic::C
 		);
 
 		_imageSampler = new Instance::ImageSampler(
-			config.magFilter, VK_SAMPLER_MIPMAP_MODE_LINEAR, config.addressMode, config.anisotropy, config.borderColor
+			_settings.magFilter, VK_SAMPLER_MIPMAP_MODE_LINEAR, _settings.addressMode, _settings.anisotropy, _settings.borderColor
 		);
 	}
 
