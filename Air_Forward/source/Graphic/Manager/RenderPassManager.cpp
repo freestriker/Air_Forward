@@ -3,14 +3,13 @@
 #include "Graphic/Instance/Image.h"
 #include "Graphic/Instance/Buffer.h"
 #include "Graphic/Instance/FrameBuffer.h"
-#include "Graphic/Instance/RenderPass.h"
+#include "Graphic/RenderPass/RenderPass.h"
 #include "Utils/Log.h"
 
-Graphic::Manager::RenderPassManager::RenderPassCreator::RenderPassCreator(const char* name)
-	: _name(name)
-	, _attchments()
-	, _subpasss()
-	, _dependencys()
+Graphic::Manager::RenderPassManager::RenderPassCreator::RenderPassCreator()
+    : _attchments()
+    , _subpasss()
+    , _dependencys()
 {
 }
 
@@ -45,6 +44,7 @@ void Graphic::Manager::RenderPassManager::RenderPassCreator::AddDependency(std::
 Graphic::Manager::RenderPassManager::RenderPassManager()
     : _managerMutex()
     , _renderPasss()
+    , _renderIndexMap()
 {
 }
 
@@ -57,9 +57,22 @@ Graphic::Manager::RenderPassManager::~RenderPassManager()
 		delete pair.second;
 	}
 }
-void Graphic::Manager::RenderPassManager::CreateRenderPass(Graphic::Manager::RenderPassManager::RenderPassCreator& creator)
+void Graphic::Manager::RenderPassManager::AddRenderPass(RenderPass::RenderPassHandle renderPass)
 {
     std::unique_lock<std::shared_mutex> lock(this->_managerMutex);
+
+    _renderPasss.emplace(renderPass->_name, renderPass);
+    _renderIndexMap.emplace(renderPass->_renderIndex, renderPass->_name);
+    renderPass->_manager = this;
+
+    Graphic::Manager::RenderPassManager::RenderPassCreator renderPassCreator = Graphic::Manager::RenderPassManager::RenderPassCreator();
+    renderPass->OnCreate(renderPassCreator);
+    CreateRenderPass(renderPassCreator, renderPass);
+    renderPass->OnPrepare();
+}
+
+void Graphic::Manager::RenderPassManager::CreateRenderPass(Graphic::Manager::RenderPassManager::RenderPassCreator& creator, RenderPass::RenderPassHandle renderPass)
+{
 
     std::map<std::string, uint32_t> attachmentIndexes;
     std::vector<VkAttachmentDescription> attachments = std::vector<VkAttachmentDescription>(creator._attchments.size());
@@ -168,43 +181,23 @@ void Graphic::Manager::RenderPassManager::CreateRenderPass(Graphic::Manager::Ren
     VkRenderPass newVkRenderPass = VkRenderPass();
     Utils::Log::Exception("Failed to create render pass", vkCreateRenderPass(Core::Device::VkDevice_(), &renderPassInfo, nullptr, &newVkRenderPass));
 
-    _renderPasss.emplace(creator._name, new Instance::RenderPass{ creator._name, newVkRenderPass, subpassMap, colorAttachmentMap });
+    renderPass->SetParameters(newVkRenderPass, subpassMap, colorAttachmentMap);
 }
 
-void Graphic::Manager::RenderPassManager::DeleteRenderPass(const char* renderPassName)
-{
-    std::unique_lock<std::shared_mutex> lock(this->_managerMutex);
-
-    delete _renderPasss[renderPassName];
-    _renderPasss.erase(renderPassName);
-}
-
-Graphic::Instance::RenderPassHandle Graphic::Manager::RenderPassManager::RenderPass(const char* renderPassName)
+Graphic::RenderPass::RenderPassHandle Graphic::Manager::RenderPassManager::RenderPass(const char* renderPassName)
 {
     std::shared_lock<std::shared_mutex> lock(this->_managerMutex);
 
     return _renderPasss[renderPassName];
 }
-Graphic::Instance::RenderPassHandle Graphic::Manager::RenderPassManager::RenderPass(std::string renderPassName)
+Graphic::RenderPass::RenderPassHandle Graphic::Manager::RenderPassManager::RenderPass(std::string renderPassName)
 {
     std::shared_lock<std::shared_mutex> lock(this->_managerMutex);
 
     return _renderPasss[renderPassName];
 }
 
-Graphic::Manager::RenderPassManager::RenderPassCreator::AttachmentDescriptor::AttachmentDescriptor(std::string name, Instance::AttachmentHandle attachment, VkImageLayout layout, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout initialLayout, VkImageLayout finalLayout, bool isStencil, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp)
-    : name(name)
-    , attachment(attachment)
-    , layout(layout)
-    , loadOp(loadOp)
-    , storeOp(storeOp)
-    , stencilLoadOp(stencilLoadOp)
-    , stencilStoreOp(stencilStoreOp)
-    , initialLayout(initialLayout)
-    , finalLayout(finalLayout)
-    , useStencil(isStencil)
-{
-}
+
 Graphic::Manager::RenderPassManager::RenderPassCreator::SubpassDescriptor::SubpassDescriptor(std::string name, VkPipelineBindPoint pipelineBindPoint, std::vector<std::string> colorAttachmentNames, bool useDepthStencilAttachment, std::string depthStencilAttachmentName)
     : name(name)
     , pipelineBindPoint(pipelineBindPoint)
@@ -223,4 +216,18 @@ Graphic::Manager::RenderPassManager::RenderPassCreator::DependencyDescriptor::De
     , dstAccessMask(dstAccessMask)
 {
 
+}
+
+Graphic::Manager::RenderPassManager::RenderPassCreator::AttachmentDescriptor::AttachmentDescriptor(std::string name, Instance::AttachmentHandle attachment, VkImageLayout layout, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout initialLayout, VkImageLayout finalLayout, bool isStencil, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp)
+    : name(name)
+    , attachment(attachment)
+    , layout(layout)
+    , loadOp(loadOp)
+    , storeOp(storeOp)
+    , stencilLoadOp(stencilLoadOp)
+    , stencilStoreOp(stencilStoreOp)
+    , initialLayout(initialLayout)
+    , finalLayout(finalLayout)
+    , useStencil(isStencil)
+{
 }

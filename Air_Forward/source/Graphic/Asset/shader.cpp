@@ -5,7 +5,7 @@
 #include "Graphic/Core/Device.h"
 #include "Graphic/Core/Window.h"
 #include "Graphic/Asset/Mesh.h"
-#include "Graphic/Instance/RenderPass.h"
+#include "Graphic/RenderPass/RenderPass.h"
 #include "Graphic/Manager/RenderPassManager.h"
 #include <Utils/Log.h>
 using namespace Utils;

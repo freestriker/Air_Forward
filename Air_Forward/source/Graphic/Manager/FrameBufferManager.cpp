@@ -1,7 +1,7 @@
 #include "Graphic/Manager/FrameBufferManager.h"
 #include "Graphic/Core/Device.h"
 #include "Graphic/Manager/MemoryManager.h"
-#include "Graphic/Instance/RenderPass.h"
+#include "Graphic/RenderPass/RenderPass.h"
 #include "Graphic/Instance/Memory.h"
 #include "Graphic/Instance/Image.h"
 #include "Utils/Log.h"
@@ -37,7 +37,7 @@ void Graphic::Manager::FrameBufferManager::AddDepthAttachment(std::string name, 
     _attachmentRefCounts.emplace(name, 0);
 }
 
-void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, Instance::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
+void Graphic::Manager::FrameBufferManager::AddFrameBuffer(std::string name, RenderPass::RenderPassHandle renderPass, std::vector<std::string> attachmentNames)
 {
     std::unique_lock<std::shared_mutex> lock(_managerMutex);
 
