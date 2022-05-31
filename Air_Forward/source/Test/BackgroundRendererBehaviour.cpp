@@ -50,7 +50,6 @@ void Test::BackgroundRendererBehaviour::OnUpdate()
 		textureCube= textureCubeTask.get();
 		material = new Graphic::Material(shader);
 		material->SetTextureCube("backgroundTexture", textureCube);
-		material->SetSlotData("depthTexture", { 0 }, { {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, meshRenderer->_temporaryImageSampler->VkSampler_(), meshRenderer->_temporaryImage->VkImageView_(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL} });
 
 		loaded = true;
 

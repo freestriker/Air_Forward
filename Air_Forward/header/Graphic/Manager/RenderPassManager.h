@@ -8,10 +8,17 @@
 #include <shared_mutex>
 namespace Graphic
 {
-	namespace Instance
+	namespace Core
+	{
+		class Thread;
+	}
+	namespace RenderPass
 	{
 		class RenderPass;
 		typedef RenderPass* RenderPassHandle;
+	}
+	namespace Instance
+	{
 		class Attachment;
 		typedef Attachment* AttachmentHandle;
 	}
@@ -19,6 +26,7 @@ namespace Graphic
 	{
 		class RenderPassManager
 		{
+			friend class Core::Thread;
 		public:
 			class RenderPassCreator final
 			{
@@ -64,11 +72,10 @@ namespace Graphic
 				public:
 					DependencyDescriptor(std::string srcSubpassName, std::string dstSubpassName, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask);
 				};
-				std::string _name;
 				std::map <std::string, AttachmentDescriptor> _attchments;
 				std::map <std::string, SubpassDescriptor> _subpasss;
 				std::vector <DependencyDescriptor> _dependencys;
-				RenderPassCreator(const char* name);
+				RenderPassCreator();
 				~RenderPassCreator();
 				void AddColorAttachment(std::string name, Instance::AttachmentHandle attachment, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout initialLayout, VkImageLayout finalLayout);
 				void AddDepthAttachment(std::string name, Instance::AttachmentHandle attachment, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkImageLayout initialLayout, VkImageLayout finalLayout);
@@ -79,14 +86,15 @@ namespace Graphic
 
 		private:
 			std::shared_mutex _managerMutex;
-			std::map<std::string, Instance::RenderPass*> _renderPasss;
+			std::map<std::string, RenderPass::RenderPass*> _renderPasss;
+			std::map<uint32_t, std::string> _renderIndexMap;
+			void CreateRenderPass(RenderPassCreator& creator, RenderPass::RenderPassHandle renderPass);
 		public:
 			RenderPassManager();
 			~RenderPassManager();
-			void CreateRenderPass(RenderPassCreator& creator);
-			void DeleteRenderPass(const char* renderPassName);
-			Instance::RenderPassHandle RenderPass(const char* renderPassName);
-			Graphic::Instance::RenderPassHandle RenderPass(std::string renderPassName);
+			void AddRenderPass(RenderPass::RenderPassHandle renderPass);
+			RenderPass::RenderPassHandle RenderPass(const char* renderPassName);
+			Graphic::RenderPass::RenderPassHandle RenderPass(std::string renderPassName);
 		};
 
 	}

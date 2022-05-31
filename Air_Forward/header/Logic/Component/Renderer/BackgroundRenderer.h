@@ -15,8 +15,6 @@ namespace Logic
 			public:
 				BackgroundRenderer();
 				virtual ~BackgroundRenderer();
-				Graphic::Instance::Image* _temporaryImage;
-				Graphic::Instance::ImageSampler* _temporaryImageSampler;
 
 				RTTR_ENABLE(Logic::Component::Renderer::Renderer)
 			};

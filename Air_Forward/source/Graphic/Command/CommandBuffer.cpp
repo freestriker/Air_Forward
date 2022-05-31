@@ -4,7 +4,7 @@
 #include "Graphic/Core/Window.h"
 #include <stdexcept>
 #include "Graphic/Manager/FrameBufferManager.h"
-#include "Graphic/Instance/RenderPass.h"
+#include "Graphic/RenderPass/RenderPass.h"
 #include "Graphic/Asset/Shader.h"
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Material.h"
@@ -165,7 +165,7 @@ void Graphic::Command::CommandBuffer::WaitForFinish()
 
 }
 
-void Graphic::Command::CommandBuffer::BeginRenderPass(Graphic::Instance::RenderPassHandle renderPass, Graphic::Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
+void Graphic::Command::CommandBuffer::BeginRenderPass(Graphic::RenderPass::RenderPassHandle renderPass, Graphic::Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues)
 {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

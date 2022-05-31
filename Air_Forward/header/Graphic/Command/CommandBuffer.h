@@ -5,12 +5,15 @@
 namespace Graphic
 {
 	class Material;
+	namespace RenderPass
+	{
+		class RenderPass;
+		typedef RenderPass* RenderPassHandle;
+	}
 	namespace Instance
 	{
 		class FrameBuffer;
 		typedef FrameBuffer* FrameBufferHandle;
-		class RenderPass;
-		typedef RenderPass* RenderPassHandle;
 		class Buffer;
 		class Image;
 		class SwapchainImage;
@@ -60,7 +63,7 @@ namespace Graphic
 			void EndRecord();
 			void Submit(std::vector<Command::Semaphore*> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages, std::vector<Command::Semaphore*> signalSemaphores);
 			void WaitForFinish();
-			void BeginRenderPass(Instance::RenderPassHandle renderPass, Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues);
+			void BeginRenderPass(Graphic::RenderPass::RenderPassHandle renderPass, Instance::FrameBufferHandle frameBuffer, std::vector<VkClearValue> clearValues);
 			void EndRenderPass();
 			void BindShader(Asset::Shader* shader);
 			void BindMesh(Asset::Mesh* mesh);

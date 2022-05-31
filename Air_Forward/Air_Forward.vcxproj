@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClInclude Include="header\Graphic\Asset\TextureCube.h" />
     <ClInclude Include="header\Graphic\Manager\LightManager.h" />
+    <ClInclude Include="header\Graphic\RenderPass\BackgroundRenderPass.h" />
+    <ClInclude Include="header\Graphic\RenderPass\OpaqueRenderPass.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\CppBehaviour.h" />
     <ClInclude Include="header\Logic\Component\Camera\Camera.h" />
@@ -59,7 +61,7 @@
     <ClInclude Include="header\Graphic\Instance\Image.h" />
     <ClInclude Include="header\Graphic\Instance\ImageSampler.h" />
     <ClInclude Include="header\Graphic\Instance\Memory.h" />
-    <ClInclude Include="header\Graphic\Instance\RenderPass.h" />
+    <ClInclude Include="header\Graphic\RenderPass\RenderPass.h" />
     <ClInclude Include="header\Graphic\Command\Semaphore.h" />
     <ClInclude Include="header\Graphic\Instance\Buffer.h" />
     <ClInclude Include="header\Graphic\Command\CommandBuffer.h" />
@@ -88,6 +90,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="source\Graphic\Asset\TextureCube.cpp" />
     <ClCompile Include="source\Graphic\Manager\LightManager.cpp" />
+    <ClCompile Include="source\Graphic\RenderPass\BackgroundRenderPass.cpp" />
+    <ClCompile Include="source\Graphic\RenderPass\OpaqueRenderPass.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\CppBehaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Camera\Camera.cpp" />
@@ -128,7 +132,7 @@
     <ClCompile Include="source\Graphic\Instance\Image.cpp" />
     <ClCompile Include="source\Graphic\Instance\ImageSampler.cpp" />
     <ClCompile Include="source\Graphic\Instance\Memory.cpp" />
-    <ClCompile Include="source\Graphic\Instance\RenderPass.cpp" />
+    <ClCompile Include="source\Graphic\RenderPass\RenderPass.cpp" />
     <ClCompile Include="source\Graphic\Command\Semaphore.cpp" />
     <ClCompile Include="source\Graphic\Instance\Buffer.cpp" />
     <ClCompile Include="source\Graphic\Command\CommandBuffer.cpp" />
