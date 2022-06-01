@@ -163,6 +163,7 @@ void Graphic::Manager::RenderPassManager::CreateRenderPass(Graphic::Manager::Ren
         dependency.srcAccessMask = dependencyDescriptor.srcAccessMask;
         dependency.dstStageMask = dependencyDescriptor.dstStageMask;
         dependency.dstAccessMask = dependencyDescriptor.dstAccessMask;
+        dependency.dependencyFlags = dependency.srcSubpass == dependency.dstSubpass ? VK_DEPENDENCY_BY_REGION_BIT : 0;
 
         dependencys[dependencyIndex] = dependency;
 

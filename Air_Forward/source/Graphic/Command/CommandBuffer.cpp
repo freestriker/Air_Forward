@@ -75,6 +75,24 @@ void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags sr
     );
 
 }
+
+void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkDependencyFlags dependencyFlag, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, std::vector<ImageMemoryBarrier*> imageMemoryBarriers)
+{
+    std::vector< VkImageMemoryBarrier> vkBarriers = std::vector< VkImageMemoryBarrier>();
+    for (const auto& imageMemoryBarrier : imageMemoryBarriers)
+    {
+        vkBarriers.insert(vkBarriers.end(), imageMemoryBarrier->VkImageMemoryBarriers().begin(), imageMemoryBarrier->VkImageMemoryBarriers().end());
+    }
+    vkCmdPipelineBarrier(
+        _vkCommandBuffer,
+        srcStageMask, dstStageMask,
+        dependencyFlag,
+        0, nullptr,
+        0, nullptr,
+        static_cast<uint32_t>(vkBarriers.size()), vkBarriers.data()
+    );
+
+}
 void Graphic::Command::CommandBuffer::AddPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask)
 {
     vkCmdPipelineBarrier(

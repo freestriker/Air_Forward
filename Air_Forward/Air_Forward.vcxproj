@@ -23,6 +23,7 @@
     <ClInclude Include="header\Graphic\Manager\LightManager.h" />
     <ClInclude Include="header\Graphic\RenderPass\BackgroundRenderPass.h" />
     <ClInclude Include="header\Graphic\RenderPass\OpaqueRenderPass.h" />
+    <ClInclude Include="header\Graphic\RenderPass\TransparentRenderPass.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\CppBehaviour.h" />
     <ClInclude Include="header\Logic\Component\Camera\Camera.h" />
@@ -35,6 +36,7 @@
     <ClInclude Include="header\Logic\Component\Renderer\BackgroundRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\MeshRenderer.h" />
     <ClInclude Include="header\Logic\Component\Renderer\Renderer.h" />
+    <ClInclude Include="header\Logic\Component\Renderer\TransparentRenderer.h" />
     <ClInclude Include="header\Logic\Component\Transform\Transform.h" />
     <ClInclude Include="header\Logic\Manager\ObjectFactory.h" />
     <ClInclude Include="header\IO\Core\Instance.h" />
@@ -75,6 +77,7 @@
     <ClInclude Include="header\Test\BackgroundRendererBehaviour.h" />
     <ClInclude Include="header\Test\RenderTestBehaviour.h" />
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
+    <ClInclude Include="header\Test\TransparentRendererBehaviour.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
     <ClInclude Include="header\Utils\ChildBrotherTree.h" />
     <ClInclude Include="header\Utils\Condition.h" />
@@ -92,6 +95,7 @@
     <ClCompile Include="source\Graphic\Manager\LightManager.cpp" />
     <ClCompile Include="source\Graphic\RenderPass\BackgroundRenderPass.cpp" />
     <ClCompile Include="source\Graphic\RenderPass\OpaqueRenderPass.cpp" />
+    <ClCompile Include="source\Graphic\RenderPass\TransparentRenderPass.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\CppBehaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Camera\Camera.cpp" />
@@ -104,9 +108,11 @@
     <ClCompile Include="source\Logic\Component\Renderer\BackgroundRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\MeshRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Renderer\Renderer.cpp" />
+    <ClCompile Include="source\Logic\Component\Renderer\TransparentRenderer.cpp" />
     <ClCompile Include="source\Logic\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Logic\Manager\ObjectFactory.cpp" />
     <ClCompile Include="source\Test\BackgroundRendererBehaviour.cpp" />
+    <ClCompile Include="source\Test\TransparentRendererBehaviour.cpp" />
     <ClCompile Include="source\Utils\Condition.cpp" />
     <ClCompile Include="source\IO\Core\Instance.cpp" />
     <ClCompile Include="source\IO\Manager\AssetManager.cpp" />

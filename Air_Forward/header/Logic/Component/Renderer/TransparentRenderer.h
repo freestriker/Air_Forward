@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include "Logic/Component/Renderer/Renderer.h"
 #include <Graphic/Instance/Image.h>
 #include <Graphic/Instance/ImageSampler.h>
@@ -8,11 +9,11 @@ namespace Logic
 	{
 		namespace Renderer
 		{
-			class BackgroundRenderer : public Logic::Component::Renderer::Renderer
+			class TransparentRenderer : public Logic::Component::Renderer::Renderer
 			{
 			public:
-				BackgroundRenderer();
-				virtual ~BackgroundRenderer();
+				TransparentRenderer();
+				virtual ~TransparentRenderer();
 
 				RTTR_ENABLE(Logic::Component::Renderer::Renderer)
 			};
