@@ -10,8 +10,10 @@
 #include "Logic/Component/Camera/OrthographicCamera.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Component/Renderer/BackgroundRenderer.h"
+#include "Logic/Component/Renderer/TransparentRenderer.h"
 #include "Test/RenderTestBehaviour.h"
 #include "Test/BackgroundRendererBehaviour.h"
+#include "Test/TransparentRendererBehaviour.h"
 #include "Logic/Component/Light/DirectionalLight.h"
 #include <algorithm>
 #include "Logic/Component/Light/PointLight.h"
@@ -352,7 +354,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Logic::Object::GameObject* cameraGo = new Logic::Object::GameObject("Camera");
 	Core::Instance::rootObject.AddChild(cameraGo);
 	cameraGo->AddComponent(new Component::Camera::OrthographicCamera());
-	cameraGo->transform.SetTranslation(glm::vec3(0, 0, 5));
+	cameraGo->transform.SetTranslation(glm::vec3(0, 0, 8));
 
 	Logic::Object::GameObject* meshRendererGo1 = new Logic::Object::GameObject("MeshRenderer1");
 	Core::Instance::rootObject.AddChild(meshRendererGo1);
@@ -365,6 +367,18 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererGo2->AddComponent(new Component::Renderer::MeshRenderer());
 	meshRendererGo2->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererGo2->transform.SetTranslation(glm::vec3(20, 0, -15));
+
+	Logic::Object::GameObject* transparentRendererGo1 = new Logic::Object::GameObject("TransparentRenderer1");
+	Core::Instance::rootObject.AddChild(transparentRendererGo1);
+	transparentRendererGo1->AddComponent(new Component::Renderer::TransparentRenderer());
+	transparentRendererGo1->AddComponent(new Test::TransparentRendererBehaviour());
+	transparentRendererGo1->transform.SetTranslation(glm::vec3(1, 0, 2));
+
+	Logic::Object::GameObject* transparentRendererGo2 = new Logic::Object::GameObject("TransparentRenderer2");
+	Core::Instance::rootObject.AddChild(transparentRendererGo2);
+	transparentRendererGo2->AddComponent(new Component::Renderer::TransparentRenderer());
+	transparentRendererGo2->AddComponent(new Test::TransparentRendererBehaviour());
+	transparentRendererGo2->transform.SetTranslation(glm::vec3(0, 0.5, 3));
 
 	Logic::Object::GameObject* meshRendererClipGo = new Logic::Object::GameObject("MeshRendererClip");
 	Core::Instance::rootObject.AddChild(meshRendererClipGo);
