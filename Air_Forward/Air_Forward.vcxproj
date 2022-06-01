@@ -23,6 +23,7 @@
     <ClInclude Include="header\Graphic\Manager\LightManager.h" />
     <ClInclude Include="header\Graphic\RenderPass\BackgroundRenderPass.h" />
     <ClInclude Include="header\Graphic\RenderPass\OpaqueRenderPass.h" />
+    <ClInclude Include="header\Graphic\RenderPass\TransparentRenderPass.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\Behaviour.h" />
     <ClInclude Include="header\Logic\Component\Behaviour\CppBehaviour.h" />
     <ClInclude Include="header\Logic\Component\Camera\Camera.h" />
@@ -93,6 +94,7 @@
     <ClCompile Include="source\Graphic\Manager\LightManager.cpp" />
     <ClCompile Include="source\Graphic\RenderPass\BackgroundRenderPass.cpp" />
     <ClCompile Include="source\Graphic\RenderPass\OpaqueRenderPass.cpp" />
+    <ClCompile Include="source\Graphic\RenderPass\TransparentRenderPass.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\Behaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Behaviour\CppBehaviour.cpp" />
     <ClCompile Include="source\Logic\Component\Camera\Camera.cpp" />

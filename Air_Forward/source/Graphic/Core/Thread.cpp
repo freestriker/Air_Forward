@@ -33,6 +33,7 @@
 #include "Logic/Component/Light/SkyBox.h"
 #include "Graphic/RenderPass/OpaqueRenderPass.h"
 #include "Graphic/RenderPass/BackgroundRenderPass.h"
+#include "Graphic/RenderPass/TransparentRenderPass.h"
 
 Graphic::Core::Thread::RenderThread Graphic::Core::Thread::_renderThread = Graphic::Core::Thread::RenderThread();
 
@@ -98,6 +99,7 @@ void Graphic::Core::Thread::RenderThread::OnThreadStart()
 
 	Core::Device::RenderPassManager().AddRenderPass(new Graphic::RenderPass::OpaqueRenderPass());
 	Core::Device::RenderPassManager().AddRenderPass(new Graphic::RenderPass::BackgroundRenderPass());
+	Core::Device::RenderPassManager().AddRenderPass(new Graphic::RenderPass::TransparentRenderPass());
 
 	{
 		Core::Device::DescriptorSetManager().AddDescriptorSetPool(Asset::SlotType::UNIFORM_BUFFER, { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }, 10);
@@ -286,10 +288,16 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 		}
 		presentCommandBuffer->EndRecord();
 
-		auto last = Core::Device::RenderPassManager()._renderIndexMap.end();
-		last--;
-		auto s = Core::Device::RenderPassManager()._renderPasss[last->second]->Semaphore();
-		presentCommandBuffer->Submit({ s }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
+		auto lastRenderPassIter = Core::Device::RenderPassManager()._renderIndexMap.rbegin();
+		if (lastRenderPassIter != Core::Device::RenderPassManager()._renderIndexMap.rend())
+		{
+			auto lastRenderPassSemaphore = Core::Device::RenderPassManager()._renderPasss[lastRenderPassIter->second]->Semaphore();
+			presentCommandBuffer->Submit({ lastRenderPassSemaphore }, { VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }, { &copyAvailableSemaphore });
+		}
+		else
+		{
+			presentCommandBuffer->Submit({ }, { }, { &copyAvailableSemaphore });
+		}
 
 		//Present
 		{

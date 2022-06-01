@@ -138,7 +138,7 @@ void Graphic::RenderPass::OpaqueRenderPass::OnRender()
 
 void Graphic::RenderPass::OpaqueRenderPass::OnClear()
 {
-	_renderCommandPool->DestoryCommandBuffer("OpaqueFrameBuffer");
+	_renderCommandPool->DestoryCommandBuffer("OpaqueCommandBuffer");
 }
 
 Graphic::RenderPass::OpaqueRenderPass::OpaqueRenderPass()
