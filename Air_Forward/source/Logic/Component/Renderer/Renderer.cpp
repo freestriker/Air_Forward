@@ -21,6 +21,7 @@ Logic::Component::Renderer::Renderer::Renderer()
 	, _matrixBuffer(new Graphic::Instance::Buffer(sizeof(MatrixData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 	, mesh(nullptr)
 	, material(nullptr)
+	, enableFrustumCulling(true)
 {
 }
 

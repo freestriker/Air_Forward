@@ -186,7 +186,7 @@ void Graphic::Core::Thread::RenderThread::OnRun()
 			auto obbCenter = renderer->mesh->OrientedBoundingBox().Center();
 			auto obbMvCenter = mvMatrix * glm::vec4(obbCenter, 1.0f);
 			auto obbBoundry = renderer->mesh->OrientedBoundingBox().BoundryVertexes();
-			if (intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
+			if (!renderer->enableFrustumCulling || intersectionChecker.Check(obbBoundry.data(), obbBoundry.size(), mvMatrix))
 			{
 				renderer->SetMatrixData(viewMatrix, projectionMatrix);
 				renderer->material->SetUniformBuffer("cameraData", camera->CameraDataBuffer());

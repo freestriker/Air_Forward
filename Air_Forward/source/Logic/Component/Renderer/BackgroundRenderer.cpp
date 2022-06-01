@@ -9,6 +9,7 @@ RTTR_REGISTRATION
 Logic::Component::Renderer::BackgroundRenderer::BackgroundRenderer()
     : Renderer()
 {
+    enableFrustumCulling = false;
 }
 
 Logic::Component::Renderer::BackgroundRenderer::~BackgroundRenderer()

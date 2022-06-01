@@ -38,6 +38,7 @@ namespace Logic
 				Renderer();
 				virtual ~Renderer();
 			public:
+				bool enableFrustumCulling;
 				Graphic::Asset::Mesh* mesh;
 				Graphic::Material* material;
 				void SetMatrixData(glm::mat4& viewMatrix, glm::mat4& projectionMatrix);

@@ -390,6 +390,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Core::Instance::rootObject.AddChild(backgroundRendererGo);
 	backgroundRendererGo->AddComponent(new Component::Renderer::BackgroundRenderer());
 	backgroundRendererGo->AddComponent(new Test::BackgroundRendererBehaviour());
+	backgroundRendererGo->transform.SetTranslation(glm::vec3(10000, 0, -30));
 
 	Logic::Object::GameObject* skyBoxGo = new Logic::Object::GameObject("SkyBox");
 	Core::Instance::rootObject.AddChild(skyBoxGo);
