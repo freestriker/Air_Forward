@@ -11,17 +11,35 @@ layout(set = START_SET + 0, binding = 1) uniform AlbedoInfo{
 	vec4 tilingScale;
 } albedoInfo;
 
+layout(set = START_SET + 1, binding = 0) uniform sampler2D normalTexture;
+layout(set = START_SET + 1, binding = 1) uniform NormalTextureInfo{
+    vec4 size;
+	vec4 tilingScale;
+} normalTextureInfo;
+
 layout(location = 0) in vec2 inTexCoords;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec4 inColor;
 layout(location = 3) in vec3 inWorldPosition;
 layout(location = 4) in vec3 inWorldNormal;
+layout(location = 5) in vec3 inTangent;
+layout(location = 6) in vec3 inBitangent;
 
 layout(location = 0) out vec4 colorAttachment;
 
 void main() {
+    vec3 oNormal = normalize(inNormal);
+    vec3 oTangent = normalize(inTangent);
+    vec3 oBitangent = normalize(inBitangent);
+    mat3 tbnMatrix = mat3(oTangent, oBitangent, oNormal);
+    vec3 normalTextureColor = texture(normalTexture, inTexCoords).xyz;
+    vec3 vsDisturbance = (normalTextureColor - vec3(0.5, 0.5, 0.5)) * 2;
+    vec3 oDisturbance = tbnMatrix * vsDisturbance;
+    vec3 targetNormal = normalize((oNormal + oDisturbance) / 2);
+    vec3 worldTargetNormal = DirectionObjectToWorld(targetNormal);
+
     vec3 viewDirection = CameraViewDirection(inWorldPosition);
-    vec3 worldNormal = normalize(inWorldNormal);
+    vec3 worldNormal = normalize(worldTargetNormal);
 
     vec4 environment = EnvironmentLighting(normalize(reflect(viewDirection, worldNormal)));
 
