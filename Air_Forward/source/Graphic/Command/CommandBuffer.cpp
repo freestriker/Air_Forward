@@ -256,8 +256,8 @@ void Graphic::Command::CommandBuffer::Blit(Instance::Image* srcImage, VkImageLay
     blit.srcOffsets[0] = {0, 0, 0};
     blit.srcOffsets[1] = *reinterpret_cast<VkOffset3D*>(&src);
     blit.dstSubresource = dstImage->VkImageSubresourceLayers_();
-    blit.dstOffsets[0] = {0, 0, 0};
-    blit.dstOffsets[1] = *reinterpret_cast<VkOffset3D*>(&dst);
+    blit.dstOffsets[0] = {0, static_cast<int32_t>(dst.height), 0};
+    blit.dstOffsets[1] = { static_cast<int32_t>(dst.width), 0, static_cast<int32_t>(dst.depth)};
 
     vkCmdBlitImage(_vkCommandBuffer, srcImage->VkImage_(), srcImageLayout, dstImage->VkImage_(), dstImageLayout, 1, &blit, VkFilter::VK_FILTER_LINEAR);
 }
