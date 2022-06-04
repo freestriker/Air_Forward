@@ -11,6 +11,8 @@ layout(location = 2) in vec3 inWorldNormal;
 
 layout(location = 0) out vec4 colorAttachment;
 
+const float refractRatio = 1.0 / 1.52;
+
 void main() 
 {
     vec3 worldNormal = normalize(inWorldNormal);
@@ -21,7 +23,7 @@ void main()
     vec3 diffuse = vec3(0, 0, 0);
     vec3 specular = vec3(0, 0, 0);
 
-    environment += SkyBoxLighting(normalize(reflect(worldView, worldNormal)));
+    environment += SkyBoxLighting(normalize(refract(worldView, worldNormal, refractRatio)));
     diffuse += DiffuseLighting(mainLight.light, worldNormal, inWorldPosition);
     specular += SpecularLighting(mainLight.light, worldView, inWorldPosition, worldNormal, 80.0);
     for(int i = 0; i < 4; i++)

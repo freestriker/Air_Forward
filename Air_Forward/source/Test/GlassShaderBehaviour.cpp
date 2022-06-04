@@ -1,4 +1,4 @@
-#include "Test/MirrorShaderBehaviour.h"
+#include "Test/GlassShaderBehaviour.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Object/GameObject.h"
 #include "Logic/Core/Instance.h"
@@ -7,10 +7,10 @@
 #include <rttr/registration>
 RTTR_REGISTRATION
 {
-	rttr::registration::class_<Test::MirrorShaderBehaviour>("Test::MirrorShaderBehaviour");
+	rttr::registration::class_<Test::GlassShaderBehaviour>("Test::GlassShaderBehaviour");
 }
 
-Test::MirrorShaderBehaviour::MirrorShaderBehaviour()
+Test::GlassShaderBehaviour::GlassShaderBehaviour()
 	: meshTask()
 	, shaderTask()
 	, loaded(false)
@@ -21,32 +21,31 @@ Test::MirrorShaderBehaviour::MirrorShaderBehaviour()
 {
 }
 
-Test::MirrorShaderBehaviour::~MirrorShaderBehaviour()
+Test::GlassShaderBehaviour::~GlassShaderBehaviour()
 {
 }
 
-void Test::MirrorShaderBehaviour::OnAwake()
+void Test::GlassShaderBehaviour::OnAwake()
 {
 }
 
-void Test::MirrorShaderBehaviour::OnStart()
+void Test::GlassShaderBehaviour::OnStart()
 {
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\DefaultMesh.ply");
-	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\MirrorShader.shader");
+	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\GlassShader.shader");
 }
 
-void Test::MirrorShaderBehaviour::OnUpdate()
+void Test::GlassShaderBehaviour::OnUpdate()
 {
 	if (!loaded && meshTask._Is_ready() && shaderTask._Is_ready())
 	{
-		auto meshRenderer = GameObject()->GetComponent<Logic::Component::Renderer::MeshRenderer>();
-
 		mesh = meshTask.get();
 		shader = shaderTask.get();
 		material = new Graphic::Material(shader);
 
 		loaded = true;
 
+		auto meshRenderer = GameObject()->GetComponent<Logic::Component::Renderer::Renderer>();
 		meshRenderer->material = material;
 		meshRenderer->mesh = mesh;
 	}
@@ -58,6 +57,6 @@ void Test::MirrorShaderBehaviour::OnUpdate()
 	GameObject()->transform.SetRotation(rotation);
 }
 
-void Test::MirrorShaderBehaviour::OnDestroy()
+void Test::GlassShaderBehaviour::OnDestroy()
 {
 }

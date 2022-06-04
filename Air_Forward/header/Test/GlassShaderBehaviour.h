@@ -3,11 +3,12 @@
 #include <string>
 #include "Graphic/Asset/Mesh.h"
 #include "Graphic/Asset/Shader.h"
+#include "Graphic/Asset/Texture2D.h"
 #include "Graphic/Material.h"
 
 namespace Test
 {
-	class MirrorShaderBehaviour : public Logic::Component::Behaviour::CppBehaviour
+	class GlassShaderBehaviour : public Logic::Component::Behaviour::CppBehaviour
 	{
 	public:
 		std::future<Graphic::Asset::Mesh*> meshTask;
@@ -19,8 +20,8 @@ namespace Test
 
 		float rotationSpeed;
 
-		MirrorShaderBehaviour();
-		~MirrorShaderBehaviour();
+		GlassShaderBehaviour();
+		~GlassShaderBehaviour();
 		void OnAwake()override;
 		void OnStart()override;
 		void OnUpdate()override;

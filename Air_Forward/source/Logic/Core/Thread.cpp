@@ -19,6 +19,7 @@
 #include "Logic/Component/Light/PointLight.h"
 #include "Logic/Component/Light/SkyBox.h"
 #include "Test/MirrorShaderBehaviour.h"
+#include "Test/GlassShaderBehaviour.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
 
@@ -362,6 +363,11 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	//meshRendererGo1->AddComponent(new Component::Renderer::MeshRenderer());
 	//meshRendererGo1->AddComponent(new Test::RenderTestBehaviour());
 	//meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, 0));
+
+	//Logic::Object::GameObject* glassMeshRendererGo = new Logic::Object::GameObject("GlassMeshRenderer");
+	//Core::Instance::rootObject.AddChild(glassMeshRendererGo);
+	//glassMeshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
+	//glassMeshRendererGo->AddComponent(new Test::GlassShaderBehaviour());
 
 	Logic::Object::GameObject* mirrorMeshRendererGo = new Logic::Object::GameObject("MirrorMeshRenderer");
 	Core::Instance::rootObject.AddChild(mirrorMeshRendererGo);

@@ -9,4 +9,8 @@ glslangValidator.exe -t -V DefaultTransprantShader.frag -IUtils/ -o DefaultTrans
 
 glslangValidator.exe -t -V MirrorShader.vert -IUtils/ -o MirrorShaderVert.spv
 glslangValidator.exe -t -V MirrorShader.frag -IUtils/ -o MirrorShaderFrag.spv
+
+glslangValidator.exe -t -V GlassShader.vert -IUtils/ -o GlassShaderVert.spv
+glslangValidator.exe -t -V GlassShader.frag -IUtils/ -o GlassShaderFrag.spv
+
 cmd
