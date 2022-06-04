@@ -30,11 +30,12 @@ void Test::CameraMoveBehaviour::OnStart()
 
 void Test::CameraMoveBehaviour::OnUpdate()
 {
-	_rotation = std::fmod((_rotation + 0.5 * Logic::Core::Instance::time.DeltaDuration()), 360.0f);
-	float x = std::cos(_rotation) * 8;
-	float y = -std::sin(_rotation) * 8;
+	const double pi = std::acos(-1.0);
+	_rotation = std::fmod((_rotation + 15 * Logic::Core::Instance::time.DeltaDuration()), 360.0f);
+	float x = std::cos(_rotation / 180 * pi) * 8;
+	float y = -std::sin(_rotation / 180 * pi) * 8;
 	GameObject()->transform.SetTranslation({ x, y, 0 });
-	GameObject()->transform.SetEulerRotation({ 90, 0, -(180 - _rotation) });
+	GameObject()->transform.SetEulerRotation({ 90, 0, -(90 - _rotation) });
 }
 
 void Test::CameraMoveBehaviour::OnDestroy()

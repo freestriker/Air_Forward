@@ -23,7 +23,7 @@ void main()
     vec3 diffuse = vec3(0, 0, 0);
     vec3 specular = vec3(0, 0, 0);
 
-    environment += SkyBoxLighting(normalize(refract(worldView, worldNormal, refractRatio)));
+    environment += SkyBoxLighting(-normalize(reflect(worldView, worldNormal)));
     diffuse += DiffuseLighting(mainLight.light, worldNormal, inWorldPosition);
     specular += SpecularLighting(mainLight.light, worldView, inWorldPosition, worldNormal, 80.0);
     for(int i = 0; i < 4; i++)
