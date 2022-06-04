@@ -16,11 +16,11 @@ layout(location = 3) out vec3 outWorldPosition;
 layout(location = 4) out vec3 outWorldNormal;
 
 void main() {
-    gl_Position = ObjectToProjection(vec4(vertexPosition, 1.0));
+    gl_Position = PositionObjectToProjection(vec4(vertexPosition, 1.0));
 
-    vec3 worldNormal = normalize(DirectionObjectToWorld(vertexNormal));
-    vec3 worldPosition = ObjectToWorld(vec4(vertexPosition, 1.0)).xyz;
-    vec3 viewDirection = CameraViewDirection(worldPosition);
+    vec3 worldNormal = DirectionObjectToWorld(vertexNormal);
+    vec3 worldPosition = PositionObjectToWorld(vec4(vertexPosition, 1.0)).xyz;
+    vec3 viewDirection = CameraWorldViewToPosition(worldPosition);
 
     vec3 diffuse = vec3(0, 0, 0);
     vec3 specular = vec3(0, 0, 0);

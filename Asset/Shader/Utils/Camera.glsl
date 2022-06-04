@@ -16,7 +16,7 @@ layout(set = 1, binding = 0) uniform CameraData{
     vec4 clipPlanes[6];
 } cameraData;
 
-vec3 GetCameraViewDirectionFromScreenCoordinates(vec2 ndcPosition)
+vec3 GetCameraWorldViewFromScreenCoordinates(vec2 ndcPosition)
 {
     float halfWidth = cameraData.parameter.y;
     float halfHeight = cameraData.parameter.z;
@@ -25,35 +25,35 @@ vec3 GetCameraViewDirectionFromScreenCoordinates(vec2 ndcPosition)
     return normalize(cameraData.forward * cameraData.nearFlat + cameraData.right * halfWidth * uv.x + up * halfHeight * uv.y);
 }
 
-vec3 OrthographicCameraViewDirection()
+vec3 OrthographicCameraWorldView()
 {
     return normalize(cameraData.forward);
 }
 
-vec3 PerspectiveCameraViewDirection(vec3 viewedPosition)
+vec3 PerspectiveCameraWorldView(vec3 worldPosition)
 {
-    return normalize(viewedPosition - cameraData.position);
+    return normalize(worldPosition - cameraData.position);
 }
 
-vec3 CameraViewDirection(vec3 viewedPosition)
+vec3 CameraWorldView(vec3 worldPosition)
 {
     switch(cameraData.type)
     {
         case ORTHOGRAPHIC_CAMERA:
         {
-            return OrthographicCameraViewDirection();
+            return OrthographicCameraWorldView();
         }
         case PERSPECTIVE_CAMERA:
         {
-            return PerspectiveCameraViewDirection(viewedPosition);
+            return PerspectiveCameraWorldView(worldPosition);
         }
     }
     return vec3(0, 0, -1);
 }
 
-vec3 CameraPositionDirection(vec3 viewedPosition)
+vec3 CameraWorldViewToPosition(vec3 worldPosition)
 {
-    return normalize(viewedPosition - cameraData.position);
+    return normalize(worldPosition - cameraData.position);
 }
 
 #endif

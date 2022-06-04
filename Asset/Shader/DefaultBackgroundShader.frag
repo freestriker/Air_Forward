@@ -15,7 +15,7 @@ layout(location = 0) out vec4 colorAttachment;
 void main() {
     if(texture(depthTexture, inTexCoords).x == 1.0)
     {
-        vec3 viewDirection = GetCameraViewDirectionFromScreenCoordinates(inTexCoords);
+        vec3 viewDirection = GetCameraWorldViewFromScreenCoordinates(inTexCoords);
         colorAttachment = vec4(texture(backgroundTexture, viewDirection).xyz, 1);
     }
     else

@@ -404,7 +404,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	auto directionalLight = new Component::Light::DirectionalLight();
 	directionalLight->color = { 0, 0.8, 0, 1 };
 	directionalLightGo->AddComponent(directionalLight);
-	//directionalLightGo->transform.SetEulerRotation(glm::vec3(0, 30, 0));
+	directionalLightGo->transform.SetEulerRotation(glm::vec3(0, 90, 0));
 
 	float pi = std::acos(-1.0);
 	float pi_5 = pi / 5;
