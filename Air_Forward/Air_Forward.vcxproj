@@ -75,6 +75,7 @@
     <ClInclude Include="header\Graphic\Material.h" />
     <ClInclude Include="header\Graphic\Manager\MemoryManager.h" />
     <ClInclude Include="header\Test\BackgroundRendererBehaviour.h" />
+    <ClInclude Include="header\Test\CameraMoveBehaviour.h" />
     <ClInclude Include="header\Test\GlassShaderBehaviour.h" />
     <ClInclude Include="header\Test\MirrorShaderBehaviour.h" />
     <ClInclude Include="header\Test\RenderTestBehaviour.h" />
@@ -115,6 +116,7 @@
     <ClCompile Include="source\Logic\Component\Transform\Transform.cpp" />
     <ClCompile Include="source\Logic\Manager\ObjectFactory.cpp" />
     <ClCompile Include="source\Test\BackgroundRendererBehaviour.cpp" />
+    <ClCompile Include="source\Test\CameraMoveBehaviour.cpp" />
     <ClCompile Include="source\Test\GlassShaderBehaviour.cpp" />
     <ClCompile Include="source\Test\MirrorShaderBehaviour.cpp" />
     <ClCompile Include="source\Test\TransparentRendererBehaviour.cpp" />

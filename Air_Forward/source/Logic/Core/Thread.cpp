@@ -22,6 +22,7 @@
 #include "Test/MirrorShaderBehaviour.h"
 #include "Test/GlassShaderBehaviour.h"
 #include "Test/UnlitShaderBehaviour.h"
+#include "Test/CameraMoveBehaviour.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
 
@@ -359,8 +360,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Logic::Object::GameObject* cameraGo = new Logic::Object::GameObject("Camera");
 	Core::Instance::rootObject.AddChild(cameraGo);
 	cameraGo->AddComponent(new Component::Camera::PerspectiveCamera());
-	cameraGo->transform.SetTranslation(glm::vec3(0, -6, 0));
-	cameraGo->transform.SetEulerRotation(glm::vec3(90, 0, 0));
+	cameraGo->AddComponent(new Test::CameraMoveBehaviour());
 
 	//Renderers
 	Logic::Object::GameObject* renderers = new Logic::Object::GameObject("Renderers");
