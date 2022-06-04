@@ -35,7 +35,7 @@ void Test::BackgroundRendererBehaviour::OnAwake()
 void Test::BackgroundRendererBehaviour::OnStart()
 {
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\SkyBoxMesh.ply");
-	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DrawSkyBoxShader.shader");
+	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultBackgroundShader.shader");
 	textureCubeTask = Graphic::Asset::TextureCube::LoadAsync("..\\Asset\\Texture\\DefaultTextureCube.json");
 }
 

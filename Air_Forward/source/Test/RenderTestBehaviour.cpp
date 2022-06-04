@@ -14,10 +14,12 @@ Test::RenderTestBehaviour::RenderTestBehaviour()
 	: meshTask()
 	, shaderTask()
 	, texture2DTask()
+	, normalTexture2DTask()
 	, loaded(false)
 	, mesh(nullptr)
 	, shader(nullptr)
 	, texture2d(nullptr)
+	, normalTexture2d(nullptr)
 	, material(nullptr)
 	, rotationSpeed(0.5235987755982988)
 {
@@ -36,6 +38,7 @@ void Test::RenderTestBehaviour::OnStart()
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\DefaultMesh.ply");
 	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultShader.shader");
 	texture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultTexture2D.json");
+	normalTexture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultNormalTexture2D.json");
 }
 
 void Test::RenderTestBehaviour::OnUpdate()
@@ -45,8 +48,10 @@ void Test::RenderTestBehaviour::OnUpdate()
 		mesh = meshTask.get();
 		shader = shaderTask.get();
 		texture2d = texture2DTask.get();
+		normalTexture2d = normalTexture2DTask.get();
 		material = new Graphic::Material(shader);
 		material->SetTexture2D("albedo", texture2d);
+		material->SetTexture2D("normalTexture", normalTexture2d);
 
 		loaded = true;
 

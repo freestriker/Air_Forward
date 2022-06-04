@@ -14,10 +14,12 @@ namespace Test
 		std::future<Graphic::Asset::Mesh*> meshTask;
 		std::future<Graphic::Asset::Shader*> shaderTask;
 		std::future<Graphic::Asset::Texture2D*> texture2DTask;
+		std::future<Graphic::Asset::Texture2D*> normalTexture2DTask;
 		bool loaded;
 		Graphic::Asset::Mesh* mesh;
 		Graphic::Asset::Shader* shader;
 		Graphic::Asset::Texture2D* texture2d;
+		Graphic::Asset::Texture2D* normalTexture2d;
 		Graphic::Material* material;
 
 		float rotationSpeed;

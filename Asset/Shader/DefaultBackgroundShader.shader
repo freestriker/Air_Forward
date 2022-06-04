@@ -8,7 +8,7 @@
   "cullMode": 0,
   "dstAlphaBlendFactor": 0,
   "dstColorBlendFactor": 7,
-  "shaderPaths": ["..\\Asset\\Shader\\DrawSkyBoxShaderFrag.spv", "..\\Asset\\Shader\\DrawSkyBoxShaderVert.spv"],
+  "shaderPaths": ["..\\Asset\\Shader\\DefaultBackgroundShaderFrag.spv", "..\\Asset\\Shader\\DefaultBackgroundShaderVert.spv"],
   "srcAlphaBlendFactor": 1,
   "srcColorBlendFactor": 6,
   "depthTestEnable": 0,
