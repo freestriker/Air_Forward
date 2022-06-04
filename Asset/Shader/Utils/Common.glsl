@@ -22,6 +22,6 @@ vec4 ObjectToWorld(vec4 position)
 
 vec3 DirectionObjectToWorld(vec3 direction)
 {
-    return vec3(matrixData.itModel * vec4(direction, 0));
+    return mat3(matrixData.itModel) * direction;
 }
 #endif

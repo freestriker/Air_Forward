@@ -12,12 +12,11 @@ layout(location = 3) in vec3 vertexTangent;
 layout(location = 4) in vec3 vertexBitangent;
 
 layout(location = 0) out vec2 outTexCoords;
-layout(location = 1) out vec3 outNormal;
-layout(location = 2) out vec4 outColor;
-layout(location = 3) out vec3 outWorldPosition;
-layout(location = 4) out vec3 outWorldNormal;
-layout(location = 5) out vec3 outTangent;
-layout(location = 6) out vec3 outBitangent;
+layout(location = 1) out vec4 outColor;
+layout(location = 2) out vec3 outWorldPosition;
+layout(location = 3) out vec3 outWorldNormal;
+layout(location = 4) out vec3 outWorldTangent;
+layout(location = 5) out vec3 outWorldBitangent;
 
 void main() {
     gl_Position = ObjectToProjection(vec4(vertexPosition, 1.0));
@@ -37,7 +36,6 @@ void main() {
     outColor = vec4(diffuse.xyz + specular.xyz, 1);
     outWorldPosition = worldPosition;
     outWorldNormal = worldNormal;
-    outNormal = normalize(vertexNormal);
-    outTangent = normalize(vertexTangent);
-    outBitangent = normalize(vertexBitangent);
+    outWorldTangent = normalize(DirectionObjectToWorld(vertexTangent));
+    outWorldBitangent = normalize(DirectionObjectToWorld(vertexBitangent));
 }

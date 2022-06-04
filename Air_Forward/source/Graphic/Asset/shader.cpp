@@ -268,7 +268,7 @@ void Graphic::Asset::Shader::_ShaderInstance::_PopulatePipelineSettings(_Pipelin
 	pipelineData.rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	pipelineData.rasterizer.lineWidth = 1.0f;
 	pipelineData.rasterizer.cullMode = _shaderSettings.cullMode;
-	pipelineData.rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	pipelineData.rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	pipelineData.rasterizer.depthBiasEnable = VK_FALSE;
 
 	pipelineData.multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
