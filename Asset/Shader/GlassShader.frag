@@ -32,5 +32,5 @@ void main()
         specular += SpecularLighting(importantLight.lights[i], worldView, inWorldPosition, worldNormal, 80.0);
     }
 
-    colorAttachment = vec4(diffuse + specular + environment * 1.8 + inColor.xyz, 1);
+    colorAttachment = vec4(environment * 1.8, 1);
 }

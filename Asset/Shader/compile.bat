@@ -13,4 +13,7 @@ glslangValidator.exe -t -V MirrorShader.frag -IUtils/ -o MirrorShaderFrag.spv
 glslangValidator.exe -t -V GlassShader.vert -IUtils/ -o GlassShaderVert.spv
 glslangValidator.exe -t -V GlassShader.frag -IUtils/ -o GlassShaderFrag.spv
 
+glslangValidator.exe -t -V UnlitShader.vert -IUtils/ -o UnlitShaderVert.spv
+glslangValidator.exe -t -V UnlitShader.frag -IUtils/ -o UnlitShaderFrag.spv
+
 cmd
