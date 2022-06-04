@@ -18,6 +18,7 @@
 #include <algorithm>
 #include "Logic/Component/Light/PointLight.h"
 #include "Logic/Component/Light/SkyBox.h"
+#include "Test/MirrorShaderBehaviour.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
 
@@ -356,11 +357,16 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	cameraGo->AddComponent(new Component::Camera::OrthographicCamera());
 	cameraGo->transform.SetTranslation(glm::vec3(0, 0, 8));
 
-	Logic::Object::GameObject* meshRendererGo1 = new Logic::Object::GameObject("MeshRenderer1");
-	Core::Instance::rootObject.AddChild(meshRendererGo1);
-	meshRendererGo1->AddComponent(new Component::Renderer::MeshRenderer());
-	meshRendererGo1->AddComponent(new Test::RenderTestBehaviour());
-	meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, 0));
+	//Logic::Object::GameObject* meshRendererGo1 = new Logic::Object::GameObject("MeshRenderer1");
+	//Core::Instance::rootObject.AddChild(meshRendererGo1);
+	//meshRendererGo1->AddComponent(new Component::Renderer::MeshRenderer());
+	//meshRendererGo1->AddComponent(new Test::RenderTestBehaviour());
+	//meshRendererGo1->transform.SetTranslation(glm::vec3(0, 0, 0));
+
+	Logic::Object::GameObject* mirrorMeshRendererGo = new Logic::Object::GameObject("MirrorMeshRenderer");
+	Core::Instance::rootObject.AddChild(mirrorMeshRendererGo);
+	mirrorMeshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
+	mirrorMeshRendererGo->AddComponent(new Test::MirrorShaderBehaviour());
 
 	Logic::Object::GameObject* meshRendererGo2 = new Logic::Object::GameObject("MeshRenderer2");
 	Core::Instance::rootObject.AddChild(meshRendererGo2);
