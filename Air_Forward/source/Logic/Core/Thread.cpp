@@ -8,6 +8,7 @@
 #include "Graphic/Core/Instance.h"
 #include <string>
 #include "Logic/Component/Camera/OrthographicCamera.h"
+#include "Logic/Component/Camera/PerspectiveCamera.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Component/Renderer/BackgroundRenderer.h"
 #include "Logic/Component/Renderer/TransparentRenderer.h"
@@ -355,7 +356,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 {
 	Logic::Object::GameObject* cameraGo = new Logic::Object::GameObject("Camera");
 	Core::Instance::rootObject.AddChild(cameraGo);
-	cameraGo->AddComponent(new Component::Camera::OrthographicCamera());
+	cameraGo->AddComponent(new Component::Camera::PerspectiveCamera());
 	cameraGo->transform.SetTranslation(glm::vec3(0, 0, 8));
 
 	//Logic::Object::GameObject* meshRendererGo1 = new Logic::Object::GameObject("MeshRenderer1");

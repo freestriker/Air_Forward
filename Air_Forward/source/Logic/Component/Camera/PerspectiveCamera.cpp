@@ -8,7 +8,7 @@ RTTR_REGISTRATION
 
 glm::vec4 Logic::Component::Camera::PerspectiveCamera::GetParameter()
 {
-    double pi = std::acos(-1.0);
+    const double pi = std::acos(-1.0);
     double halfFov = fovAngle * pi / 360.0;
     float halfHeight = std::tanf(halfFov) * nearFlat;
     float halfWidth = halfHeight * aspectRatio;
@@ -27,7 +27,17 @@ Logic::Component::Camera::PerspectiveCamera::~PerspectiveCamera()
 
 glm::mat4 Logic::Component::Camera::PerspectiveCamera::ProjectionMatrix()
 {
-    return glm::perspective(fovAngle, aspectRatio, -nearFlat, -farFlat);
+    const double pi = std::acos(-1.0);
+    double halfFov = fovAngle * pi / 360.0;
+    double cot = 1.0 / std::tan(halfFov);
+    float flatDistence = farFlat - nearFlat;
+
+    return glm::mat4(
+        cot / aspectRatio   , 0     , 0                                 , 0,
+        0                   , cot   , 0                                 , 0,
+        0                   , 0     , -farFlat / flatDistence           , -1,
+        0                   , 0     , -nearFlat * farFlat / flatDistence, 0
+    );
 }
 
 std::array<glm::vec4, 6> Logic::Component::Camera::PerspectiveCamera::ClipPlanes()
