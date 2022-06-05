@@ -81,7 +81,7 @@
     <ClInclude Include="header\Test\RenderTestBehaviour.h" />
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
     <ClInclude Include="header\Test\TransparentRendererBehaviour.h" />
-    <ClInclude Include="header\Test\UnlitShaderBehaviour.h" />
+    <ClInclude Include="header\Test\PointLightMoveBehaviour.h" />
     <ClInclude Include="header\Utils\ActivableBase.h" />
     <ClInclude Include="header\Utils\ChildBrotherTree.h" />
     <ClInclude Include="header\Utils\Condition.h" />
@@ -120,7 +120,7 @@
     <ClCompile Include="source\Test\GlassShaderBehaviour.cpp" />
     <ClCompile Include="source\Test\MirrorShaderBehaviour.cpp" />
     <ClCompile Include="source\Test\TransparentRendererBehaviour.cpp" />
-    <ClCompile Include="source\Test\UnlitShaderBehaviour.cpp" />
+    <ClCompile Include="source\Test\PointLightMoveBehaviour.cpp" />
     <ClCompile Include="source\Utils\Condition.cpp" />
     <ClCompile Include="source\IO\Core\Instance.cpp" />
     <ClCompile Include="source\IO\Manager\AssetManager.cpp" />

@@ -19,6 +19,7 @@ Logic::Component::Camera::PerspectiveCamera::PerspectiveCamera()
 	: Camera(CameraType::PERSPECTIVE)
 	, fovAngle(60)
 {
+    nearFlat = 0.5f;
 }
 
 Logic::Component::Camera::PerspectiveCamera::~PerspectiveCamera()

@@ -32,8 +32,8 @@ void Test::CameraMoveBehaviour::OnUpdate()
 {
 	const double pi = std::acos(-1.0);
 	_rotation = std::fmod((_rotation + 15 * Logic::Core::Instance::time.DeltaDuration()), 360.0f);
-	float x = std::cos(_rotation / 180 * pi) * 8;
-	float y = -std::sin(_rotation / 180 * pi) * 8;
+	float x = std::cos(_rotation / 180 * pi) * 6;
+	float y = -std::sin(_rotation / 180 * pi) * 6;
 	GameObject()->transform.SetTranslation({ x, y, 0 });
 	GameObject()->transform.SetEulerRotation({ 90, 90 - _rotation, -(0) });
 }

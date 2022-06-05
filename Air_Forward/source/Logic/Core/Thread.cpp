@@ -21,7 +21,7 @@
 #include "Logic/Component/Light/SkyBox.h"
 #include "Test/MirrorShaderBehaviour.h"
 #include "Test/GlassShaderBehaviour.h"
-#include "Test/UnlitShaderBehaviour.h"
+#include "Test/PointLightMoveBehaviour.h"
 #include "Test/CameraMoveBehaviour.h"
 
 Logic::Core::Thread::LogicThread Logic::Core::Thread::_logicThread = Logic::Core::Thread::LogicThread();
@@ -415,28 +415,105 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	directionalLightGo->transform.SetEulerRotation(glm::vec3(-30, 70, 0));
 	auto directionalLight = new Component::Light::DirectionalLight();
 	directionalLight->color = { 1, 239.0 / 255, 213.0 / 255, 1 };
-	directionalLight->intensity = 0.6;
+	directionalLight->intensity = 0.4;
 	directionalLightGo->AddComponent(directionalLight);
 
 	Logic::Object::GameObject* skyBoxGo = new Logic::Object::GameObject("SkyBox");
 	lights->AddChild(skyBoxGo);
 	auto skyBox = new Component::Light::SkyBox();
 	skyBox->color = { 1, 1, 1, 1 };
-	skyBox->intensity = 0.6f;
+	skyBox->intensity = 0.4f;
 	skyBoxGo->AddComponent(skyBox);
 
-	//float pi = std::acos(-1.0);
-	//float pi_5 = pi / 5;
-	//for (int i = 0; i < 10; i++)
+	float sr6 = std::pow(6.0, 0.5);
+	float sr2 = std::pow(2.0, 0.5);
+
+	Logic::Object::GameObject* nearPointLights = new Logic::Object::GameObject("NearPointLights");
+	lights->AddChild(nearPointLights);
+	nearPointLights->AddComponent(new Test::PointLightMoveBehaviour(60));
+	{
+		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("NearPointLight 1");
+		nearPointLights->AddChild(pointLightGo);
+		pointLightGo->transform.SetTranslation({ 0, 0, 2 });
+		auto pointLight = new Component::Light::PointLight();
+		pointLight->color = { 1, 1, 0, 1 };
+		pointLight->minRange = 1;
+		pointLight->maxRange = 4;
+		pointLightGo->AddComponent(pointLight);
+	}
+	{
+		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("NearPointLight 2");
+		nearPointLights->AddChild(pointLightGo);
+		pointLightGo->transform.SetTranslation({ -sr6 * 2 / 3, -sr2 * 2 / 3, - 2.0 / 3 });
+		auto pointLight = new Component::Light::PointLight();
+		pointLight->color = { 1, 0, 0, 1 };
+		pointLight->minRange = 1;
+		pointLight->maxRange = 4;
+		pointLightGo->AddComponent(pointLight);
+	}
+	{
+		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("NearPointLight 3");
+		nearPointLights->AddChild(pointLightGo);
+		pointLightGo->transform.SetTranslation({ sr6 * 2 / 3, -sr2 * 2 / 3, - 2.0 / 3 });
+		auto pointLight = new Component::Light::PointLight();
+		pointLight->color = { 0, 1, 0, 1 };
+		pointLight->minRange = 1;
+		pointLight->maxRange = 4;
+		pointLightGo->AddComponent(pointLight);
+	}
+	{
+		Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("NearPointLight 4");
+		nearPointLights->AddChild(pointLightGo);
+		pointLightGo->transform.SetTranslation({ 0, sr2 * 2 * 2 / 3, - 2.0 / 3 });
+		auto pointLight = new Component::Light::PointLight();
+		pointLight->color = { 0, 0, 1, 1 };
+		pointLight->minRange = 1;
+		pointLight->maxRange = 4;
+		pointLightGo->AddComponent(pointLight);
+	}
+
+	//Logic::Object::GameObject* farPointLights = new Logic::Object::GameObject("FarPointLights");
+	//lights->AddChild(farPointLights);
+	//farPointLights->AddComponent(new Test::PointLightMoveBehaviour(60));
 	//{
-	//	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("PointLight" + std::to_string(i));
-	//	Core::Instance::rootObject.AddChild(pointLightGo);
+	//	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("FarPointLight 1");
+	//	farPointLights->AddChild(pointLightGo);
+	//	pointLightGo->transform.SetTranslation({ 0, 0, -4 });
 	//	auto pointLight = new Component::Light::PointLight();
-	//	pointLight->color = { 1, 0, 0, 1 };
-	//	pointLight->minRange = 0.5;
-	//	pointLight->maxRange = 10;
+	//	pointLight->color = { 0, 1, 1, 1 };
+	//	pointLight->minRange = 1;
+	//	pointLight->maxRange = 6;
 	//	pointLightGo->AddComponent(pointLight);
-	//	pointLightGo->transform.SetTranslation(glm::vec3(std::cosf(i * pi_5), std::sinf(i * pi_5), 0.5));
+	//}
+	//{
+	//	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("FarPointLight 2");
+	//	farPointLights->AddChild(pointLightGo);
+	//	pointLightGo->transform.SetTranslation({ -sr6 * 4 / 3, sr2 * 4 / 3, 4.0 / 3 });
+	//	auto pointLight = new Component::Light::PointLight();
+	//	pointLight->color = { 1, 0, 1, 1 };
+	//	pointLight->minRange = 1;
+	//	pointLight->maxRange = 6;
+	//	pointLightGo->AddComponent(pointLight);
+	//}
+	//{
+	//	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("FarPointLight 3");
+	//	farPointLights->AddChild(pointLightGo);
+	//	pointLightGo->transform.SetTranslation({ sr6 * 4 / 3, sr2 * 4 / 3, 4.0 / 3 });
+	//	auto pointLight = new Component::Light::PointLight();
+	//	pointLight->color = { 1, 1, 1, 1 };
+	//	pointLight->minRange = 1;
+	//	pointLight->maxRange = 6;
+	//	pointLightGo->AddComponent(pointLight);
+	//}
+	//{
+	//	Logic::Object::GameObject* pointLightGo = new Logic::Object::GameObject("FarPointLight 4");
+	//	farPointLights->AddChild(pointLightGo);
+	//	pointLightGo->transform.SetTranslation({ 0, -sr2 * 2 * 4 / 3, 4.0 / 3 });
+	//	auto pointLight = new Component::Light::PointLight();
+	//	pointLight->color = { 1, 1, 0, 1 };
+	//	pointLight->minRange = 1;
+	//	pointLight->maxRange = 6;
+	//	pointLightGo->AddComponent(pointLight);
 	//}
 
 	while (!_stopped)
