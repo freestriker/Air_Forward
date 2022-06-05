@@ -36,5 +36,5 @@ void main() {
         specular += SpecularLighting(importantLight.lights[i], viewDirection, inWorldPosition, worldNormal, 50.0).xyz;
     }
 
-    colorAttachment = vec4(texture(albedo, inTexCoords).xyz, 0.2);
+    colorAttachment = texture(albedo, inTexCoords);
 }

@@ -366,6 +366,11 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Logic::Object::GameObject* renderers = new Logic::Object::GameObject("Renderers");
 	Core::Instance::rootObject.AddChild(renderers);
 
+	Logic::Object::GameObject* backgroundRendererGo = new Logic::Object::GameObject("BackgroundRenderer");
+	renderers->AddChild(backgroundRendererGo);
+	backgroundRendererGo->AddComponent(new Component::Renderer::BackgroundRenderer());
+	backgroundRendererGo->AddComponent(new Test::BackgroundRendererBehaviour());
+
 	Logic::Object::GameObject* meshRendererGo = new Logic::Object::GameObject("meshRenderer");
 	renderers->AddChild(meshRendererGo);
 	meshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
@@ -375,13 +380,13 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	renderers->AddChild(glassMeshRendererGo);
 	glassMeshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
 	glassMeshRendererGo->AddComponent(new Test::GlassShaderBehaviour());
-	glassMeshRendererGo->transform.SetTranslation(glm::vec3(4, 0, 0));
+	glassMeshRendererGo->transform.SetTranslation(glm::vec3(3, 0, 0));
 
 	Logic::Object::GameObject* mirrorMeshRendererGo = new Logic::Object::GameObject("MirrorMeshRenderer");
 	renderers->AddChild(mirrorMeshRendererGo);
 	mirrorMeshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
 	mirrorMeshRendererGo->AddComponent(new Test::MirrorShaderBehaviour());
-	mirrorMeshRendererGo->transform.SetTranslation(glm::vec3(-4, 0, 0));
+	mirrorMeshRendererGo->transform.SetTranslation(glm::vec3(-3, 0, 0));
 
 	Logic::Object::GameObject* meshRendererCulledGo = new Logic::Object::GameObject("MeshRendererCulled");
 	renderers->AddChild(meshRendererCulledGo);
@@ -389,22 +394,53 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	meshRendererCulledGo->AddComponent(new Test::RenderTestBehaviour());
 	meshRendererCulledGo->transform.SetTranslation(glm::vec3(2000, 2000, 2000));
 
-	//Logic::Object::GameObject* transparentRendererGo1 = new Logic::Object::GameObject("TransparentRenderer1");
-	//Core::Instance::rootObject.AddChild(transparentRendererGo1);
-	//transparentRendererGo1->AddComponent(new Component::Renderer::TransparentRenderer());
-	//transparentRendererGo1->AddComponent(new Test::TransparentRendererBehaviour());
-	//transparentRendererGo1->transform.SetTranslation(glm::vec3(1, 0, 2));
+	//Lights
+	Logic::Object::GameObject* transparentRenderers = new Logic::Object::GameObject("TransparentRenderers");
+	renderers->AddChild(transparentRenderers);
+	{
+		Logic::Object::GameObject* transparentRendererGo = new Logic::Object::GameObject("TransparentRenderer1");
+		transparentRenderers->AddChild(transparentRendererGo);
+		transparentRendererGo->AddComponent(new Component::Renderer::TransparentRenderer());
+		transparentRendererGo->AddComponent(new Test::TransparentRendererBehaviour());
+		transparentRendererGo->transform.SetScale(glm::vec3(2, 2, 2));
+		transparentRendererGo->transform.SetTranslation(glm::vec3(2, 2, 0));
+		transparentRendererGo->transform.SetEulerRotation(glm::vec3(90, 0, 0));
+	}
+	{
+		Logic::Object::GameObject* transparentRendererGo = new Logic::Object::GameObject("TransparentRenderer2");
+		transparentRenderers->AddChild(transparentRendererGo);
+		transparentRendererGo->AddComponent(new Component::Renderer::TransparentRenderer());
+		transparentRendererGo->AddComponent(new Test::TransparentRendererBehaviour());
+		transparentRendererGo->transform.SetScale(glm::vec3(2, 2, 2));
+		transparentRendererGo->transform.SetTranslation(glm::vec3(-2, 2, 0));
+		transparentRendererGo->transform.SetEulerRotation(glm::vec3(90, 0, 0));
+	}
+	{
+		Logic::Object::GameObject* transparentRendererGo = new Logic::Object::GameObject("TransparentRenderer3");
+		transparentRenderers->AddChild(transparentRendererGo);
+		transparentRendererGo->AddComponent(new Component::Renderer::TransparentRenderer());
+		transparentRendererGo->AddComponent(new Test::TransparentRendererBehaviour());
+		transparentRendererGo->transform.SetScale(glm::vec3(2, 2, 2));
+		transparentRendererGo->transform.SetTranslation(glm::vec3(2, 0, 2));
+	}
+	{
+		Logic::Object::GameObject* transparentRendererGo = new Logic::Object::GameObject("TransparentRenderer4");
+		transparentRenderers->AddChild(transparentRendererGo);
+		transparentRendererGo->AddComponent(new Component::Renderer::TransparentRenderer());
+		transparentRendererGo->AddComponent(new Test::TransparentRendererBehaviour());
+		transparentRendererGo->transform.SetScale(glm::vec3(2, 2, 2));
+		transparentRendererGo->transform.SetTranslation(glm::vec3(-2, 0, 2));
+	}
+	{
+		Logic::Object::GameObject* transparentRendererGo = new Logic::Object::GameObject("TransparentRenderer5");
+		transparentRenderers->AddChild(transparentRendererGo);
+		transparentRendererGo->AddComponent(new Component::Renderer::TransparentRenderer());
+		transparentRendererGo->AddComponent(new Test::TransparentRendererBehaviour());
+		transparentRendererGo->transform.SetScale(glm::vec3(2, 2, 2));
+		transparentRendererGo->transform.SetTranslation(glm::vec3(4, 0, 0));
+		transparentRendererGo->transform.SetEulerRotation(glm::vec3(90, 90, 90));
+	}
 
-	//Logic::Object::GameObject* transparentRendererGo2 = new Logic::Object::GameObject("TransparentRenderer2");
-	//Core::Instance::rootObject.AddChild(transparentRendererGo2);
-	//transparentRendererGo2->AddComponent(new Component::Renderer::TransparentRenderer());
-	//transparentRendererGo2->AddComponent(new Test::TransparentRendererBehaviour());
-	//transparentRendererGo2->transform.SetTranslation(glm::vec3(0, 0.5, 3));
-
-	Logic::Object::GameObject* backgroundRendererGo = new Logic::Object::GameObject("BackgroundRenderer");
-	renderers->AddChild(backgroundRendererGo);
-	backgroundRendererGo->AddComponent(new Component::Renderer::BackgroundRenderer());
-	backgroundRendererGo->AddComponent(new Test::BackgroundRendererBehaviour());
 
 	//Lights
 	Logic::Object::GameObject* lights = new Logic::Object::GameObject("Lights");
