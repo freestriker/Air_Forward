@@ -16,13 +16,12 @@ layout(set = 1, binding = 0) uniform CameraData{
     vec4 clipPlanes[6];
 } cameraData;
 
-vec3 GetCameraWorldViewFromScreenCoordinates(vec2 ndcPosition)
+vec3 PositionScreenToNearFlatWorld(vec2 screenPosition)
 {
-    float halfWidth = cameraData.parameter.y;
-    float halfHeight = cameraData.parameter.z;
-    vec2 uv = (ndcPosition - vec2(0.5, 0.5)) * 2;
+    float x = cameraData.parameter.y * (2 * screenPosition.x - 1);
+    float y = cameraData.parameter.z * (1 - 2 * screenPosition.y);
     vec3 up = cross(cameraData.right, cameraData.forward);
-    return normalize(cameraData.forward * cameraData.nearFlat + cameraData.right * halfWidth * uv.x + up * halfHeight * uv.y);
+    return cameraData.position + normalize(cameraData.forward) * cameraData.nearFlat + normalize(cameraData.right) * x + normalize(-up) * y;
 }
 
 vec3 OrthographicCameraWorldView()

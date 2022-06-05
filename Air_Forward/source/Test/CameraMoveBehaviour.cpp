@@ -35,7 +35,7 @@ void Test::CameraMoveBehaviour::OnUpdate()
 	float x = std::cos(_rotation / 180 * pi) * 8;
 	float y = -std::sin(_rotation / 180 * pi) * 8;
 	GameObject()->transform.SetTranslation({ x, y, 0 });
-	GameObject()->transform.SetEulerRotation({ 90, 0, -(90 - _rotation) });
+	GameObject()->transform.SetEulerRotation({ 90, 90 - _rotation, -(0) });
 }
 
 void Test::CameraMoveBehaviour::OnDestroy()
