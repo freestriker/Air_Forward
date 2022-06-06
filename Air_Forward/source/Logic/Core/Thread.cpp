@@ -12,7 +12,7 @@
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Component/Renderer/BackgroundRenderer.h"
 #include "Logic/Component/Renderer/TransparentRenderer.h"
-#include "Test/RenderTestBehaviour.h"
+#include "Test/MeshRendererBehaviour.h"
 #include "Test/BackgroundRendererBehaviour.h"
 #include "Test/TransparentRendererBehaviour.h"
 #include "Logic/Component/Light/DirectionalLight.h"
@@ -374,7 +374,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Logic::Object::GameObject* meshRendererGo = new Logic::Object::GameObject("meshRenderer");
 	renderers->AddChild(meshRendererGo);
 	meshRendererGo->AddComponent(new Component::Renderer::MeshRenderer());
-	meshRendererGo->AddComponent(new Test::RenderTestBehaviour());
+	meshRendererGo->AddComponent(new Test::MeshRendererBehaviour());
 
 	Logic::Object::GameObject* glassMeshRendererGo = new Logic::Object::GameObject("GlassMeshRenderer");
 	renderers->AddChild(glassMeshRendererGo);
@@ -391,7 +391,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	Logic::Object::GameObject* meshRendererCulledGo = new Logic::Object::GameObject("MeshRendererCulled");
 	renderers->AddChild(meshRendererCulledGo);
 	meshRendererCulledGo->AddComponent(new Component::Renderer::MeshRenderer());
-	meshRendererCulledGo->AddComponent(new Test::RenderTestBehaviour());
+	meshRendererCulledGo->AddComponent(new Test::MeshRendererBehaviour());
 	meshRendererCulledGo->transform.SetTranslation(glm::vec3(2000, 2000, 2000));
 
 	//Lights
@@ -451,7 +451,7 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	directionalLightGo->transform.SetEulerRotation(glm::vec3(-30, 70, 0));
 	auto directionalLight = new Component::Light::DirectionalLight();
 	directionalLight->color = { 1, 239.0 / 255, 213.0 / 255, 1 };
-	directionalLight->intensity = 0.4;
+	directionalLight->intensity = 0.4f;
 	directionalLightGo->AddComponent(directionalLight);
 
 	Logic::Object::GameObject* skyBoxGo = new Logic::Object::GameObject("SkyBox");
@@ -461,8 +461,8 @@ void Logic::Core::Thread::LogicThread::OnRun()
 	skyBox->intensity = 0.4f;
 	skyBoxGo->AddComponent(skyBox);
 
-	float sr6 = std::pow(6.0, 0.5);
-	float sr2 = std::pow(2.0, 0.5);
+	float sr6 = std::pow(6.0f, 0.5f);
+	float sr2 = std::pow(2.0f, 0.5f);
 
 	Logic::Object::GameObject* nearPointLights = new Logic::Object::GameObject("NearPointLights");
 	lights->AddChild(nearPointLights);

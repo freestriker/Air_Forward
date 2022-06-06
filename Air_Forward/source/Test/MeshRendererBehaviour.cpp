@@ -1,4 +1,4 @@
-#include "Test/RenderTestBehaviour.h"
+#include "Test/MeshRendererBehaviour.h"
 #include "Logic/Component/Renderer/MeshRenderer.h"
 #include "Logic/Object/GameObject.h"
 #include "Logic/Core/Instance.h"
@@ -7,10 +7,10 @@
 #include <rttr/registration>
 RTTR_REGISTRATION
 {
-	rttr::registration::class_<Test::RenderTestBehaviour>("Test::RenderTestBehaviour");
+	rttr::registration::class_<Test::MeshRendererBehaviour>("Test::MeshRendererBehaviour");
 }
 
-Test::RenderTestBehaviour::RenderTestBehaviour()
+Test::MeshRendererBehaviour::MeshRendererBehaviour()
 	: meshTask()
 	, shaderTask()
 	, texture2DTask()
@@ -21,19 +21,19 @@ Test::RenderTestBehaviour::RenderTestBehaviour()
 	, texture2d(nullptr)
 	, normalTexture2d(nullptr)
 	, material(nullptr)
-	, rotationSpeed(0.5235987755982988)
+	, rotationSpeed(0.5235987755982988f)
 {
 }
 
-Test::RenderTestBehaviour::~RenderTestBehaviour()
+Test::MeshRendererBehaviour::~MeshRendererBehaviour()
 {
 }
 
-void Test::RenderTestBehaviour::OnAwake()
+void Test::MeshRendererBehaviour::OnAwake()
 {
 }
 
-void Test::RenderTestBehaviour::OnStart()
+void Test::MeshRendererBehaviour::OnStart()
 {
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\DefaultMesh.ply");
 	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultShader.shader");
@@ -41,7 +41,7 @@ void Test::RenderTestBehaviour::OnStart()
 	normalTexture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultNormalTexture2D.json");
 }
 
-void Test::RenderTestBehaviour::OnUpdate()
+void Test::MeshRendererBehaviour::OnUpdate()
 {
 	if (!loaded && meshTask._Is_ready() && shaderTask._Is_ready() && texture2DTask._Is_ready())
 	{
@@ -61,12 +61,12 @@ void Test::RenderTestBehaviour::OnUpdate()
 	}
 
 	auto rotation = GameObject()->transform.Rotation();
-	rotation.x = std::fmod(rotation.x + rotationSpeed * 0.3f * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
-	rotation.y = std::fmod(rotation.y + rotationSpeed * 0.6f * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
-	rotation.z = std::fmod(rotation.z + rotationSpeed * Logic::Core::Instance::time.DeltaDuration(), 6.283185307179586);
+	rotation.x = std::fmod(rotation.x + rotationSpeed * 0.3f * static_cast<float>(Logic::Core::Instance::time.DeltaDuration()), 6.283185307179586f);
+	rotation.y = std::fmod(rotation.y + rotationSpeed * 0.6f * static_cast<float>(Logic::Core::Instance::time.DeltaDuration()), 6.283185307179586f);
+	rotation.z = std::fmod(rotation.z + rotationSpeed * static_cast<float>(Logic::Core::Instance::time.DeltaDuration()), 6.283185307179586f);
 	GameObject()->transform.SetRotation(rotation);
 }
 
-void Test::RenderTestBehaviour::OnDestroy()
+void Test::MeshRendererBehaviour::OnDestroy()
 {
 }

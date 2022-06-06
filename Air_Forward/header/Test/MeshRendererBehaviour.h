@@ -8,7 +8,7 @@
 
 namespace Test
 {
-	class RenderTestBehaviour : public Logic::Component::Behaviour::CppBehaviour
+	class MeshRendererBehaviour : public Logic::Component::Behaviour::CppBehaviour
 	{
 	public:
 		std::future<Graphic::Asset::Mesh*> meshTask;
@@ -24,8 +24,8 @@ namespace Test
 
 		float rotationSpeed;
 
-		RenderTestBehaviour();
-		~RenderTestBehaviour();
+		MeshRendererBehaviour();
+		~MeshRendererBehaviour();
 		void OnAwake()override;
 		void OnStart()override;
 		void OnUpdate()override;

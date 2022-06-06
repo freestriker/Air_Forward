@@ -78,7 +78,7 @@
     <ClInclude Include="header\Test\CameraMoveBehaviour.h" />
     <ClInclude Include="header\Test\GlassShaderBehaviour.h" />
     <ClInclude Include="header\Test\MirrorShaderBehaviour.h" />
-    <ClInclude Include="header\Test\RenderTestBehaviour.h" />
+    <ClInclude Include="header\Test\MeshRendererBehaviour.h" />
     <ClInclude Include="header\Test\TestCppBehaviour.h" />
     <ClInclude Include="header\Test\TransparentRendererBehaviour.h" />
     <ClInclude Include="header\Test\PointLightMoveBehaviour.h" />
@@ -157,7 +157,7 @@
     <ClCompile Include="source\Graphic\Material.cpp" />
     <ClCompile Include="source\Graphic\Manager\MemoryManager.cpp" />
     <ClCompile Include="source\Graphic\Manager\RenderPassManager.cpp" />
-    <ClCompile Include="source\Test\RenderTestBehaviour.cpp" />
+    <ClCompile Include="source\Test\MeshRendererBehaviour.cpp" />
     <ClCompile Include="source\Test\TestCppBehaviour.cpp" />
     <ClCompile Include="source\Utils\ActivableBase.cpp" />
     <ClCompile Include="source\Utils\ChildBrotherTree.cpp" />
