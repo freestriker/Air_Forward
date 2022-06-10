@@ -80,7 +80,7 @@ glm::mat4 Logic::Component::Camera::Camera::ViewMatrix()
 {
 	glm::vec3 eye = _modelMatrix * glm::vec4(0, 0, 0, 1);
 	glm::vec3 center = glm::normalize(glm::vec3(_modelMatrix * glm::vec4(0, 0, -1, 1)));
-	glm::vec3 up = glm::normalize(glm::vec3(_modelMatrix * glm::vec4(0, 1, 0, 1)));
+	glm::vec3 up = glm::normalize(glm::vec3(_modelMatrix * glm::vec4(0, 1, 0, 0)));
 
 	return glm::lookAt(eye, center, up);
 }

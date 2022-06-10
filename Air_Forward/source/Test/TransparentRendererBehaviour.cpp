@@ -34,7 +34,7 @@ void Test::TransparentRendererBehaviour::OnStart()
 {
 	meshTask = Graphic::Asset::Mesh::LoadAsync("..\\Asset\\Mesh\\SquareMesh.ply");
 	shaderTask = Graphic::Asset::Shader::LoadAsync("..\\Asset\\Shader\\DefaultTransparentShader.shader");
-	texture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\DefaultTexture2D.json");
+	texture2DTask = Graphic::Asset::Texture2D::LoadAsync("..\\Asset\\Texture\\BrokenGlassTexture2d .json");
 }
 
 void Test::TransparentRendererBehaviour::OnUpdate()

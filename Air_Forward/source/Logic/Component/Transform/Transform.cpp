@@ -1,6 +1,7 @@
 #include "Logic/Component/Transform/Transform.h"
 #include "Logic/Object/GameObject.h"
 #include <rttr/registration>
+#include <glm/glm.hpp>
 RTTR_REGISTRATION
 {
     using namespace rttr;
@@ -113,7 +114,7 @@ glm::mat4 Logic::Component::Transform::Transform::TranslationMatrix()
 
 glm::mat4 Logic::Component::Transform::Transform::RotationMatrix()
 {
-    return glm::mat4_cast(glm::quat(_rotation));
+    return glm::rotate(glm::rotate(glm::rotate(glm::mat4(1), _rotation.x, {1, 0, 0}), _rotation.y, {0, 1, 0}), _rotation.z, {0, 0, 1});
 }
 
 glm::mat4 Logic::Component::Transform::Transform::ScaleMatrix()
